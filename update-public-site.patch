@@ -1,0 +1,29 @@
+--- src/PublicSite.tsx
++++ src/PublicSite.tsx
+@@ -5,6 +5,7 @@
+ import { StatsCounter } from './components/StatsCounter';
+ import { PopularExperiences } from './components/PopularExperiences';
+ import { WhyChooseUs } from './components/WhyChooseUs';
++import { FeatureBar } from './components/FeatureBar';
+ import { DestinationsGrid } from './components/DestinationsGrid';
+ import { UpcomingRoadTrips } from './components/UpcomingRoadTrips';
+ import { UpcomingEvents } from './components/UpcomingEvents';
+@@ -62,7 +63,7 @@
+   };
+ 
+   return (
+-    <div className="min-h-screen bg-[#08121B] text-[#F4E8D2] font-['Inter',sans-serif] selection:bg-[#E67A3A] selection:text-white relative">
++    <div className="min-h-screen bg-[#070707] text-white font-['Inter',sans-serif] selection:bg-[#FF6A00] selection:text-white relative">
+       {/* Sophisticated Dark Ambient Background Glow */}
+       <div className="fixed inset-0 pointer-events-none bg-ambient-glow opacity-40 z-0" />
+ 
+@@ -82,6 +83,9 @@
+         onOpenAiPlanner={() => setIsAiPlannerOpen(true)}
+       />
+ 
++      {/* Feature Bar */}
++      <FeatureBar />
++
+       {/* Statistics Counter */}
+       <StatsCounter />
+ 

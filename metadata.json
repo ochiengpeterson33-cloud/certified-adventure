@@ -1,0 +1,6 @@
+{
+  "name": "Certified Adventures",
+  "description": "Premium luxury adventure tourism and road trips in Kenya. Travel in comfort and style with road trips, tours, camping, hiking, and custom holiday packages.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,88 @@
+--- src/components/Hero.tsx
++++ src/components/Hero.tsx
+@@ -83,11 +83,8 @@
+       <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-auto w-full">
+         <div className="max-w-3xl">
+           {/* Brand Tag Badge */}
+-          <motion.div
+-            initial={{ opacity: 0, y: 20 }}
+-            animate={{ opacity: 1, y: 0 }}
+-            transition={{ duration: 0.6 }}
+-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#12212F]/80 backdrop-blur-md border border-[#E67A3A]/40 mb-6 shadow-xl"
++          <div
++            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#12212F]/80 backdrop-blur-md border border-[#E67A3A]/40 mb-6 shadow-xl animate-fade-in-up"
+           >
+             <ShieldCheck className="w-4 h-4 text-[#E67A3A]" />
+             <span className="text-xs font-semibold uppercase tracking-widest text-[#F4E8D2]">
+@@ -99,31 +96,22 @@
+                 <Star key={i} className="w-3 h-3 fill-amber-400 text-amber-400" />
+               ))}
+             </div>
+-          </motion.div>
++          </div>
+ 
+           {/* Main Headline */}
+-          <motion.h1
+-            initial={{ opacity: 0, y: 25 }}
+-            animate={{ opacity: 1, y: 0 }}
+-            transition={{ duration: 0.7, delay: 0.1 }}
+-            className="font-['Poppins'] font-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-[#F4E8D2] leading-[1.1] tracking-tight mb-6 drop-shadow-2xl"
++          <h1
++            className="font-['Poppins'] font-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-[#F4E8D2] leading-[1.1] tracking-tight mb-6 drop-shadow-2xl animate-fade-in-up delay-100"
+           >
+             {displayTitle.split(' ').slice(0, -2).join(' ')} <br />
+             <span className="text-gradient-orange">{displayTitle.split(' ').slice(-2).join(' ')}</span>
+-          </motion.h1>
++          </h1>
+ 
+           {/* Subheading */}
+-          <motion.p
+-            initial={{ opacity: 0, y: 25 }}
+-            animate={{ opacity: 1, y: 0 }}
+-            transition={{ duration: 0.7, delay: 0.2 }}
+-            className="text-base sm:text-lg text-[#F4E8D2]/90 leading-relaxed font-normal mb-8 max-w-2xl drop-shadow"
++          <p
++            className="text-base sm:text-lg text-[#F4E8D2]/90 leading-relaxed font-normal mb-8 max-w-2xl drop-shadow animate-fade-in-up delay-200"
+           >
+             {displaySubtitle}
+-          </motion.p>
++          </p>
+ 
+           {/* CTA Buttons */}
+-          <motion.div
+-            initial={{ opacity: 0, y: 25 }}
+-            animate={{ opacity: 1, y: 0 }}
+-            transition={{ duration: 0.7, delay: 0.3 }}
+-            className="flex flex-wrap items-center gap-4 mb-10"
++          <div
++            className="flex flex-wrap items-center gap-4 mb-10 animate-fade-in-up delay-300"
+           >
+             <button
+               onClick={() => onOpenBookingModal()}
+@@ -143,14 +131,11 @@
+               <Sparkles className="w-4 h-4 text-[#E67A3A] animate-pulse" />
+               <span>Custom AI Concierge</span>
+             </button>
+-          </motion.div>
++          </div>
+         </div>
+ 
+         {/* Quick Experience Search Filter Bar Overlay */}
+-        <motion.div
+-          initial={{ opacity: 0, y: 35 }}
+-          animate={{ opacity: 1, y: 0 }}
+-          transition={{ duration: 0.8, delay: 0.4 }}
+-          className="mt-4 p-4 sm:p-6 rounded-3xl glass-panel border border-[#E67A3A]/30 shadow-2xl"
++        <div
++          className="mt-4 p-4 sm:p-6 rounded-3xl glass-panel border border-[#E67A3A]/30 shadow-2xl animate-fade-in-up delay-400"
+         >
+           <form onSubmit={handleSearch} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
+@@ -213,7 +198,7 @@
+               <span>Find Packages</span>
+             </button>
+           </form>
+-        </motion.div>
++        </div>
+       </div>
+ 
+       {/* Animated Floating Mountains Silhouette & Scroll Indicator */}

@@ -1,0 +1,20 @@
+--- src/PublicSite.tsx
++++ src/PublicSite.tsx
+@@ -9,6 +9,7 @@
+ import { WhyChooseUs } from './components/WhyChooseUs';
+ import { DestinationsGrid } from './components/DestinationsGrid';
+ import { UpcomingRoadTrips } from './components/UpcomingRoadTrips';
++import { UpcomingEvents } from './components/UpcomingEvents';
+ import { GalleryMasonry } from './components/GalleryMasonry';
+ import { TestimonialsCarousel } from './components/TestimonialsCarousel';
+ import { FAQSection } from './components/FAQSection';
+@@ -74,6 +75,9 @@
+       {/* Upcoming Scheduled Road Trips */}
+       <UpcomingRoadTrips onOpenBookingModal={handleOpenBookingModal} />
+ 
++      {/* Special Events */}
++      <UpcomingEvents />
++
+       {/* Photo Gallery Masonry & Lightbox */}
+       <GalleryMasonry />
+ 

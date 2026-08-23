@@ -1,0 +1,30 @@
+import React, { useState } from 'react';
+import { ExperienceItem } from '../types';
+import { X, CheckCircle, XCircle, Clock, MapPin, Users, Calendar, Star, ShieldCheck, ChevronRight, Award, Compass, MessageSquare } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+
+interface ExperienceModalProps {
+  experience: ExperienceItem | null;
+  onClose: () => void;
+  onOpenBookingModal: (destination: string, packageTitle: string) => void;
+}
+
+export const ExperienceModal: React.FC<ExperienceModalProps> = ({
+  experience,
+  onClose,
+  onOpenBookingModal,
+}) => {
+  const [activeTab, setActiveTab] = useState<'itinerary' | 'gallery' | 'inclusions'>('itinerary');
+  const [selectedImage, setSelectedImage] = useState<string>('');
+
+  
+
+  const currentHeroImage = selectedImage || displayExp.image;
+
+  return (
+    <AnimatePresence>
+      {experience && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        {/* Backdrop */}
+        <motion.div
+          initial={{ opacity: 0 }}
