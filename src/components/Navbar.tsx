@@ -102,7 +102,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
             </div>
             <div className="flex items-center gap-2 hover:text-[#FF7A00] transition-colors cursor-pointer hidden md:flex">
               <Phone className="w-3.5 h-3.5 text-[#FF7A00]" />
-              <span>+254 799884308</span>
+              <span>+254 707630535</span>
             </div>
             <div className="flex items-center gap-2 hover:text-[#FF7A00] transition-colors cursor-pointer hidden sm:flex">
               <Mail className="w-3.5 h-3.5 text-[#FF7A00]" />
