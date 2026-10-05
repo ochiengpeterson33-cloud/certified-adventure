@@ -42,7 +42,11 @@ const EventCountdown: React.FC<{ targetDate: string }> = ({ targetDate }) => {
   );
 };
 
-export const UpcomingEvents: React.FC = () => {
+interface UpcomingEventsProps {
+  onOpenBookingModal?: (destination: string, packageTitle: string) => void;
+}
+
+export const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ onOpenBookingModal }) => {
   const { data: dbEvents, isLoading } = useEvents();
 
   if (isLoading) {
@@ -129,7 +133,15 @@ export const UpcomingEvents: React.FC = () => {
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-6 border-t border-white/10">
                   <EventCountdown targetDate={evt.event_date} />
                   
-                  <button className="w-full sm:w-auto px-8 py-4 rounded-xl font-bold uppercase tracking-wider text-black bg-[#FF6A00] hover:bg-white hover:text-black transition-all duration-300 shadow-lg shadow-[#FF6A00]/20 flex items-center justify-center gap-2 hover:-translate-y-1 active:translate-y-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onOpenBookingModal) {
+                        onOpenBookingModal(evt.location || 'Event Venue', evt.title);
+                      }
+                    }}
+                    className="w-full sm:w-auto px-8 py-4 rounded-xl font-bold uppercase tracking-wider text-black bg-[#FF6A00] hover:bg-white hover:text-black transition-all duration-300 shadow-lg shadow-[#FF6A00]/20 flex items-center justify-center gap-2 hover:-translate-y-1 active:translate-y-0 cursor-pointer"
+                  >
                     <span>Book Ticket</span>
                     <ArrowRight className="w-5 h-5" />
                   </button>

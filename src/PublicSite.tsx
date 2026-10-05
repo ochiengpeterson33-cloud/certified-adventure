@@ -87,7 +87,7 @@ export function PublicSite() {
       <WhyChooseUs />
 
       {/* Special Events */}
-      <UpcomingEvents />
+      <UpcomingEvents onOpenBookingModal={handleOpenBookingModal} />
 
       {/* Merch Store */}
       <MerchStore />

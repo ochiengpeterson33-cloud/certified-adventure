@@ -24,14 +24,27 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [travelDate, setTravelDate] = useState('2026-08-20');
+  const [travelDate, setTravelDate] = useState(() => {
+    return activeEvent?.event_date?.split('T')[0] || new Date().toISOString().split('T')[0];
+  });
   const [guests, setGuests] = useState(2);
   const [notes, setNotes] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  
+  // Update date and reset submission state when modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      if (activeEvent?.event_date) {
+        setTravelDate(activeEvent.event_date.split('T')[0]);
+      } else {
+        setTravelDate(new Date().toISOString().split('T')[0]);
+      }
+      setSubmitted(false);
+      setErrorMsg('');
+    }
+  }, [isOpen, activeEvent]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,13 +118,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             <div className="space-y-6">
               <div>
                 <span className="px-3 py-1 rounded-full bg-[#E67A3A]/20 text-[#E67A3A] border border-[#E67A3A] text-[10px] font-bold uppercase">
-                  {activeEvent ? 'Event Reservation' : 'Fast Reservation'}
+                  {packageTitle?.toLowerCase().includes('trip') || packageTitle?.toLowerCase().includes('event') || packageTitle?.toLowerCase().includes('hike') ? 'Event Ticket' : 'Adventure Reservation'}
                 </span>
                 <h3 className="font-['Poppins'] font-bold text-2xl text-white mt-2">
-                  Reserve: {activeEvent?.title || 'No Active Event'}
+                  Reserve: {packageTitle || activeEvent?.title || 'Certified Experience'}
                 </h3>
                 <p className="text-base text-[#F4E8D2]/70 mt-1">
-                  Travel in Comfort & Style with Certified Adventures.
+                  {destination ? `Location: ${destination}` : 'Travel in Comfort & Style with Certified Adventures.'}
                 </p>
               </div>
 
@@ -121,7 +134,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 </div>
               )}
 
-              {!activeEvent && !isLoadingEvents ? (
+              {!activeEvent && !packageTitle && !isLoadingEvents ? (
                 <div className="bg-[#E67A3A]/10 border border-[#E67A3A]/20 text-[#F4E8D2] p-6 rounded-2xl text-center">
                   <Calendar className="w-12 h-12 text-[#E67A3A] mx-auto mb-4 opacity-50" />
                   <p className="font-medium mb-2">No Active Events</p>
@@ -180,7 +193,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#E67A3A]">Travelers ({guests})</label>
+                    <label className="text-xs font-bold text-[#E67A3A]">Travelers / Tickets ({guests})</label>
                     <input
                       type="number"
                       min={1}
@@ -198,7 +211,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     rows={2}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Any special diet, hotel upgrade preference..."
+                    placeholder="Any special diet, pickup location, questions..."
                     className="w-full p-3 rounded-2xl bg-[#08121B] border border-[#F4E8D2]/20 text-base text-[#F4E8D2] focus:outline-none focus:border-[#E67A3A]"
                   />
                 </div>
@@ -206,10 +219,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-3.5 rounded-2xl font-['Poppins'] text-xs font-bold text-white bg-[#E67A3A] hover:bg-[#ff843d] shadow-lg shadow-[#E67A3A]/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full py-3.5 rounded-2xl font-['Poppins'] text-xs font-bold text-white bg-[#E67A3A] hover:bg-[#ff843d] shadow-lg shadow-[#E67A3A]/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
                   <Compass className="w-4 h-4" />
-                  <span>{isSubmitting ? 'Confirming...' : 'Confirm Reservation'}</span>
+                  <span>{isSubmitting ? 'Confirming...' : 'Confirm Reservation / Ticket'}</span>
                 </button>
               </form>
               )}
