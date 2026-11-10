@@ -124,10 +124,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
       </div>
 
       {/* Main Nav */}
-      <div className={`max-w-[1400px] mx-auto px-6 transition-all duration-500 ${isScrolled ? 'h-[80px]' : 'h-[72px]'}`}>
-        <div className="flex items-center justify-between h-full">
+      <div className={`max-w-[1400px] mx-auto px-3.5 sm:px-6 lg:px-8 transition-all duration-500 ${isScrolled ? 'h-[72px] sm:h-[80px]' : 'h-[66px] sm:h-[72px]'}`}>
+        <div className="flex items-center justify-between h-full w-full">
           {/* Logo */}
-          <div onClick={() => handleLinkClick('home')} className="cursor-pointer flex items-center mr-14 shrink-0">
+          <div onClick={() => handleLinkClick('home')} className="cursor-pointer flex items-center mr-2 sm:mr-6 lg:mr-12 min-w-0 flex-1 sm:flex-initial">
              <Logo variant="full" darkText={true} showTagline={true} />
           </div>
 
@@ -237,41 +237,32 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
             </button>
           </div>
 
-          {/* Mobile Actions: Cart + Profile + Hamburger */}
-          <div className="flex lg:hidden items-center gap-2 relative z-50">
-            {/* Quick Cart Access on Mobile */}
-            <button
-              onClick={openCart}
-              aria-label="Shopping Cart"
-              className="w-11 h-11 rounded-xl bg-gray-100 active:bg-orange-50 active:scale-95 flex items-center justify-center text-gray-800 hover:text-[#FF7A00] border border-gray-200 shadow-sm transition-all relative"
-            >
-              <ShoppingCart className="w-5 h-5" />
-              {totalCount > 0 && (
+          {/* Mobile Actions: Only Hamburger by default, Cart appears when items are added */}
+          <div className="flex lg:hidden items-center gap-2 relative z-50 shrink-0">
+            {/* Cart Button: appears on mobile only when user has added items to cart */}
+            {totalCount > 0 && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                onClick={openCart}
+                aria-label="Shopping Cart"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gray-100 active:bg-orange-50 active:scale-95 flex items-center justify-center text-gray-800 hover:text-[#FF7A00] border border-gray-200 shadow-sm transition-all relative shrink-0"
+              >
+                <ShoppingCart className="w-5 h-5" />
                 <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#FF7A00] text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white shadow-sm">
                   {totalCount}
                 </span>
-              )}
-            </button>
-
-            {/* Quick Profile / Account Access */}
-            <button
-              onClick={handleUserClick}
-              aria-label="Account Profile"
-              className="w-11 h-11 rounded-xl bg-gray-100 active:bg-orange-50 active:scale-95 flex items-center justify-center text-gray-800 hover:text-[#FF7A00] border border-gray-200 shadow-sm transition-all relative"
-            >
-              <User className="w-5 h-5" />
-              {user && (
-                <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 rounded-full bg-[#FF7A00] ring-2 ring-white" />
-              )}
-            </button>
+              </motion.button>
+            )}
 
             {/* Mobile Hamburger Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-              className="w-11 h-11 rounded-xl bg-gray-100 active:scale-95 flex items-center justify-center text-gray-900 border border-gray-200 shadow-sm transition-all"
+              className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gray-100 active:scale-95 flex items-center justify-center text-gray-900 border border-gray-200 shadow-sm transition-all shrink-0 cursor-pointer"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
             </button>
           </div>
         </div>
@@ -293,12 +284,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm">
                 {user ? (
                   <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#FF7A00] to-[#FF9800] text-white flex items-center justify-center font-bold text-sm shadow-md shadow-[#FF7A00]/25">
+                    <div 
+                      onClick={() => { setMobileMenuOpen(false); navigate('/profile'); }}
+                      className="flex items-center gap-3 cursor-pointer group"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#FF7A00] to-[#FF9800] text-white flex items-center justify-center font-bold text-sm shadow-md shadow-[#FF7A00]/25 group-hover:scale-105 transition-transform flex-shrink-0">
                         {(profile?.first_name ? profile.first_name[0] : '') || user.email?.[0]?.toUpperCase() || 'U'}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-slate-900 truncate">
+                        <p className="text-sm font-bold text-slate-900 truncate group-hover:text-[#FF7A00] transition-colors">
                           {profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : user.email?.split('@')[0]}
                         </p>
                         <p className="text-xs text-slate-500 truncate">{user.email}</p>
@@ -310,8 +304,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
 
                     <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200">
                       <button
-                        onClick={handleUserClick}
-                        className="py-2.5 px-3 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-800 hover:text-[#FF7A00] hover:border-[#FF7A00]/40 flex items-center justify-center gap-1.5 active:scale-95 shadow-sm"
+                        onClick={() => { setMobileMenuOpen(false); navigate('/profile'); }}
+                        className="py-2.5 px-3 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-800 hover:text-[#FF7A00] hover:border-[#FF7A00]/40 flex items-center justify-center gap-1.5 active:scale-95 shadow-sm cursor-pointer"
                       >
                         <User className="w-3.5 h-3.5 text-[#FF7A00]" />
                         <span>My Profile</span>
@@ -319,8 +313,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
 
                       {isAdmin ? (
                         <button
-                          onClick={() => { navigate('/admin'); setMobileMenuOpen(false); }}
-                          className="py-2.5 px-3 rounded-xl bg-[#FF7A00] text-white text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 shadow-md shadow-[#FF7A00]/30"
+                          onClick={() => { setMobileMenuOpen(false); navigate('/admin'); }}
+                          className="py-2.5 px-3 rounded-xl bg-[#FF7A00] text-white text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 shadow-md shadow-[#FF7A00]/30 cursor-pointer"
                         >
                           <Shield className="w-3.5 h-3.5" />
                           <span>Admin Portal</span>
@@ -328,7 +322,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
                       ) : (
                         <button
                           onClick={() => { signOut(); setMobileMenuOpen(false); }}
-                          className="py-2.5 px-3 rounded-xl bg-white border border-slate-200 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center justify-center gap-1.5 active:scale-95 shadow-sm"
+                          className="py-2.5 px-3 rounded-xl bg-white border border-slate-200 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center justify-center gap-1.5 active:scale-95 shadow-sm cursor-pointer"
                         >
                           <LogOut className="w-3.5 h-3.5" />
                           <span>Sign Out</span>
@@ -348,15 +342,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
 
                     <div className="grid grid-cols-2 gap-2 mt-1">
                       <button
-                        onClick={() => { navigate('/login'); setMobileMenuOpen(false); }}
-                        className="py-2.5 px-3 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-800 hover:border-[#FF7A00] flex items-center justify-center gap-1.5 active:scale-95 shadow-sm"
+                        onClick={() => { setMobileMenuOpen(false); navigate('/login'); }}
+                        className="py-2.5 px-3 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-800 hover:border-[#FF7A00] flex items-center justify-center gap-1.5 active:scale-95 shadow-sm cursor-pointer"
                       >
                         <span>Sign In</span>
                       </button>
 
                       <button
-                        onClick={() => { navigate('/register'); setMobileMenuOpen(false); }}
-                        className="py-2.5 px-3 rounded-xl bg-[#FF7A00] text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 active:scale-95 shadow-md shadow-[#FF7A00]/25"
+                        onClick={() => { setMobileMenuOpen(false); navigate('/register'); }}
+                        className="py-2.5 px-3 rounded-xl bg-[#FF7A00] text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 active:scale-95 shadow-md shadow-[#FF7A00]/25 cursor-pointer"
                       >
                         <UserPlus className="w-3.5 h-3.5" />
                         <span>Register</span>
@@ -378,6 +372,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
                   {link.name}
                 </motion.button>
               ))}
+
+              {/* Explicit Profile / Account Button in Navigation List */}
+              <motion.button
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: navLinks.length * 0.04 }}
+                onClick={handleUserClick}
+                className="text-left text-lg sm:text-xl font-bold tracking-tight text-[#FF7A00] hover:text-black transition-colors border-b border-gray-100 pb-3 flex items-center justify-between cursor-pointer"
+              >
+                <span>{user ? 'MY PROFILE' : 'SIGN IN / REGISTER'}</span>
+                <User className="w-5 h-5 text-[#FF7A00]" />
+              </motion.button>
 
               <div className="grid grid-cols-4 gap-3 mt-4">
                 {[

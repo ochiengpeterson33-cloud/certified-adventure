@@ -9,8 +9,6 @@ import {
   ArrowRight, 
   ShieldCheck, 
   Truck, 
-  CreditCard, 
-  Smartphone, 
   Banknote, 
   CheckCircle2, 
   ChevronLeft,
@@ -49,8 +47,8 @@ export const CartDrawer: React.FC = () => {
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('Nairobi');
   const [notes, setNotes] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'mpesa' | 'card' | 'cod'>('mpesa');
-  const [mpesaNumber, setMpesaNumber] = useState('');
+  const [isExpressShipping, setIsExpressShipping] = useState(false);
+  const paymentMethod = 'cod';
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [completedOrder, setCompletedOrder] = useState<PlacedOrder | null>(null);
@@ -67,7 +65,6 @@ export const CartDrawer: React.FC = () => {
       const userPhone = profile?.phone || userMeta.phone || '';
       if (userPhone) {
         setPhone(userPhone);
-        setMpesaNumber(userPhone);
       }
     }
   }, [user, profile]);
@@ -79,12 +76,13 @@ export const CartDrawer: React.FC = () => {
         if (step === 'success') {
           setStep('cart');
           setCompletedOrder(null);
+          setIsExpressShipping(false);
         }
       }, 300);
     }
   }, [isCartOpen, step]);
 
-  const shipping = subtotal >= 6000 || subtotal === 0 ? 0 : 350;
+  const shipping = isExpressShipping ? 350 : 0;
   const grandTotal = subtotal + shipping;
 
   const handleProceedToCheckout = () => {
@@ -134,8 +132,8 @@ export const CartDrawer: React.FC = () => {
           date: new Date().toISOString().split('T')[0],
           guests: items.reduce((sum, item) => sum + item.quantity, 0),
           total_amount: grandTotal,
-          status: 'paid',
-          notes: `MERCHANDISE ORDER [${orderId}]\nItems:\n${itemsSummary}\nDelivery: ${address}, ${city}\nPayment: ${paymentMethod.toUpperCase()}${notes ? `\nNotes: ${notes}` : ''}`,
+          status: 'confirmed',
+          notes: `MERCHANDISE ORDER [${orderId}]\nItems:\n${itemsSummary}\nDelivery: ${address}, ${city} [${isExpressShipping ? 'Priority Express (+KES 350)' : 'Standard Delivery (FREE)'}]\nPayment: PAY ON DELIVERY (Cash or M-Pesa to courier upon receipt)${notes ? `\nNotes: ${notes}` : ''}`,
           user_id: user?.id || null,
         });
       } catch (dbErr) {
@@ -150,7 +148,7 @@ export const CartDrawer: React.FC = () => {
         subtotal,
         shipping,
         total: grandTotal,
-        paymentMethod: paymentMethod === 'mpesa' ? 'M-Pesa Express' : paymentMethod === 'card' ? 'Credit/Debit Card' : 'Cash on Delivery',
+        paymentMethod: 'Pay on Delivery',
         customerName: fullName.trim(),
         customerEmail: email.trim() || 'N/A',
         customerPhone: phone.trim(),
@@ -390,10 +388,7 @@ export const CartDrawer: React.FC = () => {
                             type="tel"
                             required
                             value={phone}
-                            onChange={(e) => {
-                              setPhone(e.target.value);
-                              if (!mpesaNumber) setMpesaNumber(e.target.value);
-                            }}
+                            onChange={(e) => setPhone(e.target.value)}
                             placeholder="+254 700 000 000"
                             className="w-full px-3 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white placeholder-white/30 text-xs sm:text-sm focus:outline-none focus:border-[#FF6A00]"
                           />
@@ -441,105 +436,112 @@ export const CartDrawer: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Payment Methods */}
+                    {/* Delivery Speed: Standard (FREE) vs Optional Express */}
                     <div className="bg-[#141B26] p-4 rounded-2xl border border-white/5 space-y-3">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-white/90 flex items-center gap-1.5">
-                        <CreditCard className="w-3.5 h-3.5 text-[#FF6A00]" />
-                        <span>Payment Method</span>
-                      </h3>
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold uppercase tracking-wider text-white/90 flex items-center gap-1.5">
+                          <Truck className="w-3.5 h-3.5 text-[#FF6A00]" />
+                          <span>Delivery Speed</span>
+                        </label>
+                        <span className="text-[10px] text-white/50 uppercase tracking-wider">
+                          Optional Express
+                        </span>
+                      </div>
 
-                      <div className="space-y-2">
-                        {/* M-Pesa Option */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {/* Standard Delivery (Default - Free) */}
                         <div
-                          onClick={() => setPaymentMethod('mpesa')}
-                          className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
-                            paymentMethod === 'mpesa'
+                          onClick={() => setIsExpressShipping(false)}
+                          className={`p-3 rounded-xl border flex flex-col justify-between cursor-pointer transition-all ${
+                            !isExpressShipping
                               ? 'bg-[#FF6A00]/15 border-[#FF6A00] text-white'
                               : 'bg-black/30 border-white/10 text-white/70 hover:border-white/20'
                           }`}
                         >
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-green-500/20 text-green-400 flex items-center justify-center font-bold text-xs">
-                              <Smartphone className="w-4 h-4" />
-                            </div>
+                          <div className="flex items-start justify-between">
                             <div>
-                              <p className="font-bold text-xs sm:text-sm">M-Pesa Express</p>
-                              <p className="text-[10px] text-white/50">Instant STK prompt to your phone</p>
+                              <p className="font-bold text-xs sm:text-sm">Standard Delivery</p>
+                              <p className="text-[11px] text-white/50 mt-0.5">2–4 business days</p>
                             </div>
+                            <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold text-[10px]">
+                              FREE
+                            </span>
                           </div>
-                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                            paymentMethod === 'mpesa' ? 'border-[#FF6A00] bg-[#FF6A00]' : 'border-white/30'
-                          }`}>
-                            {paymentMethod === 'mpesa' && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
+                          <div className="mt-2.5 flex items-center gap-1.5 text-[10px] text-white/60">
+                            <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
+                              !isExpressShipping ? 'border-[#FF6A00] bg-[#FF6A00]' : 'border-white/30'
+                            }`}>
+                              {!isExpressShipping && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
+                            </div>
+                            <span>Default Delivery</span>
                           </div>
                         </div>
 
-                        {paymentMethod === 'mpesa' && (
-                          <div className="p-3 rounded-xl bg-black/40 border border-[#FF6A00]/30 text-xs space-y-2">
-                            <label className="block text-[11px] font-bold text-white/70 uppercase">
-                              M-Pesa Registered Phone
-                            </label>
-                            <input
-                              type="tel"
-                              value={mpesaNumber}
-                              onChange={(e) => setMpesaNumber(e.target.value)}
-                              placeholder="07XX XXX XXX"
-                              className="w-full px-3 py-2 rounded-lg bg-black border border-white/10 text-white text-xs focus:outline-none focus:border-[#FF6A00]"
-                            />
-                            <p className="text-[10px] text-white/40 leading-relaxed">
-                              You will receive an M-Pesa prompt on your phone for <strong>KES {grandTotal.toLocaleString()}</strong> to enter your PIN upon confirmation.
+                        {/* Optional Express Priority Delivery */}
+                        <div
+                          onClick={() => setIsExpressShipping(true)}
+                          className={`p-3 rounded-xl border flex flex-col justify-between cursor-pointer transition-all ${
+                            isExpressShipping
+                              ? 'bg-[#FF6A00]/15 border-[#FF6A00] text-white'
+                              : 'bg-black/30 border-white/10 text-white/70 hover:border-white/20'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="font-bold text-xs sm:text-sm flex items-center gap-1">
+                                <span>Express Priority</span>
+                                <span className="text-[#FF6A00]">⚡</span>
+                              </p>
+                              <p className="text-[11px] text-white/50 mt-0.5">Same/Next business day</p>
+                            </div>
+                            <span className="font-bold text-xs text-[#FF6A00]">
+                              +KES 350
+                            </span>
+                          </div>
+                          <div className="mt-2.5 flex items-center gap-1.5 text-[10px] text-white/60">
+                            <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
+                              isExpressShipping ? 'border-[#FF6A00] bg-[#FF6A00]' : 'border-white/30'
+                            }`}>
+                              {isExpressShipping && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
+                            </div>
+                            <span>Optional Upgrade</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Payment Method: Exclusive Pay After Delivery */}
+                    <div className="bg-[#141B26] p-4 rounded-2xl border border-[#FF6A00]/30 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-white/90 flex items-center gap-1.5">
+                          <Banknote className="w-3.5 h-3.5 text-[#FF6A00]" />
+                          <span>Payment Method</span>
+                        </h3>
+                        <span className="px-2 py-0.5 rounded-full bg-[#FF6A00]/15 text-[#FF6A00] text-[10px] font-bold uppercase tracking-wider border border-[#FF6A00]/30">
+                          Pay on Delivery
+                        </span>
+                      </div>
+
+                      {/* Pay After Delivery Informational Card */}
+                      <div className="p-3.5 rounded-xl bg-gradient-to-br from-[#1a2332] to-[#121824] border border-[#FF6A00]/40 space-y-2.5">
+                        <div className="flex items-start gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-[#FF6A00]/20 text-[#FF6A00] flex items-center justify-center shrink-0 mt-0.5">
+                            <Truck className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <p className="font-bold text-xs sm:text-sm text-white">Pay After Delivery</p>
+                              <CheckCircle2 className="w-4 h-4 text-[#FF6A00]" />
+                            </div>
+                            <p className="text-[11px] text-white/70 mt-1 leading-relaxed">
+                              Zero upfront charges. Inspect your merchandise upon arrival, then pay via <strong className="text-white">Cash or M-Pesa</strong> directly to the courier.
                             </p>
                           </div>
-                        )}
-
-                        {/* Credit / Debit Card */}
-                        <div
-                          onClick={() => setPaymentMethod('card')}
-                          className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
-                            paymentMethod === 'card'
-                              ? 'bg-[#FF6A00]/15 border-[#FF6A00] text-white'
-                              : 'bg-black/30 border-white/10 text-white/70 hover:border-white/20'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs">
-                              <CreditCard className="w-4 h-4" />
-                            </div>
-                            <div>
-                              <p className="font-bold text-xs sm:text-sm">Credit / Debit Card</p>
-                              <p className="text-[10px] text-white/50">Visa, Mastercard, Amex</p>
-                            </div>
-                          </div>
-                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                            paymentMethod === 'card' ? 'border-[#FF6A00] bg-[#FF6A00]' : 'border-white/30'
-                          }`}>
-                            {paymentMethod === 'card' && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
-                          </div>
                         </div>
 
-                        {/* Cash / Pay on Delivery */}
-                        <div
-                          onClick={() => setPaymentMethod('cod')}
-                          className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
-                            paymentMethod === 'cod'
-                              ? 'bg-[#FF6A00]/15 border-[#FF6A00] text-white'
-                              : 'bg-black/30 border-white/10 text-white/70 hover:border-white/20'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs">
-                              <Banknote className="w-4 h-4" />
-                            </div>
-                            <div>
-                              <p className="font-bold text-xs sm:text-sm">Pay on Delivery</p>
-                              <p className="text-[10px] text-white/50">Cash or M-Pesa upon parcel arrival</p>
-                            </div>
-                          </div>
-                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                            paymentMethod === 'cod' ? 'border-[#FF6A00] bg-[#FF6A00]' : 'border-white/30'
-                          }`}>
-                            {paymentMethod === 'cod' && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
-                          </div>
+                        <div className="pt-2 border-t border-white/10 flex items-center gap-2 text-[10px] text-emerald-400 font-medium">
+                          <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
+                          <span>Safe & secure: Inspect your items first before paying.</span>
                         </div>
                       </div>
                     </div>
@@ -551,11 +553,11 @@ export const CartDrawer: React.FC = () => {
                         <span>KES {subtotal.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between text-white/60">
-                        <span>Express Delivery</span>
-                        <span>{shipping === 0 ? 'FREE' : `KES ${shipping.toLocaleString()}`}</span>
+                        <span>{isExpressShipping ? 'Priority Express Shipping' : 'Standard Delivery'}</span>
+                        <span>{isExpressShipping ? 'KES 350' : <strong className="text-emerald-400 font-bold">FREE</strong>}</span>
                       </div>
                       <div className="pt-2 border-t border-white/10 flex justify-between font-bold text-sm text-white">
-                        <span>Grand Total</span>
+                        <span>Grand Total Due</span>
                         <span className="text-[#FF6A00] text-base">KES {grandTotal.toLocaleString()}</span>
                       </div>
                     </div>
@@ -568,12 +570,12 @@ export const CartDrawer: React.FC = () => {
                       {isProcessing ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          <span>Processing Direct Order...</span>
+                          <span>Confirming Order...</span>
                         </>
                       ) : (
                         <>
                           <ShieldCheck className="w-4 h-4" />
-                          <span>Complete Purchase (KES {grandTotal.toLocaleString()})</span>
+                          <span>Complete Order — Pay on Delivery (KES {grandTotal.toLocaleString()})</span>
                         </>
                       )}
                     </button>
@@ -615,12 +617,12 @@ export const CartDrawer: React.FC = () => {
 
                       <div className="pt-2 border-t border-white/10 space-y-1">
                         <div className="flex justify-between text-white/60">
-                          <span>Total Paid</span>
+                          <span>Amount Due on Delivery</span>
                           <strong className="text-white">KES {completedOrder.total.toLocaleString()}</strong>
                         </div>
                         <div className="flex justify-between text-white/60">
-                          <span>Payment</span>
-                          <span>{completedOrder.paymentMethod}</span>
+                          <span>Payment Method</span>
+                          <span className="text-[#FF6A00] font-semibold">Pay After Delivery</span>
                         </div>
                         <div className="flex justify-between text-white/60">
                           <span>Delivery to</span>
@@ -630,7 +632,7 @@ export const CartDrawer: React.FC = () => {
 
                       <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 flex items-center gap-2 text-[11px] text-white/70">
                         <Clock className="w-3.5 h-3.5 text-[#FF6A00] flex-shrink-0" />
-                        <span>Estimated delivery: <strong>1–2 business days</strong></span>
+                        <span>Estimated delivery: <strong>{completedOrder.shipping > 0 ? 'Within 24 Hours (Priority Express)' : '2–4 business days (Standard Delivery)'}</strong></span>
                       </div>
                     </div>
 
@@ -658,12 +660,12 @@ export const CartDrawer: React.FC = () => {
                       <span className="font-semibold text-white">KES {subtotal.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between text-white/60">
-                      <span>Express Shipping</span>
-                      <span>{shipping === 0 ? <strong className="text-green-400">FREE</strong> : `KES ${shipping.toLocaleString()}`}</span>
+                      <span>Delivery</span>
+                      <span className="font-medium text-emerald-400">FREE Standard</span>
                     </div>
                     <div className="pt-2 border-t border-white/10 flex justify-between font-bold text-sm text-white">
-                      <span>Estimated Total</span>
-                      <span className="text-[#FF6A00] text-base">KES {grandTotal.toLocaleString()}</span>
+                      <span>Subtotal</span>
+                      <span className="text-[#FF6A00] text-base">KES {subtotal.toLocaleString()}</span>
                     </div>
                   </div>
 
