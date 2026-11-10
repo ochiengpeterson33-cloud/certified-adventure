@@ -12,11 +12,45 @@ export const Logo: React.FC<LogoProps> = ({ variant = 'full', className = '', sh
   const isLarge = variant === 'large';
   const isCompact = variant === 'compact';
 
+  if (isLarge) {
+    return (
+      <div className={`flex flex-col items-center text-center select-none group cursor-pointer max-w-full ${className}`}>
+        {/* Official Certified Adventures Logo Image */}
+        <div className="relative shrink-0 flex items-center justify-center rounded-2xl bg-[#08121B] border border-[#FF6A00]/40 shadow-xl group-hover:border-[#FF6A00] group-hover:shadow-[#FF6A00]/25 transition-all duration-300 overflow-hidden w-16 h-16 sm:w-20 sm:h-20 p-1.5 mb-3 sm:mb-4">
+          <img
+            src={officialLogo}
+            alt="Certified Adventures Official Logo"
+            referrerPolicy="no-referrer"
+            className="w-full h-full object-contain rounded-xl transition-transform duration-300 group-hover:scale-105"
+          />
+          <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-[#FF6A00]/0 via-[#FF6A00]/20 to-[#29492F]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+        </div>
+
+        {/* Brand Typography Header - Centered & Fluid */}
+        <div className="flex flex-col items-center text-center max-w-full">
+          <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 leading-none text-center">
+            <span className={`font-['Poppins'] font-black tracking-tight ${darkText ? 'text-gray-900' : 'text-[#F4E8D2]'} leading-none group-hover:text-white transition-colors text-[clamp(1.5rem,5.5vw,2.25rem)] sm:text-3xl lg:text-4xl`}>
+              CERTIFIED
+            </span>
+            <span className="font-['Poppins'] font-black tracking-tight text-[#FF6A00] leading-none text-[clamp(1.5rem,5.5vw,2.25rem)] sm:text-3xl lg:text-4xl">
+              ADVENTURES
+            </span>
+          </div>
+          {showTagline && (
+            <span className="uppercase tracking-[0.16em] sm:tracking-[0.22em] font-bold text-[#FF6A00] mt-2 sm:mt-2.5 transition-colors text-[10px] sm:text-xs text-center max-w-full block">
+              Travel in Comfort and style
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={`flex items-center gap-3 select-none group cursor-pointer ${className}`}>
+    <div className={`flex items-center gap-2.5 sm:gap-3 select-none group cursor-pointer ${className}`}>
       {/* Official Certified Adventures Logo Image */}
-      <div className={`relative flex-shrink-0 flex items-center justify-center rounded-2xl bg-[#08121B] border border-[#FF6A00]/40 shadow-lg group-hover:border-[#FF6A00] group-hover:shadow-[#FF6A00]/20 transition-all duration-300 overflow-hidden ${
-        isLarge ? 'w-20 h-20 p-1.5' : isCompact ? 'w-10 h-10 p-1' : 'w-12 h-12 p-1'
+      <div className={`relative shrink-0 flex items-center justify-center rounded-2xl bg-[#08121B] border border-[#FF6A00]/40 shadow-lg group-hover:border-[#FF6A00] group-hover:shadow-[#FF6A00]/20 transition-all duration-300 overflow-hidden ${
+        isCompact ? 'w-10 h-10 p-1' : 'w-12 h-12 p-1'
       }`}>
         <img
           src={officialLogo}
@@ -31,21 +65,15 @@ export const Logo: React.FC<LogoProps> = ({ variant = 'full', className = '', sh
       {!isCompact && (
         <div className="flex flex-col">
           <div className="flex items-center gap-1">
-            <span className={`font-['Poppins'] font-black tracking-tight ${darkText ? 'text-gray-900' : 'text-[#F4E8D2]'} leading-none group-hover:text-white transition-colors ${
-              isLarge ? 'text-2xl sm:text-3xl' : 'text-lg sm:text-xl'
-            }`}>
+            <span className={`font-['Poppins'] font-black tracking-tight ${darkText ? 'text-gray-900' : 'text-[#F4E8D2]'} leading-none group-hover:text-white transition-colors text-lg sm:text-xl`}>
               CERTIFIED
             </span>
-            <span className={`font-['Poppins'] font-black tracking-tight text-[#FF6A00] leading-none ${
-              isLarge ? 'text-2xl sm:text-3xl' : 'text-lg sm:text-xl'
-            }`}>
+            <span className="font-['Poppins'] font-black tracking-tight text-[#FF6A00] leading-none text-lg sm:text-xl">
               ADVENTURES
             </span>
           </div>
           {showTagline && (
-            <span className={`uppercase tracking-[0.22em] font-bold text-[#FF6A00] mt-1 transition-colors ${
-              isLarge ? 'text-xs' : 'text-[9px]'
-            }`}>
+            <span className="uppercase tracking-[0.22em] font-bold text-[#FF6A00] mt-1 transition-colors text-[9px]">
               Travel in Comfort and style
             </span>
           )}

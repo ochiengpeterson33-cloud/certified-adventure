@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App.tsx';
 import { AuthProvider } from './contexts/AuthContext';
+import { CartProvider } from './contexts/CartContext';
 import './index.css';
 
 const queryClient = new QueryClient({
@@ -16,15 +17,15 @@ const queryClient = new QueryClient({
 });
 
 createRoot(document.getElementById('root')!).render(
-  
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider>
+  <QueryClientProvider client={queryClient}>
+    <BrowserRouter>
+      <AuthProvider>
+        <CartProvider>
           <App />
-        </AuthProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
-  ,
+        </CartProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  </QueryClientProvider>
 );
 
 

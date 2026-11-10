@@ -57,7 +57,7 @@ export const Hero: React.FC<{ onOpenBookingModal: () => void }> = ({ onOpenBooki
   const activeVideo = activeVideos.length > 0 ? activeVideos[0] : null;
 
   return (
-    <section id="home" className="relative h-[80vh] md:h-[100vh] w-full flex flex-col justify-center overflow-hidden bg-[#070707]">
+    <section id="home" className="relative min-h-[75svh] md:min-h-screen h-auto md:h-screen w-full flex flex-col justify-center overflow-hidden bg-[#070707] py-20 sm:py-24 md:py-0">
       {/* Hero Backgrounds */}
       {activeVideo ? (
         <div className="absolute inset-0 z-0">
@@ -98,24 +98,26 @@ export const Hero: React.FC<{ onOpenBookingModal: () => void }> = ({ onOpenBooki
 
       {/* Slider Controls */}
       {!activeVideo && slides.length > 1 && (
-        <div className="absolute z-30 left-4 right-4 md:left-10 md:right-10 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
+        <div className="absolute z-30 left-2 right-2 sm:left-6 sm:right-6 md:left-10 md:right-10 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
           <button 
             onClick={handlePrevSlide}
-            className="pointer-events-auto w-12 h-12 rounded-full glass-panel flex items-center justify-center text-white hover:bg-[#FF6A00] transition-colors hover:scale-110 active:scale-95"
+            className="pointer-events-auto w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full glass-panel flex items-center justify-center text-white hover:bg-[#FF6A00] transition-colors hover:scale-110 active:scale-95"
+            aria-label="Previous slide"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
           <button 
             onClick={handleNextSlide}
-            className="pointer-events-auto w-12 h-12 rounded-full glass-panel flex items-center justify-center text-white hover:bg-[#FF6A00] transition-colors hover:scale-110 active:scale-95"
+            className="pointer-events-auto w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full glass-panel flex items-center justify-center text-white hover:bg-[#FF6A00] transition-colors hover:scale-110 active:scale-95"
+            aria-label="Next slide"
           >
-            <ChevronRight className="w-6 h-6" />
+            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </div>
       )}
 
       {/* Hero Content */}
-      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mt-24 md:mt-20">
+      <div className="relative z-20 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 w-full my-auto">
         <div className="max-w-4xl">
           <AnimatePresence mode="wait">
             <motion.div
@@ -125,9 +127,9 @@ export const Hero: React.FC<{ onOpenBookingModal: () => void }> = ({ onOpenBooki
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
-              <h1 className="font-['Poppins'] font-black text-[clamp(2.5rem,6vw+1rem,6rem)] leading-[1.05] text-white leading-[1.05] tracking-tight mb-6 uppercase" dangerouslySetInnerHTML={{ __html: (activeVideo ? activeVideo.title : currentSlide.title) || '' }}>
+              <h1 className="font-['Poppins'] font-black text-[clamp(1.85rem,5.5vw+0.75rem,5.5rem)] leading-[1.08] text-white tracking-tight mb-4 sm:mb-6 uppercase break-words hyphens-auto" dangerouslySetInnerHTML={{ __html: (activeVideo ? activeVideo.title : currentSlide.title) || '' }}>
               </h1>
-              <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 leading-relaxed font-medium mb-10 max-w-2xl">
+              <p className="text-sm sm:text-base md:text-xl lg:text-2xl text-white/90 leading-relaxed font-medium mb-6 sm:mb-10 max-w-2xl break-words">
                 {activeVideo ? activeVideo.subtitle : currentSlide.subtitle}
               </p>
               
@@ -135,23 +137,19 @@ export const Hero: React.FC<{ onOpenBookingModal: () => void }> = ({ onOpenBooki
                 onClick={onOpenBookingModal}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-[#E67A3A] hover:bg-[#c9662d] text-white font-bold text-lg md:text-xl px-6 py-3 sm:px-8 sm:py-4 rounded-full shadow-lg transition-colors flex items-center gap-3 w-full sm:w-auto justify-center"
+                className="bg-[#E67A3A] hover:bg-[#c9662d] text-white font-bold text-base sm:text-lg md:text-xl px-6 py-3.5 sm:px-8 sm:py-4 rounded-full shadow-lg transition-colors flex items-center gap-2.5 sm:gap-3 w-full sm:w-auto justify-center cursor-pointer"
               >
                 <span>Book Active Event</span>
-                <ChevronRight className="w-6 h-6" />
+                <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
               </motion.button>
             </motion.div>
           </AnimatePresence>
-
-          
         </div>
       </div>
 
-      
-
       {/* Slider Dots */}
       {!activeVideo && slides.length > 1 && (
-        <div className="absolute z-30 bottom-8 md:bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3">
+        <div className="absolute z-30 bottom-6 sm:bottom-8 md:bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-2 sm:gap-3">
           {slides.map((_, idx) => (
             <button
               key={idx}

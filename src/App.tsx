@@ -20,14 +20,23 @@ import { SettingsManager } from './admin/SettingsManager';
 import { HomepageManager } from './admin/HomepageManager';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
+import { Profile } from './pages/Profile';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { CartDrawer } from './components/CartDrawer';
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<PublicSite />} />
+    <>
+      <CartDrawer />
+      <Routes>
+        <Route path="/" element={<PublicSite />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/profile" element={
+        <ProtectedRoute>
+          <Profile />
+        </ProtectedRoute>
+      } />
       <Route path="/admin" element={
         <ProtectedRoute requireAdmin={true}>
           <AdminLayout />
@@ -51,5 +60,6 @@ export default function App() {
         <Route path="homepage" element={<HomepageManager />} />
       </Route>
     </Routes>
+    </>
   );
 }
