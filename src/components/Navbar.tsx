@@ -63,8 +63,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
   ];
 
   const handleLinkClick = (id: string) => {
-    if (location.pathname !== '/') {
-      navigate(`/#${id}`);
+    const isPublicSection = location.pathname === '/' || ['home', 'experiences', 'packages', 'adventures', 'destinations', 'gallery', 'events', 'merch', 'about', 'contact'].includes(location.pathname.replace(/^\//, ''));
+    if (!isPublicSection) {
+      navigate(`/${id}`);
     } else {
       onNavigateSection(id);
     }

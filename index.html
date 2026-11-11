@@ -11,6 +11,16 @@
   </head>
   <body class="bg-[#08121B] text-[#F4E8D2] font-['Inter',sans-serif] antialiased selection:bg-[#E67A3A] selection:text-white">
     <div id="root"></div>
+    <script>
+      // Seamlessly redirect subpath requests to HashRouter routes to ensure refreshes never 404 in iFrame or cloud environments
+      (function() {
+        var path = window.location.pathname;
+        if (path && path !== '/' && !path.startsWith('/@') && !path.startsWith('/src') && !path.startsWith('/assets') && !path.includes('.')) {
+          var targetHash = '#' + path + window.location.search;
+          window.history.replaceState(null, '', '/' + targetHash);
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
