@@ -32,6 +32,7 @@ export default function App() {
         <Route path="/" element={<PublicSite />} />
         {/* Direct section routes pointing to PublicSite */}
         <Route path="/home" element={<PublicSite />} />
+        <Route path="/experiences" element={<PublicSite />} />
         <Route path="/packages" element={<PublicSite />} />
         <Route path="/adventures" element={<PublicSite />} />
         <Route path="/destinations" element={<PublicSite />} />

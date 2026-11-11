@@ -34,7 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 40);
       
-      const sections = ['home', 'packages', 'gallery', 'events', 'merch', 'about', 'contact'];
+      const sections = ['home', 'experiences', 'packages', 'gallery', 'events', 'merch', 'about', 'contact'];
       for (const section of sections) {
         const el = document.getElementById(section);
         if (el) {
@@ -52,6 +52,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
 
   const navLinks = [
     { name: 'HOME', id: 'home' },
+    { name: 'EXPERIENCES', id: 'experiences' },
     { name: 'ADVENTURES', id: 'packages', hasMegaMenu: true },
     { name: 'DESTINATIONS', id: 'destinations' },
     { name: 'GALLERY', id: 'gallery' },

@@ -36,6 +36,7 @@ export function PublicSite() {
     const rawPath = location.pathname.replace(/^\//, '');
     const rawHash = location.hash.replace(/^#/, '');
     const sectionMap: Record<string, string> = {
+      experiences: 'experiences',
       adventures: 'packages',
       packages: 'packages',
       destinations: 'destinations',
@@ -108,7 +109,7 @@ export function PublicSite() {
       <FeatureBar />
 
       {/* Our Experiences Section */}
-      <OurExperiences />
+      <OurExperiences onOpenBookingModal={handleOpenBookingModal} />
 
       {/* Adventures Section */}
       <AdventuresSection onOpenBookingModal={handleOpenBookingModal} />
