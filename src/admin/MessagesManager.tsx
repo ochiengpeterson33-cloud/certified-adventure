@@ -55,8 +55,8 @@ export function MessagesManager() {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <div className="overflow-x-auto w-full"><table className="w-full text-left text-sm text-gray-500">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-left text-sm text-gray-500 min-w-[600px]">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-4 font-bold">Contact</th>
@@ -120,7 +120,7 @@ export function MessagesManager() {
                 </tr>
               )}
             </tbody>
-          </table></div>
+          </table>
         </div>
       </div>
     </div>

@@ -74,11 +74,11 @@ export function UsersManager() {
   );
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
+    <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto w-full">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Users</h1>
-          <p className="text-gray-500">Manage user profiles and roles.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Users</h1>
+          <p className="text-gray-500 text-sm sm:text-base">Manage user profiles and roles.</p>
         </div>
       </div>
 
@@ -102,8 +102,8 @@ export function UsersManager() {
             <p className="text-gray-500">Loading users...</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <div className="overflow-x-auto w-full"><table className="w-full text-left border-collapse">
+          <div className="overflow-x-auto w-full">
+            <table className="w-full text-left border-collapse min-w-[550px]">
               <thead>
                 <tr className="bg-white border-b border-gray-100 text-sm text-gray-500">
                   <th className="p-4 font-medium">User</th>
@@ -168,7 +168,7 @@ export function UsersManager() {
                   </tr>
                 )}
               </tbody>
-            </table></div>
+            </table>
           </div>
         )}
       </div>

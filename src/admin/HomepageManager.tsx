@@ -417,12 +417,12 @@ export function HomepageManager() {
   );
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-black font-['Poppins'] uppercase tracking-tight text-gray-900 mb-2">
+    <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto w-full">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-black font-['Poppins'] uppercase tracking-tight text-gray-900 mb-2">
           Homepage Content
         </h1>
-        <p className="text-gray-500">Manage dynamic sections on the main landing page.</p>
+        <p className="text-gray-500 text-sm sm:text-base">Manage dynamic sections on the main landing page.</p>
       </div>
 
       {saveSuccess && (
@@ -432,7 +432,7 @@ export function HomepageManager() {
         </motion.div>
       )}
 
-      <div className="flex gap-4 mb-8 border-b border-gray-200">
+      <div className="flex gap-2 sm:gap-4 mb-6 sm:mb-8 border-b border-gray-200 overflow-x-auto no-scrollbar">
         <button onClick={() => setActiveTab('stats')} className={`pb-4 px-4 font-bold uppercase tracking-wider text-sm ${activeTab === 'stats' ? 'border-b-2 border-[#FF6A00] text-[#FF6A00]' : 'text-gray-500'}`}>Stats Counter</button>
         <button onClick={() => setActiveTab('features')} className={`pb-4 px-4 font-bold uppercase tracking-wider text-sm ${activeTab === 'features' ? 'border-b-2 border-[#FF6A00] text-[#FF6A00]' : 'text-gray-500'}`}>Feature Bar</button>
         <button onClick={() => setActiveTab('why')} className={`pb-4 px-4 font-bold uppercase tracking-wider text-sm ${activeTab === 'why' ? 'border-b-2 border-[#FF6A00] text-[#FF6A00]' : 'text-gray-500'}`}>Why Choose Us</button>

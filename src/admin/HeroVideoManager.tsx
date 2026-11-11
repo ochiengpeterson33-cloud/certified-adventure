@@ -141,28 +141,28 @@ export function HeroVideoManager() {
   if (isLoading) return <div className="p-8">Loading videos...</div>;
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <p className="text-gray-500">Manage hero background videos.</p>
+    <div className="space-y-6 sm:space-y-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <p className="text-gray-500 text-sm sm:text-base">Manage hero background videos.</p>
         <button 
           onClick={handleCreateNew}
-          className="bg-[#E67A3A] hover:bg-[#c9662d] text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+          className="bg-[#E67A3A] hover:bg-[#c9662d] text-white px-4 py-2 rounded-xl font-medium text-xs sm:text-sm flex items-center gap-2 transition-colors cursor-pointer w-full sm:w-auto justify-center"
         >
           <Plus size={18} />
           <span>Add New Video</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         {/* List */}
         <div className="space-y-4">
           {(videos || []).map((video: HeroVideo) => (
             <div 
               key={video.id} 
-              className={`bg-white p-4 rounded-xl border-2 transition-colors ${editingVideo?.id === video.id ? 'border-[#E67A3A]' : 'border-gray-200'} flex gap-4 cursor-pointer relative group`}
+              className={`bg-white p-3.5 sm:p-4 rounded-xl border-2 transition-colors ${editingVideo?.id === video.id ? 'border-[#E67A3A]' : 'border-gray-200'} flex gap-3 sm:gap-4 cursor-pointer relative group`}
               onClick={() => setEditingVideo(video)}
             >
-              <div className="w-32 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 relative">
+              <div className="w-20 sm:w-28 h-18 sm:h-22 bg-gray-100 rounded-lg overflow-hidden shrink-0 relative">
                 {video.poster_url ? (
                   <img src={video.poster_url} alt="Poster" className="w-full h-full object-cover" />
                 ) : (

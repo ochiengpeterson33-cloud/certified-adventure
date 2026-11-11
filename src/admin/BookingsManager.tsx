@@ -136,12 +136,12 @@ export function BookingsManager() {
             </div>
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {['all', 'pending', 'confirmed', 'cancelled'].map(f => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium capitalize transition-colors ${
                   filter === f 
                     ? 'bg-[#E67A3A] text-white' 
                     : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -153,8 +153,8 @@ export function BookingsManager() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <div className="overflow-x-auto w-full"><table className="w-full text-left text-sm text-gray-500">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-left text-sm text-gray-500 min-w-[650px]">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-4 font-bold">Customer Details</th>
@@ -240,7 +240,7 @@ export function BookingsManager() {
                 ))
               )}
             </tbody>
-          </table></div>
+          </table>
         </div>
       </div>
 

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { LoadingScreen } from './components/LoadingScreen';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
@@ -19,6 +20,7 @@ import { AudioAmbienceToggle } from './components/AudioAmbienceToggle';
 import { ExperienceItem } from './types';
 
 export function PublicSite() {
+  const location = useLocation();
   const [selectedExperience, setSelectedExperience] = useState<ExperienceItem | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [isAiPlannerOpen, setIsAiPlannerOpen] = useState(false);
@@ -28,6 +30,34 @@ export function PublicSite() {
 
   const [filterDestination, setFilterDestination] = useState<string>('');
   const [filterType, setFilterType] = useState<string>('');
+
+  // Handle section scrolling on page mount or refresh
+  useEffect(() => {
+    const rawPath = location.pathname.replace(/^\//, '');
+    const rawHash = location.hash.replace(/^#/, '');
+    const sectionMap: Record<string, string> = {
+      adventures: 'packages',
+      packages: 'packages',
+      destinations: 'destinations',
+      gallery: 'gallery',
+      events: 'events',
+      merch: 'merch',
+      about: 'about',
+      contact: 'contact',
+      home: 'home',
+    };
+
+    const target = sectionMap[rawHash] || sectionMap[rawPath];
+    if (target) {
+      const timer = setTimeout(() => {
+        const el = document.getElementById(target);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, [location.pathname, location.hash]);
 
   const handleOpenBookingModal = (destination?: string, packageTitle?: string) => {
     if (destination) setBookingDestination(destination);

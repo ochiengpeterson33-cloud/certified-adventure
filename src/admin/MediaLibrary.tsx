@@ -132,20 +132,20 @@ export function MediaLibrary() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden m-8">
+    <div className="h-full flex flex-col bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden m-3 sm:m-6 md:m-8">
       {/* Header */}
-      <div className="p-6 border-b border-gray-200 bg-white flex flex-wrap items-center justify-between gap-4">
+      <div className="p-4 sm:p-6 border-b border-gray-200 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Media Library</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage all your website assets, images, and videos in one place.</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Media Library</h1>
+          <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">Manage all your website assets, images, and videos in one place.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="relative">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="relative w-full sm:w-auto">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input 
               type="text" 
               placeholder="Search files..."
-              className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#E67A3A] focus:border-transparent outline-none w-64"
+              className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#E67A3A] focus:border-transparent outline-none w-full sm:w-64"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -153,22 +153,22 @@ export function MediaLibrary() {
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* Buckets Sidebar */}
-        <div className="w-64 bg-gray-50 border-r border-gray-200 p-4 overflow-y-auto">
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Storage Buckets</h3>
-          <div className="space-y-1">
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+        {/* Buckets Navigation */}
+        <div className="w-full md:w-64 bg-gray-50 border-b md:border-b-0 md:border-r border-gray-200 p-3 sm:p-4 shrink-0 overflow-x-auto md:overflow-y-auto">
+          <h3 className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 sm:mb-4">Storage Buckets</h3>
+          <div className="flex md:flex-col gap-1.5 min-w-max md:min-w-0">
             {BUCKETS.map(bucket => (
               <button
                 key={bucket}
                 onClick={() => setSelectedBucket(bucket)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors shrink-0 cursor-pointer ${
                   selectedBucket === bucket 
-                    ? 'bg-[#E67A3A]/10 text-[#E67A3A]' 
+                    ? 'bg-[#E67A3A]/10 text-[#E67A3A] font-bold' 
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
-                <FolderOpen className={`w-4 h-4 ${selectedBucket === bucket ? 'text-[#E67A3A]' : 'text-gray-400'}`} />
+                <FolderOpen className={`w-4 h-4 shrink-0 ${selectedBucket === bucket ? 'text-[#E67A3A]' : 'text-gray-400'}`} />
                 <span className="capitalize">{bucket.replace('-', ' ')}</span>
               </button>
             ))}

@@ -149,19 +149,19 @@ export function HeroImageManager() {
   if (error) return <div className="p-8 text-red-500">Error loading slides. Please verify Supabase setup.</div>;
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <p className="text-gray-500">Manage the main hero slider images and text.</p>
+    <div className="space-y-6 sm:space-y-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <p className="text-gray-500 text-sm sm:text-base">Manage the main hero slider images and text.</p>
         <button 
           onClick={handleCreateNew}
-          className="bg-[#E67A3A] hover:bg-[#c9662d] text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+          className="bg-[#E67A3A] hover:bg-[#c9662d] text-white px-4 py-2 rounded-xl font-medium text-xs sm:text-sm flex items-center gap-2 transition-colors cursor-pointer w-full sm:w-auto justify-center"
         >
           <Plus size={18} />
           <span>Add New Slide</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         {/* Slides List */}
         <div className="space-y-4">
           {realtimeSlides.map((slide) => (

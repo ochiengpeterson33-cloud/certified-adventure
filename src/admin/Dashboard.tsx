@@ -25,25 +25,26 @@ export function Dashboard() {
   });
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-6 text-gray-900">Dashboard Overview</h1>
-      <p className="text-gray-600 mb-8">
-        Welcome to the Certified Adventures Admin Panel. 
-        Note: Connect your Supabase project in `.env.example` to see real data.
-      </p>
+    <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto w-full">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard Overview</h1>
+        <p className="text-gray-600 mt-1 text-sm sm:text-base">
+          Welcome to the Certified Adventures Admin Panel.
+        </p>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-          <h3 className="text-gray-500 font-medium">Active Hero Slides</h3>
-          <p className="text-3xl font-bold mt-2 text-[#08121B]">{isLoading ? '...' : counts?.hero}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100">
+          <h3 className="text-gray-500 font-medium text-xs sm:text-sm">Active Hero Slides</h3>
+          <p className="text-2xl sm:text-3xl font-bold mt-2 text-[#08121B]">{isLoading ? '...' : counts?.hero}</p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-          <h3 className="text-gray-500 font-medium">Total Packages</h3>
-          <p className="text-3xl font-bold mt-2 text-[#08121B]">{isLoading ? '...' : counts?.packages}</p>
+        <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100">
+          <h3 className="text-gray-500 font-medium text-xs sm:text-sm">Total Packages</h3>
+          <p className="text-2xl sm:text-3xl font-bold mt-2 text-[#08121B]">{isLoading ? '...' : counts?.packages}</p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-          <h3 className="text-gray-500 font-medium">Total Bookings</h3>
-          <p className="text-3xl font-bold mt-2 text-[#E67A3A]">{isLoading ? '...' : counts?.bookings}</p>
+        <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 sm:col-span-2 lg:col-span-1">
+          <h3 className="text-gray-500 font-medium text-xs sm:text-sm">Total Bookings</h3>
+          <p className="text-2xl sm:text-3xl font-bold mt-2 text-[#E67A3A]">{isLoading ? '...' : counts?.bookings}</p>
         </div>
       </div>
     </div>
