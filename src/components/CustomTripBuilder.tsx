@@ -125,7 +125,7 @@ Respond ONLY in JSON format matching this schema:
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-[#08121B]/90 backdrop-blur-xl"
+          className="fixed inset-0 bg-slate-900/50 dark:bg-[#08121B]/90 backdrop-blur-xl"
         />
 
         {/* Modal Container */}
@@ -133,19 +133,19 @@ Respond ONLY in JSON format matching this schema:
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="relative w-full max-w-3xl bg-[#0d1c29] border border-[#E67A3A]/40 rounded-3xl shadow-2xl overflow-hidden z-10 my-2 sm:my-8 max-h-[95vh] sm:max-h-[90vh] flex flex-col"
+          className="relative w-full max-w-3xl bg-white dark:bg-[#0d1c29] border border-slate-200 dark:border-[#E67A3A]/40 rounded-3xl shadow-2xl overflow-hidden z-10 my-2 sm:my-8 max-h-[95vh] sm:max-h-[90vh] flex flex-col"
         >
           {/* Header */}
-          <div className="p-6 bg-[#08121B] border-b border-[#F4E8D2]/10 flex items-center justify-between">
+          <div className="p-6 bg-slate-50 dark:bg-[#08121B] border-b border-slate-200 dark:border-[#F4E8D2]/10 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-xl bg-[#E67A3A]/20 border border-[#E67A3A] text-[#E67A3A]">
+              <div className="p-2 rounded-xl bg-[#E67A3A]/15 dark:bg-[#E67A3A]/20 border border-[#E67A3A] text-[#E67A3A]">
                 <Sparkles className="w-5 h-5 animate-pulse" />
               </div>
               <div>
-                <h3 className="font-['Poppins'] font-bold text-lg text-white">
+                <h3 className="font-['Poppins'] font-bold text-lg text-slate-900 dark:text-white">
                   AI Custom Itinerary Concierge
                 </h3>
-                <p className="text-base text-[#F4E8D2]/60">
+                <p className="text-base text-slate-600 dark:text-[#F4E8D2]/60">
                   Generate a tailormade luxury tour or road trip package in seconds
                 </p>
               </div>
@@ -153,7 +153,7 @@ Respond ONLY in JSON format matching this schema:
 
             <button
               onClick={onClose}
-              className="p-3 rounded-full bg-[#12212F] text-[#F4E8D2] hover:bg-[#E67A3A] transition-colors"
+              className="p-3 rounded-full bg-white dark:bg-[#12212F] border border-slate-200 dark:border-transparent text-slate-700 dark:text-[#F4E8D2] hover:bg-[#E67A3A] hover:text-white transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -175,7 +175,7 @@ Respond ONLY in JSON format matching this schema:
                       value={destination}
                       onChange={(e) => setDestination(e.target.value)}
                       placeholder="e.g. Maasai Mara, Diani Beach, Mt Kenya"
-                      className="w-full px-4 py-3 rounded-2xl bg-[#12212F] border border-[#F4E8D2]/20 text-base text-[#F4E8D2] focus:outline-none focus:border-[#E67A3A]"
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-[#12212F] border border-slate-200 dark:border-[#F4E8D2]/20 text-base text-slate-900 dark:text-[#F4E8D2] placeholder-slate-400 dark:placeholder-[#F4E8D2]/40 focus:outline-none focus:border-[#E67A3A]"
                       required
                     />
                   </div>
@@ -189,13 +189,13 @@ Respond ONLY in JSON format matching this schema:
                     <select
                       value={duration}
                       onChange={(e) => setDuration(e.target.value)}
-                      className="w-full px-4 py-3 rounded-2xl bg-[#12212F] border border-[#F4E8D2]/20 text-base text-[#F4E8D2] focus:outline-none focus:border-[#E67A3A]"
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-[#12212F] border border-slate-200 dark:border-[#F4E8D2]/20 text-base text-slate-900 dark:text-[#F4E8D2] focus:outline-none focus:border-[#E67A3A]"
                     >
-                      <option className="bg-[#08121B]">2 Days Weekend Getaway</option>
-                      <option className="bg-[#08121B]">3 Days Safari / Road Trip</option>
-                      <option className="bg-[#08121B]">5 Days Coast & Savannah</option>
-                      <option className="bg-[#08121B]">7 Days Grand Kenya Discovery</option>
-                      <option className="bg-[#08121B]">10+ Days Ultimate Luxury Expedition</option>
+                      <option className="bg-white dark:bg-[#08121B]">2 Days Weekend Getaway</option>
+                      <option className="bg-white dark:bg-[#08121B]">3 Days Safari / Road Trip</option>
+                      <option className="bg-white dark:bg-[#08121B]">5 Days Coast & Savannah</option>
+                      <option className="bg-white dark:bg-[#08121B]">7 Days Grand Kenya Discovery</option>
+                      <option className="bg-white dark:bg-[#08121B]">10+ Days Ultimate Luxury Expedition</option>
                     </select>
                   </div>
 
@@ -210,7 +210,7 @@ Respond ONLY in JSON format matching this schema:
                       value={guests}
                       onChange={(e) => setGuests(e.target.value)}
                       placeholder="e.g. 2 Adults, 2 Kids"
-                      className="w-full px-4 py-3 rounded-2xl bg-[#12212F] border border-[#F4E8D2]/20 text-base text-[#F4E8D2] focus:outline-none focus:border-[#E67A3A]"
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-[#12212F] border border-slate-200 dark:border-[#F4E8D2]/20 text-base text-slate-900 dark:text-[#F4E8D2] placeholder-slate-400 dark:placeholder-[#F4E8D2]/40 focus:outline-none focus:border-[#E67A3A]"
                       required
                     />
                   </div>
@@ -224,13 +224,13 @@ Respond ONLY in JSON format matching this schema:
                     <select
                       value={travelStyle}
                       onChange={(e) => setTravelStyle(e.target.value)}
-                      className="w-full px-4 py-3 rounded-2xl bg-[#12212F] border border-[#F4E8D2]/20 text-base text-[#F4E8D2] focus:outline-none focus:border-[#E67A3A]"
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-[#12212F] border border-slate-200 dark:border-[#F4E8D2]/20 text-base text-slate-900 dark:text-[#F4E8D2] focus:outline-none focus:border-[#E67A3A]"
                     >
-                      <option className="bg-[#08121B]">Luxury Safari & Big 5</option>
-                      <option className="bg-[#08121B]">Overland Road Trip Caravan</option>
-                      <option className="bg-[#08121B]">Mountain Trekking & Hiking</option>
-                      <option className="bg-[#08121B]">Beach & Water Sports Escapade</option>
-                      <option className="bg-[#08121B]">Corporate Team Building Retreat</option>
+                      <option className="bg-white dark:bg-[#08121B]">Luxury Safari & Big 5</option>
+                      <option className="bg-white dark:bg-[#08121B]">Overland Road Trip Caravan</option>
+                      <option className="bg-white dark:bg-[#08121B]">Mountain Trekking & Hiking</option>
+                      <option className="bg-white dark:bg-[#08121B]">Beach & Water Sports Escapade</option>
+                      <option className="bg-white dark:bg-[#08121B]">Corporate Team Building Retreat</option>
                     </select>
                   </div>
                 </div>
@@ -245,14 +245,14 @@ Respond ONLY in JSON format matching this schema:
                     value={customNotes}
                     onChange={(e) => setCustomNotes(e.target.value)}
                     placeholder="e.g. Prefer dietary vegetarian meals, desire sunrise hot air balloon, private 4x4 cruiser..."
-                    className="w-full p-3 rounded-2xl bg-[#12212F] border border-[#F4E8D2]/20 text-base text-[#F4E8D2] focus:outline-none focus:border-[#E67A3A]"
+                    className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#12212F] border border-slate-200 dark:border-[#F4E8D2]/20 text-base text-slate-900 dark:text-[#F4E8D2] placeholder-slate-400 dark:placeholder-[#F4E8D2]/40 focus:outline-none focus:border-[#E67A3A]"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={isGenerating}
-                  className="w-full py-4 rounded-2xl font-['Poppins'] text-xs font-bold text-white bg-gradient-to-r from-[#E67A3A] via-[#E67A3A] to-[#ff8c47] shadow-lg shadow-[#E67A3A]/30 transition-all flex items-center justify-center gap-2 hover:scale-[1.01]"
+                  className="w-full py-4 rounded-2xl font-['Poppins'] text-xs font-bold text-white bg-gradient-to-r from-[#E67A3A] via-[#E67A3A] to-[#ff8c47] shadow-lg shadow-[#E67A3A]/30 transition-all flex items-center justify-center gap-2 hover:scale-[1.01] cursor-pointer"
                 >
                   {isGenerating ? (
                     <>
@@ -269,9 +269,9 @@ Respond ONLY in JSON format matching this schema:
               </form>
             ) : (
               <div className="space-y-6">
-                <div className="p-5 rounded-2xl bg-[#12212F] border border-[#E67A3A]/40 space-y-3">
+                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#12212F] border border-orange-200 dark:border-[#E67A3A]/40 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-full bg-[#E67A3A]/20 border border-[#E67A3A] text-[#E67A3A] text-[10px] font-bold uppercase">
+                    <span className="px-3 py-1 rounded-full bg-[#E67A3A]/15 dark:bg-[#E67A3A]/20 border border-[#E67A3A] text-[#E67A3A] text-[10px] font-bold uppercase">
                       Custom Concierge Result
                     </span>
                     <span className="font-['Poppins'] font-black text-xl text-[#E67A3A]">
@@ -279,11 +279,11 @@ Respond ONLY in JSON format matching this schema:
                     </span>
                   </div>
 
-                  <h3 className="font-['Poppins'] font-bold text-xl text-white">
+                  <h3 className="font-['Poppins'] font-bold text-xl text-slate-900 dark:text-white">
                     {generatedItinerary.title}
                   </h3>
 
-                  <p className="text-base text-[#F4E8D2]/80 leading-relaxed">
+                  <p className="text-base text-slate-600 dark:text-[#F4E8D2]/80 leading-relaxed">
                     {generatedItinerary.overview}
                   </p>
 
@@ -291,8 +291,8 @@ Respond ONLY in JSON format matching this schema:
                     <h4 className="text-[11px] font-bold text-[#E67A3A] uppercase mb-2">Highlights Included</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {generatedItinerary.highlights.map((h, i) => (
-                        <div key={i} className="flex items-center gap-1.5 text-base text-[#F4E8D2]">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                        <div key={i} className="flex items-center gap-1.5 text-base text-slate-800 dark:text-[#F4E8D2]">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
                           <span>{h}</span>
                         </div>
                       ))}
@@ -304,22 +304,22 @@ Respond ONLY in JSON format matching this schema:
                 <div className="space-y-3">
                   <h4 className="text-xs font-bold text-[#E67A3A] uppercase">Proposed Day-By-Day Schedule</h4>
                   {generatedItinerary.days.map((d) => (
-                    <div key={d.day} className="p-4 rounded-xl bg-[#08121B] border border-[#F4E8D2]/10 space-y-1">
+                    <div key={d.day} className="p-4 rounded-xl bg-slate-50 dark:bg-[#08121B] border border-slate-200 dark:border-[#F4E8D2]/10 space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="px-2 py-0.5 rounded bg-[#E67A3A] text-white text-[10px] font-bold">
                           Day {d.day}
                         </span>
-                        <h5 className="text-xs font-bold text-[#F4E8D2]">{d.title}</h5>
+                        <h5 className="text-xs font-bold text-slate-900 dark:text-[#F4E8D2]">{d.title}</h5>
                       </div>
-                      <p className="text-base text-[#F4E8D2]/70">{d.activities}</p>
+                      <p className="text-base text-slate-600 dark:text-[#F4E8D2]/70">{d.activities}</p>
                     </div>
                   ))}
                 </div>
 
-                <div className="flex items-center gap-3 pt-4 border-t border-[#F4E8D2]/10">
+                <div className="flex items-center gap-3 pt-4 border-t border-slate-200 dark:border-[#F4E8D2]/10">
                   <button
                     onClick={() => setGeneratedItinerary(null)}
-                    className="px-4 py-3 rounded-2xl bg-[#12212F] text-xs font-semibold text-[#F4E8D2] hover:bg-[#1a2d3e]"
+                    className="px-4 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-[#12212F] text-xs font-semibold text-slate-800 dark:text-[#F4E8D2] dark:hover:bg-[#1a2d3e] cursor-pointer"
                   >
                     Modify Search
                   </button>
@@ -329,7 +329,7 @@ Respond ONLY in JSON format matching this schema:
                       onClose();
                       onOpenBookingModal(destination, generatedItinerary.title);
                     }}
-                    className="flex-1 py-3 rounded-2xl font-['Poppins'] text-xs font-bold text-white bg-[#E67A3A] hover:bg-[#ff843d] shadow-lg shadow-[#E67A3A]/30 flex items-center justify-center gap-2"
+                    className="flex-1 py-3 rounded-2xl font-['Poppins'] text-xs font-bold text-white bg-[#E67A3A] hover:bg-[#ff843d] shadow-lg shadow-[#E67A3A]/30 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <span>Request Quotation & Booking</span>
                     <ArrowRight className="w-4 h-4" />

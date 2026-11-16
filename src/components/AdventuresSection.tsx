@@ -8,7 +8,7 @@ export const AdventuresSection: React.FC<{ onOpenBookingModal: () => void }> = (
 
   if (isLoading) {
     return (
-      <section id="packages" className="py-24 bg-[#070707] relative border-t border-white/5 flex justify-center">
+      <section id="packages" className="py-24 bg-white dark:bg-[#070707] relative border-t border-slate-200 dark:border-white/5 flex justify-center transition-colors duration-300">
         <div className="w-12 h-12 border-4 border-[#FF6A00] border-t-transparent rounded-full animate-spin"></div>
       </section>
     );
@@ -19,17 +19,17 @@ export const AdventuresSection: React.FC<{ onOpenBookingModal: () => void }> = (
   if (packages.length === 0) return null;
 
   return (
-    <section id="packages" className="py-24 bg-[#070707] relative border-t border-white/5">
+    <section id="packages" className="py-24 bg-white dark:bg-[#070707] relative border-t border-slate-200 dark:border-white/5 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
           <div className="max-w-2xl">
-            <h2 className="font-['Poppins'] font-black text-[clamp(2.25rem,4vw+1rem,3.75rem)] text-white uppercase tracking-tight leading-none mb-4">
+            <h2 className="font-['Poppins'] font-black text-[clamp(2.25rem,4vw+1rem,3.75rem)] text-slate-900 dark:text-white uppercase tracking-tight leading-none mb-4">
               Choose Your <br/><span className="text-[#FF6A00]">Next Adventure</span>
             </h2>
-            <p className="text-white/60 text-lg">Curated premium experiences designed for thrill-seekers and luxury travelers.</p>
+            <p className="text-slate-600 dark:text-white/60 text-lg">Curated premium experiences designed for thrill-seekers and luxury travelers.</p>
           </div>
-          <button className="min-h-[44px] min-w-[44px] hidden md:flex items-center gap-2 text-white hover:text-[#FF6A00] font-bold uppercase tracking-wider transition-colors">
+          <button className="min-h-[44px] min-w-[44px] hidden md:flex items-center gap-2 text-slate-800 dark:text-white hover:text-[#FF6A00] font-bold uppercase tracking-wider transition-colors">
             <span>View All</span>
             <ArrowRight className="w-5 h-5" />
           </button>
@@ -43,31 +43,31 @@ export const AdventuresSection: React.FC<{ onOpenBookingModal: () => void }> = (
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: idx * 0.1 }}
-              className="group relative rounded-3xl overflow-hidden glass-panel bg-[#111111]/60 hover:bg-[#111111] transition-all duration-500 border border-white/5 hover:border-[#FF6A00]/30"
+              className="group relative rounded-3xl overflow-hidden glass-panel bg-slate-50 hover:bg-white dark:bg-[#111111]/60 dark:hover:bg-[#111111] transition-all duration-500 border border-slate-200 dark:border-white/5 hover:border-[#FF6A00]/40 shadow-sm hover:shadow-xl"
             >
               {/* Image */}
               <div className="relative h-64 overflow-hidden">
                 <img loading="lazy" 
                   src={adv.image_url || 'https://images.unsplash.com/photo-1549468057-5ce754b4fa26?auto=format&fit=crop&w=800&q=80'} 
                   alt={adv.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 filter brightness-90"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 filter brightness-95 dark:brightness-90"
                 />
-                <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+                <div className="absolute top-4 right-4 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
                   <span className="text-[#FF6A00] font-bold font-['Poppins']">${adv.price}</span>
                 </div>
               </div>
               
               {/* Content */}
               <div className="p-6">
-                <h3 className="font-['Poppins'] font-bold text-2xl text-white mb-2 uppercase group-hover:text-[#FF6A00] transition-colors">{adv.title}</h3>
-                <p className="text-white/60 text-sm mb-6 line-clamp-2">{adv.description}</p>
+                <h3 className="font-['Poppins'] font-bold text-2xl text-slate-900 dark:text-white mb-2 uppercase group-hover:text-[#FF6A00] transition-colors">{adv.title}</h3>
+                <p className="text-slate-600 dark:text-white/60 text-sm mb-6 line-clamp-2">{adv.description}</p>
                 
                 <div className="flex items-center gap-6 mb-6">
-                  <div className="flex items-center gap-2 text-white/80 text-sm font-medium">
+                  <div className="flex items-center gap-2 text-slate-700 dark:text-white/80 text-sm font-medium">
                     <Clock className="w-4 h-4 text-[#FF6A00]" />
                     <span>{adv.duration}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-white/80 text-sm font-medium">
+                  <div className="flex items-center gap-2 text-slate-700 dark:text-white/80 text-sm font-medium">
                     <Users className="w-4 h-4 text-[#FF6A00]" />
                     <span>{adv.total_seats} Seats</span>
                   </div>
@@ -75,7 +75,7 @@ export const AdventuresSection: React.FC<{ onOpenBookingModal: () => void }> = (
 
                 <button 
                   onClick={onOpenBookingModal}
-                  className="w-full py-4 rounded-xl font-bold uppercase tracking-wider text-white bg-white/5 hover:bg-[#FF6A00] transition-all duration-300 border border-white/10 hover:border-transparent flex items-center justify-center gap-2 group/btn"
+                  className="w-full py-4 rounded-xl font-bold uppercase tracking-wider text-slate-900 dark:text-white bg-slate-200/80 dark:bg-white/5 hover:bg-[#FF6A00] hover:text-white transition-all duration-300 border border-slate-200 dark:border-white/10 hover:border-transparent flex items-center justify-center gap-2 group/btn cursor-pointer"
                 >
                   <span>Book Now</span>
                   <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />

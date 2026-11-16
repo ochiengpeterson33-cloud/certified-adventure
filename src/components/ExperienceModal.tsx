@@ -41,7 +41,7 @@ export const ExperienceModal: React.FC<ExperienceModalProps> = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-[#08121B]/90 backdrop-blur-xl"
+          className="fixed inset-0 bg-slate-900/50 dark:bg-[#08121B]/90 backdrop-blur-xl"
         />
 
         {/* Modal Container */}
@@ -50,7 +50,7 @@ export const ExperienceModal: React.FC<ExperienceModalProps> = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-4xl bg-[#0d1c29] border border-[#E67A3A]/40 rounded-3xl shadow-2xl overflow-hidden z-10 my-2 sm:my-8 max-h-[95vh] sm:max-h-[90vh] flex flex-col"
+          className="relative w-full max-w-4xl bg-white dark:bg-[#0d1c29] border border-slate-200 dark:border-[#E67A3A]/40 rounded-3xl shadow-2xl overflow-hidden z-10 my-2 sm:my-8 max-h-[95vh] sm:max-h-[90vh] flex flex-col"
         >
           {/* Top Header Banner */}
           <div className="relative h-48 sm:h-64 md:h-80 flex-shrink-0">
@@ -59,7 +59,7 @@ export const ExperienceModal: React.FC<ExperienceModalProps> = ({
               alt={displayExp.title}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0d1c29] via-[#0d1c29]/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
 
             {/* Close Button */}
             <button
@@ -105,13 +105,13 @@ export const ExperienceModal: React.FC<ExperienceModalProps> = ({
           </div>
 
           {/* Modal Tab Controls */}
-          <div className="flex items-center gap-2 px-6 py-3 border-b border-[#F4E8D2]/10 bg-[#08121B]/80 flex-shrink-0 overflow-x-auto whitespace-nowrap scrollbar-hide">
+          <div className="flex items-center gap-2 px-6 py-3 border-b border-slate-200 dark:border-[#F4E8D2]/10 bg-slate-50 dark:bg-[#08121B]/80 flex-shrink-0 overflow-x-auto whitespace-nowrap scrollbar-hide">
             <button
               onClick={() => setActiveTab('itinerary')}
               className={`px-4 py-3 sm:py-2 rounded-xl text-sm sm:text-base font-bold transition-all ${
                 activeTab === 'itinerary'
                   ? 'bg-[#E67A3A] text-white shadow-md'
-                  : 'text-[#F4E8D2]/70 hover:text-white'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-[#F4E8D2]/70 dark:hover:text-white'
               }`}
             >
               Day-by-Day Itinerary
@@ -122,7 +122,7 @@ export const ExperienceModal: React.FC<ExperienceModalProps> = ({
               className={`px-4 py-3 sm:py-2 rounded-xl text-sm sm:text-base font-bold transition-all ${
                 activeTab === 'inclusions'
                   ? 'bg-[#E67A3A] text-white shadow-md'
-                  : 'text-[#F4E8D2]/70 hover:text-white'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-[#F4E8D2]/70 dark:hover:text-white'
               }`}
             >
               What's Included
@@ -133,7 +133,7 @@ export const ExperienceModal: React.FC<ExperienceModalProps> = ({
               className={`px-4 py-3 sm:py-2 rounded-xl text-sm sm:text-base font-bold transition-all ${
                 activeTab === 'gallery'
                   ? 'bg-[#E67A3A] text-white shadow-md'
-                  : 'text-[#F4E8D2]/70 hover:text-white'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-[#F4E8D2]/70 dark:hover:text-white'
               }`}
             >
               Photo Gallery ({displayExp.gallery?.length || 0})
@@ -146,7 +146,7 @@ export const ExperienceModal: React.FC<ExperienceModalProps> = ({
               <div className="space-y-6">
                 <div>
                   <h4 className="text-xs font-bold uppercase tracking-wider text-[#E67A3A] mb-2">Trip Overview</h4>
-                  <p className="text-sm text-[#F4E8D2]/90 leading-relaxed font-normal">
+                  <p className="text-sm text-slate-700 dark:text-[#F4E8D2]/90 leading-relaxed font-normal">
                     {displayExp.description}
                   </p>
                 </div>
@@ -156,7 +156,7 @@ export const ExperienceModal: React.FC<ExperienceModalProps> = ({
                   <h4 className="text-xs font-bold uppercase tracking-wider text-[#E67A3A] mb-3">Key Highlights</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {displayExp.highlights?.map((item, idx) => (
-                      <div key={idx} className="flex items-center gap-2 p-3 rounded-2xl bg-[#12212F] border border-[#F4E8D2]/10 text-xs text-[#F4E8D2]">
+                      <div key={idx} className="flex items-center gap-2 p-3 rounded-2xl bg-slate-50 dark:bg-[#12212F] border border-slate-200 dark:border-[#F4E8D2]/10 text-xs text-slate-800 dark:text-[#F4E8D2]">
                         <Award className="w-4 h-4 text-[#E67A3A] flex-shrink-0" />
                         <span>{item}</span>
                       </div>
@@ -169,24 +169,24 @@ export const ExperienceModal: React.FC<ExperienceModalProps> = ({
                   <h4 className="text-xs font-bold uppercase tracking-wider text-[#E67A3A] mb-4">Detailed Daily Schedule</h4>
                   <div className="space-y-4">
                     {displayExp.itinerary?.map((day) => (
-                      <div key={day.day} className="p-4 rounded-2xl bg-[#12212F]/80 border border-[#F4E8D2]/10 space-y-2">
+                      <div key={day.day} className="p-4 rounded-2xl bg-slate-50 dark:bg-[#12212F]/80 border border-slate-200 dark:border-[#F4E8D2]/10 space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="px-3 py-1 rounded-full bg-[#E67A3A]/20 border border-[#E67A3A] text-[#E67A3A] text-xs font-bold">
+                          <span className="px-3 py-1 rounded-full bg-[#E67A3A]/15 dark:bg-[#E67A3A]/20 border border-[#E67A3A] text-[#E67A3A] text-xs font-bold">
                             Day {day.day}
                           </span>
-                          <span className="text-[11px] font-medium text-[#F4E8D2]/60">
+                          <span className="text-[11px] font-medium text-slate-500 dark:text-[#F4E8D2]/60">
                             Meals: {day.mealsIncluded}
                           </span>
                         </div>
-                        <h5 className="font-['Poppins'] font-bold text-sm text-[#F4E8D2]">
+                        <h5 className="font-['Poppins'] font-bold text-sm text-slate-900 dark:text-[#F4E8D2]">
                           {day.title}
                         </h5>
-                        <p className="text-xs text-[#F4E8D2]/70 leading-relaxed">
+                        <p className="text-xs text-slate-600 dark:text-[#F4E8D2]/70 leading-relaxed">
                           {day.description}
                         </p>
                         <div className="flex flex-wrap gap-1.5 pt-1">
                           {day.activities?.map((act, i) => (
-                            <span key={i} className="text-[10px] px-2 py-0.5 rounded bg-[#08121B] text-[#E67A3A] border border-[#E67A3A]/30">
+                            <span key={i} className="text-[10px] px-2 py-0.5 rounded bg-white dark:bg-[#08121B] text-[#E67A3A] border border-[#E67A3A]/30">
                               • {act}
                             </span>
                           ))}
@@ -201,15 +201,15 @@ export const ExperienceModal: React.FC<ExperienceModalProps> = ({
             {activeTab === 'inclusions' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Included */}
-                <div className="p-5 rounded-2xl bg-[#12212F]/80 border border-emerald-500/30 space-y-3">
-                  <h4 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
+                <div className="p-5 rounded-2xl bg-emerald-50/70 dark:bg-[#12212F]/80 border border-emerald-500/30 space-y-3">
+                  <h4 className="text-sm font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
                     <CheckCircle className="w-4 h-4" />
                     <span>Included in Price</span>
                   </h4>
-                  <ul className="space-y-2 text-xs text-[#F4E8D2]/90">
+                  <ul className="space-y-2 text-xs text-slate-700 dark:text-[#F4E8D2]/90">
                     {displayExp.included?.map((inc, i) => (
                       <li key={i} className="flex items-start gap-2">
-                        <span className="text-emerald-400 font-bold">✓</span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">✓</span>
                         <span>{inc}</span>
                       </li>
                     ))}
@@ -217,15 +217,15 @@ export const ExperienceModal: React.FC<ExperienceModalProps> = ({
                 </div>
 
                 {/* Not Included */}
-                <div className="p-5 rounded-2xl bg-[#12212F]/80 border border-rose-500/30 space-y-3">
-                  <h4 className="text-sm font-bold text-rose-400 flex items-center gap-2">
+                <div className="p-5 rounded-2xl bg-rose-50/70 dark:bg-[#12212F]/80 border border-rose-500/30 space-y-3">
+                  <h4 className="text-sm font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2">
                     <XCircle className="w-4 h-4" />
                     <span>Not Included</span>
                   </h4>
-                  <ul className="space-y-2 text-xs text-[#F4E8D2]/70">
+                  <ul className="space-y-2 text-xs text-slate-600 dark:text-[#F4E8D2]/70">
                     {displayExp.notIncluded?.map((exc, i) => (
                       <li key={i} className="flex items-start gap-2">
-                        <span className="text-rose-400 font-bold">✕</span>
+                        <span className="text-rose-600 dark:text-rose-400 font-bold">✕</span>
                         <span>{exc}</span>
                       </li>
                     ))}
@@ -252,12 +252,12 @@ export const ExperienceModal: React.FC<ExperienceModalProps> = ({
           </div>
 
           {/* Footer Sticky Reservation Bar */}
-          <div className="p-4 sm:p-6 bg-[#08121B] border-t border-[#F4E8D2]/10 flex flex-col sm:flex-row items-center justify-between gap-4 flex-shrink-0">
+          <div className="p-4 sm:p-6 bg-slate-50 dark:bg-[#08121B] border-t border-slate-200 dark:border-[#F4E8D2]/10 flex flex-col sm:flex-row items-center justify-between gap-4 flex-shrink-0">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#F4E8D2]/50 block">Investment Per Person</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#F4E8D2]/50 block">Investment Per Person</span>
               <div className="flex items-baseline gap-2">
                 <span className="font-['Poppins'] font-black text-3xl text-[#E67A3A]">${displayExp.price}</span>
-                <span className="text-xs text-[#F4E8D2]/60">All taxes & permits included</span>
+                <span className="text-xs text-slate-600 dark:text-[#F4E8D2]/60">All taxes & permits included</span>
               </div>
             </div>
 

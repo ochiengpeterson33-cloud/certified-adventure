@@ -244,7 +244,7 @@ export const GalleryMasonry: React.FC = () => {
   };
 
   return (
-    <section id="gallery" className="py-16 sm:py-20 lg:py-28 bg-[#060C13] relative overflow-hidden border-t border-white/5">
+    <section id="gallery" className="py-16 sm:py-20 lg:py-28 bg-white dark:bg-[#060C13] relative overflow-hidden border-t border-slate-200 dark:border-white/5 transition-colors duration-300">
       {/* Subtle atmospheric ambient glow */}
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[350px] sm:w-[500px] h-[350px] sm:h-[500px] bg-[#FF6A00]/5 rounded-full blur-[100px] sm:blur-[120px] pointer-events-none" />
       <div className="absolute bottom-10 right-1/4 w-[300px] sm:w-[400px] h-[300px] sm:h-[400px] bg-[#FF6A00]/5 rounded-full blur-[90px] sm:blur-[100px] pointer-events-none" />
@@ -257,16 +257,16 @@ export const GalleryMasonry: React.FC = () => {
             - Clean responsive typography scaling seamlessly from 320px up to 4K
             - "Energy" styled with distinct script typeface
             ========================================================================= */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-8 sm:mb-12 lg:mb-16 gap-5 pb-6 border-b border-white/5">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-8 sm:mb-12 lg:mb-16 gap-5 pb-6 border-b border-slate-200 dark:border-white/5">
           <div className="max-w-2xl">
             {/* Small uppercase label */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[#FF6A00] text-[11px] sm:text-xs font-bold tracking-widest uppercase mb-3.5 sm:mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 dark:bg-white/5 border border-orange-200 dark:border-white/10 text-[#FF6A00] text-[11px] sm:text-xs font-bold tracking-widest uppercase mb-3.5 sm:mb-4">
               <span className="w-1.5 h-1.5 rounded-full bg-[#FF6A00] animate-pulse" />
               EVENT GALLERY
             </div>
 
             {/* Large heading with distinctive handwritten "Energy" */}
-            <h2 className="font-['Poppins'] font-black text-2xl xs:text-3xl sm:text-4xl lg:text-5xl xl:text-6xl text-white tracking-tight leading-[1.15] uppercase break-words">
+            <h2 className="font-['Poppins'] font-black text-2xl xs:text-3xl sm:text-4xl lg:text-5xl xl:text-6xl text-slate-900 dark:text-white tracking-tight leading-[1.15] uppercase break-words">
               The Night <span className="text-[#FF6A00] font-light">•</span> The People <span className="text-[#FF6A00] font-light">•</span>{' '}
               <span className="font-['Caveat',cursive] italic font-bold text-[#FF6A00] text-[1.2em] lowercase capitalize inline-block -rotate-1 tracking-normal select-none">
                 Energy
@@ -276,7 +276,7 @@ export const GalleryMasonry: React.FC = () => {
 
           {/* Short supporting description */}
           <div className="max-w-md lg:text-right">
-            <p className="text-white/70 text-xs sm:text-sm lg:text-base font-normal leading-relaxed">
+            <p className="text-slate-600 dark:text-white/70 text-xs sm:text-sm lg:text-base font-normal leading-relaxed">
               Real moments. Unfiltered vibes. A gallery of the people, the culture and the energy that make it all happen.
             </p>
           </div>
@@ -300,7 +300,7 @@ export const GalleryMasonry: React.FC = () => {
                   className={`px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-300 whitespace-nowrap cursor-pointer shrink-0 select-none ${
                     isActive
                       ? 'bg-[#FF6A00] text-white shadow-lg shadow-[#FF6A00]/25 scale-105'
-                      : 'bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10'
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 dark:bg-white/5 dark:hover:bg-white/10 dark:text-white/70 dark:hover:text-white dark:border-white/10'
                   }`}
                 >
                   {tab}
@@ -833,11 +833,11 @@ export const GalleryMasonry: React.FC = () => {
 
         {/* Additional Photos Drawer / Expander if more than 7 photos exist */}
         {extraPhotos.length > 0 && (
-          <div className="mt-8 pt-6 border-t border-white/5 flex flex-col items-center">
+          <div className="mt-8 pt-6 border-t border-slate-200 dark:border-white/5 flex flex-col items-center">
             {!showAllPhotos ? (
               <button
                 onClick={() => setShowAllPhotos(true)}
-                className="inline-flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-300 hover:border-[#FF6A00]/50 hover:text-[#FF6A00] cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-300 hover:border-[#FF6A00]/50 hover:text-[#FF6A00] cursor-pointer"
               >
                 <span>View More Captures ({extraPhotos.length})</span>
                 <ChevronRight className="w-4 h-4" />
@@ -845,12 +845,12 @@ export const GalleryMasonry: React.FC = () => {
             ) : (
               <div className="w-full">
                 <div className="flex items-center justify-between mb-4 sm:mb-6">
-                  <h3 className="text-white text-xs sm:text-sm font-bold uppercase tracking-wider">
+                  <h3 className="text-slate-900 dark:text-white text-xs sm:text-sm font-bold uppercase tracking-wider">
                     Extended Collection ({extraPhotos.length})
                   </h3>
                   <button
                     onClick={() => setShowAllPhotos(false)}
-                    className="text-white/60 hover:text-white text-xs uppercase tracking-wider font-semibold cursor-pointer"
+                    className="text-slate-500 hover:text-slate-900 dark:text-white/60 dark:hover:text-white text-xs uppercase tracking-wider font-semibold cursor-pointer"
                   >
                     Collapse
                   </button>

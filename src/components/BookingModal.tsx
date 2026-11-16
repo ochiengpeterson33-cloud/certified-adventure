@@ -19,7 +19,17 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   packageTitle = 'Custom Luxury Trip',
 }) => {
   const { data: events, isLoading: isLoadingEvents } = useEvents();
-  const activeEvent = events && events.length > 0 ? events[0] : null;
+  const upcomingEvents = (events || []).filter((evt: any) => {
+    const t = evt.event_date ? new Date(evt.event_date).getTime() : NaN;
+    return Number.isNaN(t) || t > Date.now();
+  });
+  const matchedEvent = (events || []).find((evt: any) => evt.title && evt.title === packageTitle);
+  const isMatchedEventSoldOut = Boolean(
+    matchedEvent &&
+    matchedEvent.event_date &&
+    new Date(matchedEvent.event_date).getTime() <= Date.now()
+  );
+  const activeEvent = upcomingEvents.length > 0 ? upcomingEvents[0] : null;
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -98,18 +108,18 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-[#08121B]/90 backdrop-blur-xl"
+          className="fixed inset-0 bg-slate-900/50 dark:bg-[#08121B]/90 backdrop-blur-xl"
         />
 
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="relative w-full max-w-xl bg-[#0d1c29] border border-[#E67A3A]/40 rounded-3xl shadow-2xl overflow-hidden z-10 text-left my-8 p-6 sm:p-8"
+          className="relative w-full max-w-xl bg-white dark:bg-[#0d1c29] border border-slate-200 dark:border-[#E67A3A]/40 rounded-3xl shadow-2xl overflow-hidden z-10 text-left my-8 p-6 sm:p-8"
         >
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-3 rounded-full bg-[#12212F] text-[#F4E8D2] hover:bg-[#E67A3A] transition-colors"
+            className="absolute top-4 right-4 p-3 rounded-full bg-slate-100 dark:bg-[#12212F] text-slate-700 dark:text-[#F4E8D2] hover:bg-[#E67A3A] hover:text-white transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -117,28 +127,34 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           {!submitted ? (
             <div className="space-y-6">
               <div>
-                <span className="px-3 py-1 rounded-full bg-[#E67A3A]/20 text-[#E67A3A] border border-[#E67A3A] text-[10px] font-bold uppercase">
+                <span className="px-3 py-1 rounded-full bg-[#E67A3A]/15 dark:bg-[#E67A3A]/20 text-[#E67A3A] border border-[#E67A3A] text-[10px] font-bold uppercase">
                   {packageTitle?.toLowerCase().includes('trip') || packageTitle?.toLowerCase().includes('event') || packageTitle?.toLowerCase().includes('hike') ? 'Event Ticket' : 'Adventure Reservation'}
                 </span>
-                <h3 className="font-['Poppins'] font-bold text-2xl text-white mt-2">
+                <h3 className="font-['Poppins'] font-bold text-2xl text-slate-900 dark:text-white mt-2">
                   Reserve: {packageTitle || activeEvent?.title || 'Certified Experience'}
                 </h3>
-                <p className="text-base text-[#F4E8D2]/70 mt-1">
+                <p className="text-base text-slate-600 dark:text-[#F4E8D2]/70 mt-1">
                   {destination ? `Location: ${destination}` : 'Travel in Comfort & Style with Certified Adventures.'}
                 </p>
               </div>
 
               {errorMsg && (
-                <div className="bg-red-500/20 border border-red-500/50 text-red-200 p-3 rounded-xl text-xs">
+                <div className="bg-red-50 dark:bg-red-500/20 border border-red-200 dark:border-red-500/50 text-red-700 dark:text-red-200 p-3 rounded-xl text-xs">
                   {errorMsg}
                 </div>
               )}
 
-              {!activeEvent && !packageTitle && !isLoadingEvents ? (
-                <div className="bg-[#E67A3A]/10 border border-[#E67A3A]/20 text-[#F4E8D2] p-6 rounded-2xl text-center">
+              {isMatchedEventSoldOut ? (
+                <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 text-slate-800 dark:text-[#F4E8D2] p-6 rounded-2xl text-center">
+                  <Calendar className="w-12 h-12 text-red-500 mx-auto mb-4 opacity-70" />
+                  <p className="font-bold uppercase tracking-wider text-red-600 dark:text-red-400 mb-2">Sold Out</p>
+                  <p className="text-sm text-slate-600 dark:text-[#F4E8D2]/70">This event has already ended and bookings are closed.</p>
+                </div>
+              ) : !activeEvent && !packageTitle && !isLoadingEvents ? (
+                <div className="bg-orange-50 dark:bg-[#E67A3A]/10 border border-orange-200 dark:border-[#E67A3A]/20 text-slate-800 dark:text-[#F4E8D2] p-6 rounded-2xl text-center">
                   <Calendar className="w-12 h-12 text-[#E67A3A] mx-auto mb-4 opacity-50" />
                   <p className="font-medium mb-2">No Active Events</p>
-                  <p className="text-sm text-[#F4E8D2]/70">There are currently no active events available for booking.</p>
+                  <p className="text-sm text-slate-600 dark:text-[#F4E8D2]/70">There are currently no active events available for booking.</p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -150,7 +166,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="e.g. Mwangi Wachira"
-                    className="w-full px-4 py-3 rounded-2xl bg-[#08121B] border border-[#F4E8D2]/20 text-base text-[#F4E8D2] focus:outline-none focus:border-[#E67A3A]"
+                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-[#08121B] border border-slate-200 dark:border-[#F4E8D2]/20 text-base text-slate-900 dark:text-[#F4E8D2] placeholder-slate-400 dark:placeholder-[#F4E8D2]/40 focus:outline-none focus:border-[#E67A3A]"
                   />
                 </div>
 
@@ -163,7 +179,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="mwangi@example.com"
-                      className="w-full px-4 py-3 rounded-2xl bg-[#08121B] border border-[#F4E8D2]/20 text-base text-[#F4E8D2] focus:outline-none focus:border-[#E67A3A]"
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-[#08121B] border border-slate-200 dark:border-[#F4E8D2]/20 text-base text-slate-900 dark:text-[#F4E8D2] placeholder-slate-400 dark:placeholder-[#F4E8D2]/40 focus:outline-none focus:border-[#E67A3A]"
                     />
                   </div>
 
@@ -175,7 +191,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+254 711 000 000"
-                      className="w-full px-4 py-3 rounded-2xl bg-[#08121B] border border-[#F4E8D2]/20 text-base text-[#F4E8D2] focus:outline-none focus:border-[#E67A3A]"
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-[#08121B] border border-slate-200 dark:border-[#F4E8D2]/20 text-base text-slate-900 dark:text-[#F4E8D2] placeholder-slate-400 dark:placeholder-[#F4E8D2]/40 focus:outline-none focus:border-[#E67A3A]"
                     />
                   </div>
                 </div>
@@ -188,7 +204,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                       required
                       value={travelDate}
                       onChange={(e) => setTravelDate(e.target.value)}
-                      className="w-full px-4 py-3 rounded-2xl bg-[#08121B] border border-[#F4E8D2]/20 text-base text-[#F4E8D2] focus:outline-none focus:border-[#E67A3A]"
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-[#08121B] border border-slate-200 dark:border-[#F4E8D2]/20 text-base text-slate-900 dark:text-[#F4E8D2] focus:outline-none focus:border-[#E67A3A]"
                     />
                   </div>
 
@@ -200,7 +216,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                       max={30}
                       value={guests}
                       onChange={(e) => setGuests(parseInt(e.target.value) || 1)}
-                      className="w-full px-4 py-3 rounded-2xl bg-[#08121B] border border-[#F4E8D2]/20 text-base text-[#F4E8D2] focus:outline-none focus:border-[#E67A3A]"
+                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-[#08121B] border border-slate-200 dark:border-[#F4E8D2]/20 text-base text-slate-900 dark:text-[#F4E8D2] focus:outline-none focus:border-[#E67A3A]"
                     />
                   </div>
                 </div>
@@ -212,7 +228,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Any special diet, pickup location, questions..."
-                    className="w-full p-3 rounded-2xl bg-[#08121B] border border-[#F4E8D2]/20 text-base text-[#F4E8D2] focus:outline-none focus:border-[#E67A3A]"
+                    className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#08121B] border border-slate-200 dark:border-[#F4E8D2]/20 text-base text-slate-900 dark:text-[#F4E8D2] placeholder-slate-400 dark:placeholder-[#F4E8D2]/40 focus:outline-none focus:border-[#E67A3A]"
                   />
                 </div>
 
@@ -230,13 +246,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           ) : (
             <div className="text-center py-8 space-y-4">
               <CheckCircle2 className="w-16 h-16 text-[#E67A3A] mx-auto animate-bounce" />
-              <h3 className="font-['Poppins'] font-bold text-xl text-white">Booking Sent!</h3>
-              <p className="text-base text-[#F4E8D2]/80">
+              <h3 className="font-['Poppins'] font-bold text-xl text-slate-900 dark:text-white">Booking Sent!</h3>
+              <p className="text-base text-slate-600 dark:text-[#F4E8D2]/80">
                 Thank you {fullName}! We have received your booking inquiry for {packageTitle}. Our team will contact you on {phone} within 30 minutes.
               </p>
               <button
                 onClick={onClose}
-                className="px-6 py-3 rounded-xl bg-[#E67A3A] text-xs font-bold text-white"
+                className="px-6 py-3 rounded-xl bg-[#E67A3A] text-xs font-bold text-white cursor-pointer"
               >
                 Close Window
               </button>

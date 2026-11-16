@@ -115,16 +115,16 @@ export const MerchStore: React.FC = () => {
 
   if (isLoading) {
     return (
-      <section className="py-24 bg-[#0B0F15] relative border-t border-white/5 flex justify-center items-center">
+      <section className="py-24 bg-[#F4F5F7] dark:bg-[#0B0F15] relative border-t border-slate-200 dark:border-white/5 flex justify-center items-center transition-colors duration-300">
         <div className="w-12 h-12 border-4 border-[#FF6A00] border-t-transparent rounded-full animate-spin"></div>
       </section>
     );
   }
 
   return (
-    <section id="merch" className="py-20 sm:py-28 bg-[#0B0F15] relative border-t border-white/5 font-['Poppins',sans-serif]">
+    <section id="merch" className="py-20 sm:py-28 bg-[#F4F5F7] dark:bg-[#0B0F15] relative border-t border-slate-200 dark:border-white/5 font-['Poppins',sans-serif] transition-colors duration-300">
       {/* Background ambient lighting */}
-      <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-[#FF6A00]/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-[#FF6A00]/10 dark:bg-[#FF6A00]/5 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
@@ -134,10 +134,10 @@ export const MerchStore: React.FC = () => {
               <Sparkles className="w-3.5 h-3.5" />
               <span>Official Merch Store</span>
             </div>
-            <h2 className="font-['Poppins'] font-black text-3xl sm:text-4xl md:text-5xl text-white uppercase tracking-tight leading-none mb-3">
+            <h2 className="font-['Poppins'] font-black text-3xl sm:text-4xl md:text-5xl text-slate-900 dark:text-white uppercase tracking-tight leading-none mb-3">
               Rep The <span className="text-[#FF6A00]">Vibe</span>
             </h2>
-            <p className="text-white/60 text-sm sm:text-base">
+            <p className="text-slate-600 dark:text-white/60 text-sm sm:text-base">
               Premium Certified Adventures gear designed for mountain trails, game drives, and street culture.
             </p>
           </div>
@@ -150,8 +150,8 @@ export const MerchStore: React.FC = () => {
                 onClick={() => setActiveCategory(cat)}
                 className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap active:scale-95 ${
                   activeCategory === cat
-                    ? 'bg-[#FF6A00] text-black shadow-md shadow-[#FF6A00]/25'
-                    : 'bg-white/5 text-white/70 hover:text-white hover:bg-white/10 border border-white/5'
+                    ? 'bg-[#FF6A00] text-white dark:text-black shadow-md shadow-[#FF6A00]/25'
+                    : 'bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 dark:bg-white/5 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/10 dark:border-white/5'
                 }`}
               >
                 {cat}
@@ -175,10 +175,10 @@ export const MerchStore: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: idx * 0.08 }}
-                className="group relative rounded-3xl overflow-hidden bg-[#121721] border border-white/10 hover:border-[#FF6A00]/40 transition-all duration-300 shadow-xl flex flex-col justify-between"
+                className="group relative rounded-3xl overflow-hidden bg-white dark:bg-[#121721] border border-slate-200 dark:border-white/10 hover:border-[#FF6A00]/50 transition-all duration-300 shadow-md dark:shadow-xl hover:shadow-xl flex flex-col justify-between"
               >
                 {/* Image Section */}
-                <div className="relative aspect-square overflow-hidden bg-black/40">
+                <div className="relative aspect-square overflow-hidden bg-slate-100 dark:bg-black/40">
                   <img
                     loading="lazy"
                     src={prod.image_url}
@@ -193,7 +193,7 @@ export const MerchStore: React.FC = () => {
                     className={`absolute top-3.5 right-3.5 w-10 h-10 rounded-xl backdrop-blur-md flex items-center justify-center transition-all z-10 active:scale-90 ${
                       isLiked
                         ? 'bg-red-500 text-white'
-                        : 'bg-black/50 text-white/70 hover:text-white border border-white/10'
+                        : 'bg-black/50 text-white/80 hover:text-white border border-white/10'
                     }`}
                   >
                     <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
@@ -206,7 +206,7 @@ export const MerchStore: React.FC = () => {
                       className={`w-full py-2.5 px-3 rounded-xl font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer ${
                         isAdded
                           ? 'bg-green-500 text-white'
-                          : 'bg-[#FF6A00] text-black hover:bg-white'
+                          : 'bg-[#FF6A00] text-white dark:text-black hover:bg-white hover:text-black'
                       }`}
                     >
                       {isAdded ? (
@@ -228,7 +228,7 @@ export const MerchStore: React.FC = () => {
                 <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
                   <div>
                     <div className="flex items-start justify-between gap-2 mb-1.5">
-                      <h3 className="text-white font-bold text-sm tracking-wide group-hover:text-[#FF6A00] transition-colors line-clamp-1">
+                      <h3 className="text-slate-900 dark:text-white font-bold text-sm tracking-wide group-hover:text-[#FF6A00] transition-colors line-clamp-1">
                         {prod.name}
                       </h3>
                       <span className="font-bold text-[#FF6A00] text-sm whitespace-nowrap">
@@ -239,7 +239,7 @@ export const MerchStore: React.FC = () => {
                     {/* Sizes Selection */}
                     {availableSizes.length > 1 && (
                       <div className="flex items-center gap-1.5 mt-2.5 mb-3">
-                        <span className="text-[10px] uppercase font-bold text-white/40 mr-1">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-white/40 mr-1">
                           Size:
                         </span>
                         {availableSizes.map((s) => (
@@ -249,8 +249,8 @@ export const MerchStore: React.FC = () => {
                             onClick={() => handleSizeChange(prod.id, s)}
                             className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all ${
                               currentSize === s
-                                ? 'bg-[#FF6A00] text-black ring-1 ring-[#FF6A00]'
-                                : 'bg-white/5 text-white/60 hover:text-white border border-white/10'
+                                ? 'bg-[#FF6A00] text-white dark:text-black ring-1 ring-[#FF6A00]'
+                                : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200 dark:bg-white/5 dark:text-white/60 dark:hover:text-white dark:border-white/10'
                             }`}
                           >
                             {s}
@@ -261,13 +261,13 @@ export const MerchStore: React.FC = () => {
                   </div>
 
                   {/* Mobile & Tablet Visible Add to Cart Button */}
-                  <div className="mt-3 pt-3 border-t border-white/5 flex lg:hidden">
+                  <div className="mt-3 pt-3 border-t border-slate-100 dark:border-white/5 flex lg:hidden">
                     <button
                       onClick={() => handleAddToCart(prod)}
                       className={`w-full min-h-[44px] py-2.5 px-3 rounded-xl font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer ${
                         isAdded
                           ? 'bg-green-500 text-white shadow-md shadow-green-500/20'
-                          : 'bg-[#FF6A00] text-black shadow-md shadow-[#FF6A00]/25'
+                          : 'bg-[#FF6A00] text-white dark:text-black shadow-md shadow-[#FF6A00]/25'
                       }`}
                     >
                       {isAdded ? (

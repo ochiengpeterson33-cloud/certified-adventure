@@ -4,11 +4,13 @@ import {
   MapPin, Phone, Mail, 
   Facebook, Instagram, MessageCircle, Twitter,
   Search, User, Heart, ShoppingCart, 
-  Menu, X, ArrowRight, ChevronDown, LogOut, Shield, UserPlus
+  Menu, X, ArrowRight, ChevronDown, LogOut, Shield, UserPlus,
+  Sun, Moon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { usePackages } from '../hooks/useSupabaseData';
 
@@ -24,6 +26,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const { user, profile, isAdmin, signOut } = useAuth();
   const { openCart, totalCount } = useCart();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -216,6 +219,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
           {/* 3. Dedicated Right Action Icons & CTA Container (Desktop xl+) */}
           <div className="hidden xl:flex items-center gap-2 min-[1400px]:gap-3 2xl:gap-4 shrink-0">
             <div className="flex items-center gap-0.5 min-[1400px]:gap-1 2xl:gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                className="w-8 h-8 min-[1400px]:w-9 min-[1400px]:h-9 2xl:w-10 2xl:h-10 rounded-full bg-slate-100 hover:bg-orange-50 text-slate-700 hover:text-[#F97316] flex items-center justify-center transition-all duration-200 group relative shrink-0 cursor-pointer border border-slate-200/80"
+              >
+                {isDark ? (
+                  <Sun className="w-[16px] h-[16px] min-[1400px]:w-[17px] min-[1400px]:h-[17px] 2xl:w-[18px] 2xl:h-[18px] text-[#FF7A00] transition-transform group-hover:rotate-45" />
+                ) : (
+                  <Moon className="w-[16px] h-[16px] min-[1400px]:w-[17px] min-[1400px]:h-[17px] 2xl:w-[18px] 2xl:h-[18px] text-slate-700 transition-transform group-hover:-rotate-12" />
+                )}
+              </button>
               {[
                 { icon: Search, label: 'Search', onClick: () => {} },
                 { icon: User, label: 'User Profile', onClick: handleUserClick },
@@ -254,6 +270,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
           <div className="flex xl:hidden items-center gap-2 sm:gap-3 relative z-50 shrink-0">
             {/* Tablet Action Icons (md to < xl) */}
             <div className="hidden md:flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-orange-50 text-slate-700 hover:text-[#F97316] flex items-center justify-center transition-all duration-200 group relative shrink-0 cursor-pointer border border-slate-200/80"
+              >
+                {isDark ? (
+                  <Sun className="w-[17px] h-[17px] text-[#FF7A00]" />
+                ) : (
+                  <Moon className="w-[17px] h-[17px] text-slate-700" />
+                )}
+              </button>
               {[
                 { icon: Search, label: 'Search', onClick: () => {} },
                 { icon: User, label: 'User Profile', onClick: handleUserClick },
@@ -405,6 +434,38 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Theme Mode Switcher inside Mobile/Tablet Drawer */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-9 h-9 rounded-xl bg-orange-100 text-[#FF7A00] flex items-center justify-center shrink-0">
+                    {isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-900">Appearance</p>
+                    <p className="text-[11px] text-slate-500">
+                      {isDark ? 'Dark Mode Active' : 'Light Mode Active'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#FF7A00] text-xs font-bold text-slate-800 flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer shrink-0"
+                >
+                  {isDark ? (
+                    <>
+                      <Sun className="w-3.5 h-3.5 text-[#FF7A00]" />
+                      <span>Light Mode</span>
+                    </>
+                  ) : (
+                    <>
+                      <Moon className="w-3.5 h-3.5 text-slate-700" />
+                      <span>Dark Mode</span>
+                    </>
+                  )}
+                </button>
               </div>
 
               {navLinks.map((link, idx) => (

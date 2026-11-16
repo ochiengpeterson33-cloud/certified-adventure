@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, Bus, Map, Heart, Compass, Users, Car, Calendar, Sparkles } from 'lucide-react';
+import { ArrowRight, Bus, Map, Heart, Compass, Users, Car, Calendar } from 'lucide-react';
 import { useHomepageExperiences } from '../hooks/useSupabaseData';
 
 interface ExperienceData {
@@ -105,6 +105,42 @@ const ExperienceVideo = ({ src }: { src: string }) => {
   );
 };
 
+const SectionBackgroundVideo = ({ src, poster }: { src: string; poster?: string }) => {
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  React.useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          el.play().catch(() => {});
+        } else {
+          el.pause();
+        }
+      },
+      { threshold: 0.05 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [src]);
+
+  return (
+    <video
+      ref={videoRef}
+      src={src}
+      poster={poster || undefined}
+      autoPlay
+      muted
+      loop
+      playsInline
+      className="w-full h-full object-cover object-center"
+    />
+  );
+};
+
 interface OurExperiencesProps {
   onOpenBookingModal?: (destination?: string, packageTitle?: string) => void;
 }
@@ -112,30 +148,62 @@ interface OurExperiencesProps {
 export const OurExperiences: React.FC<OurExperiencesProps> = ({ onOpenBookingModal }) => {
   const { data: dynamicImages } = useHomepageExperiences();
 
+  const bgType = dynamicImages?.section_bg_type;
+  const bgImage = dynamicImages?.section_bg_image;
+  const bgVideo = dynamicImages?.section_bg_video;
+
+  const showSectionVideo = Boolean(bgVideo) && (bgType === 'video' || !bgType);
+  const showSectionImage = !showSectionVideo && Boolean(bgImage) && (bgType === 'image' || !bgType);
+  const hasCustomSectionBg = showSectionVideo || showSectionImage;
+
+  const overlayClassMap: Record<string, string> = {
+    '40': 'bg-[#F8F6F2]/55 dark:bg-[#08121B]/40',
+    '60': 'bg-[#F8F6F2]/70 dark:bg-[#08121B]/60',
+    '75': 'bg-[#F8F6F2]/80 dark:bg-[#08121B]/75',
+    '85': 'bg-[#F8F6F2]/90 dark:bg-[#08121B]/85',
+  };
+  const overlayScrimClass = overlayClassMap[dynamicImages?.section_bg_overlay || '60'] || overlayClassMap['60'];
+
   const handleBook = (exp: ExperienceData) => {
     onOpenBookingModal?.(exp.location, exp.title);
   };
 
   return (
-    <section id="experiences" className="py-24 bg-[#08121B] relative overflow-hidden font-['Poppins'] border-t border-[#E67A3A]/20">
+    <section id="experiences" className="py-24 bg-[#F8F6F2] dark:bg-[#08121B] relative overflow-hidden font-['Poppins'] border-t border-slate-200 dark:border-[#E67A3A]/20 transition-colors duration-300">
+      {/* Admin-Configured Section Background Media (Video or Image) */}
+      {hasCustomSectionBg && (
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          {showSectionVideo ? (
+            <SectionBackgroundVideo src={bgVideo} poster={bgImage} />
+          ) : (
+            <img
+              src={bgImage}
+              alt="Explore Our Experiences background"
+              loading="lazy"
+              className="w-full h-full object-cover object-center"
+            />
+          )}
+          {/* Theme-aware contrast veil */}
+          <div className={`absolute inset-0 transition-colors duration-300 ${overlayScrimClass}`} />
+          {/* Top & bottom soft edge fade for seamless section transitions */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#F8F6F2] via-transparent to-[#F8F6F2] dark:from-[#08121B] dark:via-transparent dark:to-[#08121B]" />
+        </div>
+      )}
+
       {/* Background ambient glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full sm:w-[800px] h-[300px] sm:h-[400px] bg-[#E67A3A]/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full sm:w-[800px] h-[300px] sm:h-[400px] bg-[#E67A3A]/10 dark:bg-[#E67A3A]/5 blur-[120px] rounded-full pointer-events-none z-0" />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#E67A3A]/10 border border-[#E67A3A]/30 text-[#E67A3A] text-xs font-bold uppercase tracking-widest mb-4">
-            <Sparkles className="w-3.5 h-3.5 text-[#E67A3A]" />
-            Signature Travel Styles
-          </div>
-          <h2 className="font-black text-[clamp(2.25rem,4vw+1rem,4.5rem)] text-[#F4E8D2] uppercase tracking-tighter leading-none mb-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-16 px-1">
+          <h2 className="font-black text-[clamp(2rem,4vw+1rem,4.5rem)] text-slate-900 dark:text-[#F4E8D2] uppercase tracking-tighter leading-none mb-4 sm:mb-6">
             Explore <span className="text-gradient-orange">Our Experiences</span>
           </h2>
-          <p className="text-[#F4E8D2]/70 text-lg leading-relaxed">
+          <p className="text-slate-700 dark:text-[#F4E8D2]/80 text-sm sm:text-lg leading-relaxed font-medium">
             Choose your favourite adventure and reserve your customized experience instantly.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
           {experiences.map((exp, idx) => {
             const imgUrl = dynamicImages?.[exp.id] || exp.image;
             return (
@@ -146,7 +214,7 @@ export const OurExperiences: React.FC<OurExperiencesProps> = ({ onOpenBookingMod
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: idx * 0.1 }}
               onClick={() => handleBook(exp)}
-              className="group relative rounded-3xl overflow-hidden glass-card border border-[#F4E8D2]/10 hover:border-[#E67A3A]/50 transition-all duration-500 shadow-xl flex flex-col cursor-pointer hover:shadow-2xl hover:shadow-[#E67A3A]/10"
+              className="group relative rounded-2xl sm:rounded-3xl overflow-hidden glass-card bg-white dark:bg-transparent border border-slate-200 dark:border-[#F4E8D2]/10 hover:border-[#E67A3A]/50 transition-all duration-500 shadow-lg dark:shadow-xl flex flex-col cursor-pointer hover:shadow-2xl hover:shadow-[#E67A3A]/10 min-w-0"
             >
               <div className="aspect-[4/3] w-full overflow-hidden relative">
                 {dynamicImages?.[exp.id + '_video'] ? (
@@ -159,35 +227,35 @@ export const OurExperiences: React.FC<OurExperiencesProps> = ({ onOpenBookingMod
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#08121B] via-[#08121B]/60 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-white via-white/30 dark:from-[#08121B] dark:via-[#08121B]/60 to-transparent" />
                 
                 {/* Category tag */}
-                <div className="absolute top-4 left-4">
-                  <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-[11px] font-bold text-[#F4E8D2] border border-white/10 uppercase tracking-wider">
+                <div className="absolute top-2.5 left-2.5 sm:top-4 sm:left-4 max-w-[calc(100%-3rem)]">
+                  <span className="inline-block truncate max-w-full px-2 py-0.5 sm:px-3 sm:py-1 rounded-full bg-black/60 backdrop-blur-md text-[9px] sm:text-[11px] font-bold text-[#F4E8D2] border border-white/10 uppercase tracking-wider">
                     {exp.tag}
                   </span>
                 </div>
 
                 {/* Icon Badge */}
-                <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white border border-white/10 group-hover:bg-[#E67A3A] transition-colors duration-300">
-                  <exp.icon className="w-5 h-5" />
+                <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white border border-white/10 group-hover:bg-[#E67A3A] transition-colors duration-300">
+                  <exp.icon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                 </div>
               </div>
               
-              <div className="p-6 sm:p-7 relative -mt-8 flex-1 flex flex-col justify-between">
+              <div className="p-3 sm:p-6 md:p-7 relative -mt-4 sm:-mt-8 flex-1 flex flex-col justify-between min-w-0">
                 <div>
-                  <h3 className="text-2xl font-bold text-white mb-2 tracking-tight group-hover:text-[#E67A3A] transition-colors">
+                  <h3 className="text-sm sm:text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-1 sm:mb-2 tracking-tight leading-snug group-hover:text-[#E67A3A] transition-colors">
                     {exp.title}
                   </h3>
-                  <p className="text-[#F4E8D2]/70 text-sm mb-5 line-clamp-2">
+                  <p className="text-slate-600 dark:text-[#F4E8D2]/70 text-[11px] sm:text-sm mb-3 sm:mb-5 line-clamp-2">
                     {exp.description}
                   </p>
                 </div>
 
                 {/* Booking Action Footer */}
-                <div className="pt-4 border-t border-white/10 flex items-center justify-between gap-3 mt-auto">
-                  <span className="text-xs font-medium text-[#F4E8D2]/60 flex items-center gap-1.5 truncate">
-                    <Calendar className="w-3.5 h-3.5 text-[#E67A3A] shrink-0" />
+                <div className="pt-2.5 sm:pt-4 border-t border-slate-200 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 mt-auto">
+                  <span className="text-[10px] sm:text-xs font-medium text-slate-500 dark:text-[#F4E8D2]/60 flex items-center gap-1 sm:gap-1.5 min-w-0">
+                    <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#E67A3A] shrink-0" />
                     <span className="truncate">{exp.location}</span>
                   </span>
                   
@@ -197,10 +265,10 @@ export const OurExperiences: React.FC<OurExperiencesProps> = ({ onOpenBookingMod
                       e.stopPropagation();
                       handleBook(exp);
                     }}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#E67A3A] hover:bg-[#FF6A00] text-white font-bold text-xs uppercase tracking-wider transition-all duration-200 active:scale-95 shadow-md shadow-[#E67A3A]/20 shrink-0 group-hover:bg-[#FF6A00]"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-[#E67A3A] hover:bg-[#FF6A00] text-white font-bold text-[10px] sm:text-xs uppercase tracking-wider transition-all duration-200 active:scale-95 shadow-md shadow-[#E67A3A]/20 shrink-0 group-hover:bg-[#FF6A00]"
                   >
                     <span>Book</span>
-                    <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                    <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 transition-transform group-hover:translate-x-1" />
                   </button>
                 </div>
               </div>

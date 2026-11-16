@@ -190,7 +190,7 @@ export const CartDrawer: React.FC = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeCart}
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
+            className="absolute inset-0 bg-slate-900/50 dark:bg-black/70 backdrop-blur-sm transition-opacity"
           />
 
           {/* Slide-over Drawer */}
@@ -200,15 +200,15 @@ export const CartDrawer: React.FC = () => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 26, stiffness: 220 }}
-              className="w-screen max-w-md bg-[#0D1117] text-white border-l border-white/10 shadow-2xl flex flex-col h-full"
+              className="w-screen max-w-md bg-white dark:bg-[#0D1117] text-slate-900 dark:text-white border-l border-slate-200 dark:border-white/10 shadow-2xl flex flex-col h-full"
             >
               {/* Header */}
-              <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between bg-[#121822]/80 backdrop-blur-md">
+              <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-white/10 flex items-center justify-between bg-slate-50/90 dark:bg-[#121822]/80 backdrop-blur-md">
                 <div className="flex items-center gap-2.5">
                   {step !== 'cart' && (
                     <button
                       onClick={() => setStep('cart')}
-                      className="p-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+                      className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-200/70 dark:text-white/60 dark:hover:text-white dark:hover:bg-white/5 transition-colors"
                       aria-label="Back to Cart"
                     >
                       <ChevronLeft className="w-5 h-5" />
@@ -218,12 +218,12 @@ export const CartDrawer: React.FC = () => {
                     <ShoppingBag className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="font-bold text-sm sm:text-base text-white tracking-wide">
+                    <h2 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white tracking-wide">
                       {step === 'cart' && 'Your Shopping Cart'}
                       {step === 'checkout' && 'Direct Purchase Checkout'}
                       {step === 'success' && 'Order Confirmed'}
                     </h2>
-                    <p className="text-[11px] text-white/50">
+                    <p className="text-[11px] text-slate-500 dark:text-white/50">
                       {step === 'cart' && `${totalCount} ${totalCount === 1 ? 'item' : 'items'} in cart`}
                       {step === 'checkout' && 'Fast, secure & encrypted checkout'}
                       {step === 'success' && 'Receipt & shipping confirmation'}
@@ -234,7 +234,7 @@ export const CartDrawer: React.FC = () => {
                 <button
                   onClick={closeCart}
                   aria-label="Close Cart"
-                  className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-colors active:scale-95"
+                  className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-white/60 dark:hover:text-white transition-colors active:scale-95 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -248,11 +248,11 @@ export const CartDrawer: React.FC = () => {
                   <>
                     {items.length === 0 ? (
                       <div className="h-full flex flex-col items-center justify-center text-center py-16 px-4">
-                        <div className="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center text-white/30 mb-4">
+                        <div className="w-20 h-20 rounded-3xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-400 dark:text-white/30 mb-4">
                           <ShoppingBag className="w-10 h-10 stroke-[1.5]" />
                         </div>
-                        <h3 className="text-lg font-bold text-white mb-1">Your cart is empty</h3>
-                        <p className="text-xs sm:text-sm text-white/50 max-w-xs mb-6">
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Your cart is empty</h3>
+                        <p className="text-xs sm:text-sm text-slate-500 dark:text-white/50 max-w-xs mb-6">
                           Explore official Certified Adventures hoodies, caps, bottles, and safari tees.
                         </p>
                         <button
@@ -261,7 +261,7 @@ export const CartDrawer: React.FC = () => {
                             const el = document.getElementById('merch');
                             if (el) el.scrollIntoView({ behavior: 'smooth' });
                           }}
-                          className="px-6 py-3 rounded-xl bg-[#FF6A00] hover:bg-[#FF8526] text-black font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-[#FF6A00]/25 active:scale-95"
+                          className="px-6 py-3 rounded-xl bg-[#FF6A00] hover:bg-[#FF8526] text-white dark:text-black font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-[#FF6A00]/25 active:scale-95 cursor-pointer"
                         >
                           Explore Merch Store
                         </button>
@@ -271,16 +271,16 @@ export const CartDrawer: React.FC = () => {
                         {items.map((item) => (
                           <div
                             key={`${item.id}-${item.size || 'std'}`}
-                            className="p-3 sm:p-3.5 rounded-2xl bg-[#141B26] border border-white/5 hover:border-white/10 transition-colors flex gap-3 sm:gap-4 items-center"
+                            className="p-3 sm:p-3.5 rounded-2xl bg-slate-50 dark:bg-[#141B26] border border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-colors flex gap-3 sm:gap-4 items-center"
                           >
                             <img
                               src={item.image_url}
                               alt={item.name}
-                              className="w-16 h-16 sm:w-18 sm:h-18 rounded-xl object-cover bg-white/5 border border-white/5 flex-shrink-0"
+                              className="w-16 h-16 sm:w-18 sm:h-18 rounded-xl object-cover bg-slate-200 dark:bg-white/5 border border-slate-200 dark:border-white/5 flex-shrink-0"
                             />
 
                             <div className="flex-1 min-w-0">
-                              <h4 className="text-xs sm:text-sm font-bold text-white truncate">
+                              <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
                                 {item.name}
                               </h4>
                               <div className="flex items-center gap-2 mt-0.5 mb-2">
@@ -288,7 +288,7 @@ export const CartDrawer: React.FC = () => {
                                   KES {item.priceNumber.toLocaleString()}
                                 </span>
                                 {item.size && (
-                                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/10 text-white/70">
+                                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-white/70">
                                     Size: {item.size}
                                   </span>
                                 )}
@@ -296,27 +296,27 @@ export const CartDrawer: React.FC = () => {
 
                               {/* Stepper */}
                               <div className="flex items-center gap-2">
-                                <div className="flex items-center bg-black/40 border border-white/10 rounded-lg p-0.5">
+                                <div className="flex items-center bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-lg p-0.5">
                                   <button
                                     onClick={() => updateQuantity(item.id, -1, item.size)}
                                     aria-label="Decrease quantity"
-                                    className="w-6 h-6 rounded flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 active:scale-90 transition-all"
+                                    className="w-6 h-6 rounded flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-white/60 dark:hover:text-white dark:hover:bg-white/10 active:scale-90 transition-all"
                                   >
                                     <Minus className="w-3 h-3" />
                                   </button>
-                                  <span className="w-8 text-center text-xs font-bold text-white">
+                                  <span className="w-8 text-center text-xs font-bold text-slate-900 dark:text-white">
                                     {item.quantity}
                                   </span>
                                   <button
                                     onClick={() => updateQuantity(item.id, 1, item.size)}
                                     aria-label="Increase quantity"
-                                    className="w-6 h-6 rounded flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 active:scale-90 transition-all"
+                                    className="w-6 h-6 rounded flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-white/60 dark:hover:text-white dark:hover:bg-white/10 active:scale-90 transition-all"
                                   >
                                     <Plus className="w-3 h-3" />
                                   </button>
                                 </div>
 
-                                <span className="text-xs text-white/40">
+                                <span className="text-xs text-slate-500 dark:text-white/40">
                                   = KES {(item.priceNumber * item.quantity).toLocaleString()}
                                 </span>
                               </div>
@@ -325,7 +325,7 @@ export const CartDrawer: React.FC = () => {
                             <button
                               onClick={() => removeFromCart(item.id, item.size)}
                               aria-label="Remove item"
-                              className="p-2 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors active:scale-90"
+                              className="p-2 text-slate-400 dark:text-white/40 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors active:scale-90 cursor-pointer"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -340,20 +340,20 @@ export const CartDrawer: React.FC = () => {
                 {step === 'checkout' && (
                   <form onSubmit={handlePlaceOrder} className="space-y-4">
                     {errorMessage && (
-                      <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/40 text-red-400 text-xs">
+                      <div className="p-3 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/40 text-red-600 dark:text-red-400 text-xs">
                         {errorMessage}
                       </div>
                     )}
 
                     {/* Customer & Delivery Form */}
-                    <div className="bg-[#141B26] p-4 rounded-2xl border border-white/5 space-y-3">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-white/90 flex items-center gap-1.5">
+                    <div className="bg-slate-50 dark:bg-[#141B26] p-4 rounded-2xl border border-slate-200 dark:border-white/5 space-y-3">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white/90 flex items-center gap-1.5">
                         <MapPin className="w-3.5 h-3.5 text-[#FF6A00]" />
                         <span>Delivery Destination</span>
                       </h3>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-white/70 uppercase tracking-wider mb-1">
+                        <label className="block text-[11px] font-bold text-slate-700 dark:text-white/70 uppercase tracking-wider mb-1">
                           Full Name *
                         </label>
                         <input
@@ -362,13 +362,13 @@ export const CartDrawer: React.FC = () => {
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
                           placeholder="Your Name"
-                          className="w-full px-3 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white placeholder-white/30 text-xs sm:text-sm focus:outline-none focus:border-[#FF6A00]"
+                          className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30 text-xs sm:text-sm focus:outline-none focus:border-[#FF6A00]"
                         />
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <div>
-                          <label className="block text-[11px] font-bold text-white/70 uppercase tracking-wider mb-1">
+                          <label className="block text-[11px] font-bold text-slate-700 dark:text-white/70 uppercase tracking-wider mb-1">
                             Phone (Courier) *
                           </label>
                           <input
@@ -377,12 +377,12 @@ export const CartDrawer: React.FC = () => {
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
                             placeholder="+254 700 000 000"
-                            className="w-full px-3 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white placeholder-white/30 text-xs sm:text-sm focus:outline-none focus:border-[#FF6A00]"
+                            className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30 text-xs sm:text-sm focus:outline-none focus:border-[#FF6A00]"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-[11px] font-bold text-white/70 uppercase tracking-wider mb-1">
+                          <label className="block text-[11px] font-bold text-slate-700 dark:text-white/70 uppercase tracking-wider mb-1">
                             City / Town
                           </label>
                           <input
@@ -390,13 +390,13 @@ export const CartDrawer: React.FC = () => {
                             value={city}
                             onChange={(e) => setCity(e.target.value)}
                             placeholder="Nairobi, Mombasa, etc."
-                            className="w-full px-3 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white placeholder-white/30 text-xs sm:text-sm focus:outline-none focus:border-[#FF6A00]"
+                            className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30 text-xs sm:text-sm focus:outline-none focus:border-[#FF6A00]"
                           />
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-white/70 uppercase tracking-wider mb-1">
+                        <label className="block text-[11px] font-bold text-slate-700 dark:text-white/70 uppercase tracking-wider mb-1">
                           Street / Apartment / Office Address *
                         </label>
                         <input
@@ -405,12 +405,12 @@ export const CartDrawer: React.FC = () => {
                           value={address}
                           onChange={(e) => setAddress(e.target.value)}
                           placeholder="e.g. Westlands, Delta Corner Tower A, 4th Fl"
-                          className="w-full px-3 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white placeholder-white/30 text-xs sm:text-sm focus:outline-none focus:border-[#FF6A00]"
+                          className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30 text-xs sm:text-sm focus:outline-none focus:border-[#FF6A00]"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-white/70 uppercase tracking-wider mb-1">
+                        <label className="block text-[11px] font-bold text-slate-700 dark:text-white/70 uppercase tracking-wider mb-1">
                           Order / Dispatch Notes (Optional)
                         </label>
                         <input
@@ -418,19 +418,19 @@ export const CartDrawer: React.FC = () => {
                           value={notes}
                           onChange={(e) => setNotes(e.target.value)}
                           placeholder="Leave at reception, gate code, etc."
-                          className="w-full px-3 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white placeholder-white/30 text-xs sm:text-sm focus:outline-none focus:border-[#FF6A00]"
+                          className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30 text-xs sm:text-sm focus:outline-none focus:border-[#FF6A00]"
                         />
                       </div>
                     </div>
 
                     {/* Delivery Speed: Standard (FREE) vs Optional Express */}
-                    <div className="bg-[#141B26] p-4 rounded-2xl border border-white/5 space-y-3">
+                    <div className="bg-slate-50 dark:bg-[#141B26] p-4 rounded-2xl border border-slate-200 dark:border-white/5 space-y-3">
                       <div className="flex items-center justify-between">
-                        <label className="text-xs font-bold uppercase tracking-wider text-white/90 flex items-center gap-1.5">
+                        <label className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white/90 flex items-center gap-1.5">
                           <Truck className="w-3.5 h-3.5 text-[#FF6A00]" />
                           <span>Delivery Speed</span>
                         </label>
-                        <span className="text-[10px] text-white/50 uppercase tracking-wider">
+                        <span className="text-[10px] text-slate-500 dark:text-white/50 uppercase tracking-wider">
                           Optional Express
                         </span>
                       </div>
@@ -441,24 +441,24 @@ export const CartDrawer: React.FC = () => {
                           onClick={() => setIsExpressShipping(false)}
                           className={`p-3 rounded-xl border flex flex-col justify-between cursor-pointer transition-all ${
                             !isExpressShipping
-                              ? 'bg-[#FF6A00]/15 border-[#FF6A00] text-white'
-                              : 'bg-black/30 border-white/10 text-white/70 hover:border-white/20'
+                              ? 'bg-orange-50 dark:bg-[#FF6A00]/15 border-[#FF6A00] text-slate-900 dark:text-white'
+                              : 'bg-white dark:bg-black/30 border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/70 hover:border-slate-300 dark:hover:border-white/20'
                           }`}
                         >
                           <div className="flex items-start justify-between">
                             <div>
                               <p className="font-bold text-xs sm:text-sm">Standard Delivery</p>
-                              <p className="text-[11px] text-white/50 mt-0.5">2–4 business days</p>
+                              <p className="text-[11px] text-slate-500 dark:text-white/50 mt-0.5">2–4 business days</p>
                             </div>
-                            <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold text-[10px]">
+                            <span className="px-2 py-0.5 rounded bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-[10px]">
                               FREE
                             </span>
                           </div>
-                          <div className="mt-2.5 flex items-center gap-1.5 text-[10px] text-white/60">
+                          <div className="mt-2.5 flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-white/60">
                             <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
-                              !isExpressShipping ? 'border-[#FF6A00] bg-[#FF6A00]' : 'border-white/30'
+                              !isExpressShipping ? 'border-[#FF6A00] bg-[#FF6A00]' : 'border-slate-300 dark:border-white/30'
                             }`}>
-                              {!isExpressShipping && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
+                              {!isExpressShipping && <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-black" />}
                             </div>
                             <span>Default Delivery</span>
                           </div>
@@ -469,8 +469,8 @@ export const CartDrawer: React.FC = () => {
                           onClick={() => setIsExpressShipping(true)}
                           className={`p-3 rounded-xl border flex flex-col justify-between cursor-pointer transition-all ${
                             isExpressShipping
-                              ? 'bg-[#FF6A00]/15 border-[#FF6A00] text-white'
-                              : 'bg-black/30 border-white/10 text-white/70 hover:border-white/20'
+                              ? 'bg-orange-50 dark:bg-[#FF6A00]/15 border-[#FF6A00] text-slate-900 dark:text-white'
+                              : 'bg-white dark:bg-black/30 border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/70 hover:border-slate-300 dark:hover:border-white/20'
                           }`}
                         >
                           <div className="flex items-start justify-between">
@@ -479,17 +479,17 @@ export const CartDrawer: React.FC = () => {
                                 <span>Express Priority</span>
                                 <span className="text-[#FF6A00]">⚡</span>
                               </p>
-                              <p className="text-[11px] text-white/50 mt-0.5">Same/Next business day</p>
+                              <p className="text-[11px] text-slate-500 dark:text-white/50 mt-0.5">Same/Next business day</p>
                             </div>
                             <span className="font-bold text-xs text-[#FF6A00]">
                               +KES 350
                             </span>
                           </div>
-                          <div className="mt-2.5 flex items-center gap-1.5 text-[10px] text-white/60">
+                          <div className="mt-2.5 flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-white/60">
                             <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
-                              isExpressShipping ? 'border-[#FF6A00] bg-[#FF6A00]' : 'border-white/30'
+                              isExpressShipping ? 'border-[#FF6A00] bg-[#FF6A00]' : 'border-slate-300 dark:border-white/30'
                             }`}>
-                              {isExpressShipping && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
+                              {isExpressShipping && <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-black" />}
                             </div>
                             <span>Optional Upgrade</span>
                           </div>
@@ -498,9 +498,9 @@ export const CartDrawer: React.FC = () => {
                     </div>
 
                     {/* Payment Method: Exclusive Pay After Delivery */}
-                    <div className="bg-[#141B26] p-4 rounded-2xl border border-[#FF6A00]/30 space-y-3">
+                    <div className="bg-slate-50 dark:bg-[#141B26] p-4 rounded-2xl border border-[#FF6A00]/30 space-y-3">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-xs font-bold uppercase tracking-wider text-white/90 flex items-center gap-1.5">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white/90 flex items-center gap-1.5">
                           <Banknote className="w-3.5 h-3.5 text-[#FF6A00]" />
                           <span>Payment Method</span>
                         </h3>
@@ -510,40 +510,40 @@ export const CartDrawer: React.FC = () => {
                       </div>
 
                       {/* Pay After Delivery Informational Card */}
-                      <div className="p-3.5 rounded-xl bg-gradient-to-br from-[#1a2332] to-[#121824] border border-[#FF6A00]/40 space-y-2.5">
+                      <div className="p-3.5 rounded-xl bg-gradient-to-br from-orange-50 to-amber-50/50 dark:from-[#1a2332] dark:to-[#121824] border border-[#FF6A00]/40 space-y-2.5">
                         <div className="flex items-start gap-3">
                           <div className="w-8 h-8 rounded-lg bg-[#FF6A00]/20 text-[#FF6A00] flex items-center justify-center shrink-0 mt-0.5">
                             <Truck className="w-4 h-4" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
-                              <p className="font-bold text-xs sm:text-sm text-white">Pay After Delivery</p>
+                              <p className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">Pay After Delivery</p>
                               <CheckCircle2 className="w-4 h-4 text-[#FF6A00]" />
                             </div>
-                            <p className="text-[11px] text-white/70 mt-1 leading-relaxed">
-                              Zero upfront charges. Inspect your merchandise upon arrival, then pay via <strong className="text-white">Cash or M-Pesa</strong> directly to the courier.
+                            <p className="text-[11px] text-slate-600 dark:text-white/70 mt-1 leading-relaxed">
+                              Zero upfront charges. Inspect your merchandise upon arrival, then pay via <strong className="text-slate-900 dark:text-white">Cash or M-Pesa</strong> directly to the courier.
                             </p>
                           </div>
                         </div>
 
-                        <div className="pt-2 border-t border-white/10 flex items-center gap-2 text-[10px] text-emerald-400 font-medium">
-                          <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
+                        <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex items-center gap-2 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                          <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                           <span>Safe & secure: Inspect your items first before paying.</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Order summary in checkout */}
-                    <div className="bg-[#141B26] p-4 rounded-2xl border border-white/5 space-y-2 text-xs">
-                      <div className="flex justify-between text-white/60">
+                    <div className="bg-slate-50 dark:bg-[#141B26] p-4 rounded-2xl border border-slate-200 dark:border-white/5 space-y-2 text-xs">
+                      <div className="flex justify-between text-slate-600 dark:text-white/60">
                         <span>Items ({totalCount})</span>
                         <span>KES {subtotal.toLocaleString()}</span>
                       </div>
-                      <div className="flex justify-between text-white/60">
+                      <div className="flex justify-between text-slate-600 dark:text-white/60">
                         <span>{isExpressShipping ? 'Priority Express Shipping' : 'Standard Delivery'}</span>
-                        <span>{isExpressShipping ? 'KES 350' : <strong className="text-emerald-400 font-bold">FREE</strong>}</span>
+                        <span>{isExpressShipping ? 'KES 350' : <strong className="text-emerald-600 dark:text-emerald-400 font-bold">FREE</strong>}</span>
                       </div>
-                      <div className="pt-2 border-t border-white/10 flex justify-between font-bold text-sm text-white">
+                      <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex justify-between font-bold text-sm text-slate-900 dark:text-white">
                         <span>Grand Total Due</span>
                         <span className="text-[#FF6A00] text-base">KES {grandTotal.toLocaleString()}</span>
                       </div>
@@ -552,7 +552,7 @@ export const CartDrawer: React.FC = () => {
                     <button
                       type="submit"
                       disabled={isProcessing}
-                      className="w-full min-h-[50px] py-3.5 px-4 rounded-xl bg-[#FF6A00] hover:bg-[#FF8526] text-black font-bold uppercase tracking-wider text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xl shadow-[#FF6A00]/30 active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
+                      className="w-full min-h-[50px] py-3.5 px-4 rounded-xl bg-[#FF6A00] hover:bg-[#FF8526] text-white dark:text-black font-bold uppercase tracking-wider text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xl shadow-[#FF6A00]/30 active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
                     >
                       {isProcessing ? (
                         <>
@@ -572,52 +572,52 @@ export const CartDrawer: React.FC = () => {
                 {/* 3. ORDER CONFIRMATION / RECEIPT VIEW */}
                 {step === 'success' && completedOrder && (
                   <div className="py-6 text-center space-y-5 animate-fadeIn">
-                    <div className="w-16 h-16 rounded-2xl bg-green-500/20 text-green-400 border border-green-500/40 flex items-center justify-center mx-auto shadow-lg shadow-green-500/20">
+                    <div className="w-16 h-16 rounded-2xl bg-green-500/15 dark:bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/40 flex items-center justify-center mx-auto shadow-lg shadow-green-500/20">
                       <CheckCircle2 className="w-8 h-8" />
                     </div>
 
                     <div>
-                      <h3 className="text-xl font-bold text-white mb-1">
+                      <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
                         Thank You For Your Order!
                       </h3>
-                      <p className="text-xs text-white/60">
+                      <p className="text-xs text-slate-600 dark:text-white/60">
                         Your merchandise is being prepared for dispatch.
                       </p>
                     </div>
 
                     {/* Receipt Card */}
-                    <div className="bg-[#141B26] p-4 rounded-2xl border border-white/10 text-left space-y-3 text-xs">
-                      <div className="flex justify-between pb-2 border-b border-white/10">
-                        <span className="text-white/50">Order Reference</span>
+                    <div className="bg-slate-50 dark:bg-[#141B26] p-4 rounded-2xl border border-slate-200 dark:border-white/10 text-left space-y-3 text-xs">
+                      <div className="flex justify-between pb-2 border-b border-slate-200 dark:border-white/10">
+                        <span className="text-slate-500 dark:text-white/50">Order Reference</span>
                         <strong className="text-[#FF6A00] font-mono">{completedOrder.orderId}</strong>
                       </div>
 
                       <div className="space-y-1.5">
-                        <span className="text-white/50 text-[11px] uppercase tracking-wider font-bold">Ordered Gear</span>
+                        <span className="text-slate-500 dark:text-white/50 text-[11px] uppercase tracking-wider font-bold">Ordered Gear</span>
                         {completedOrder.items.map((it, idx) => (
-                          <div key={idx} className="flex justify-between text-white/80">
+                          <div key={idx} className="flex justify-between text-slate-800 dark:text-white/80">
                             <span className="truncate pr-2">{it.quantity}x {it.name} ({it.size || 'STD'})</span>
                             <span>KES {(it.priceNumber * it.quantity).toLocaleString()}</span>
                           </div>
                         ))}
                       </div>
 
-                      <div className="pt-2 border-t border-white/10 space-y-1">
-                        <div className="flex justify-between text-white/60">
+                      <div className="pt-2 border-t border-slate-200 dark:border-white/10 space-y-1">
+                        <div className="flex justify-between text-slate-600 dark:text-white/60">
                           <span>Amount Due on Delivery</span>
-                          <strong className="text-white">KES {completedOrder.total.toLocaleString()}</strong>
+                          <strong className="text-slate-900 dark:text-white">KES {completedOrder.total.toLocaleString()}</strong>
                         </div>
-                        <div className="flex justify-between text-white/60">
+                        <div className="flex justify-between text-slate-600 dark:text-white/60">
                           <span>Payment Method</span>
                           <span className="text-[#FF6A00] font-semibold">Pay After Delivery</span>
                         </div>
-                        <div className="flex justify-between text-white/60">
+                        <div className="flex justify-between text-slate-600 dark:text-white/60">
                           <span>Delivery to</span>
                           <span className="truncate max-w-[180px] text-right">{completedOrder.deliveryAddress}</span>
                         </div>
                       </div>
 
-                      <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 flex items-center gap-2 text-[11px] text-white/70">
+                      <div className="p-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/5 flex items-center gap-2 text-[11px] text-slate-700 dark:text-white/70">
                         <Clock className="w-3.5 h-3.5 text-[#FF6A00] flex-shrink-0" />
                         <span>Estimated delivery: <strong>{completedOrder.shipping > 0 ? 'Within 24 Hours (Priority Express)' : '2–4 business days (Standard Delivery)'}</strong></span>
                       </div>
@@ -629,7 +629,7 @@ export const CartDrawer: React.FC = () => {
                           closeCart();
                           setStep('cart');
                         }}
-                        className="w-full py-3.5 px-4 rounded-xl bg-[#FF6A00] hover:bg-[#FF8526] text-black font-bold uppercase tracking-wider text-xs transition-all shadow-lg shadow-[#FF6A00]/20 active:scale-95"
+                        className="w-full py-3.5 px-4 rounded-xl bg-[#FF6A00] hover:bg-[#FF8526] text-white dark:text-black font-bold uppercase tracking-wider text-xs transition-all shadow-lg shadow-[#FF6A00]/20 active:scale-95 cursor-pointer"
                       >
                         Continue Exploring
                       </button>
@@ -640,17 +640,17 @@ export const CartDrawer: React.FC = () => {
 
               {/* Cart Footer (Subtotal & Checkout CTA) */}
               {step === 'cart' && items.length > 0 && (
-                <div className="p-4 sm:p-5 border-t border-white/10 bg-[#121822]/90 backdrop-blur-md space-y-3">
+                <div className="p-4 sm:p-5 border-t border-slate-200 dark:border-white/10 bg-slate-50/95 dark:bg-[#121822]/90 backdrop-blur-md space-y-3">
                   <div className="space-y-1.5 text-xs">
-                    <div className="flex justify-between text-white/60">
+                    <div className="flex justify-between text-slate-600 dark:text-white/60">
                       <span>Subtotal</span>
-                      <span className="font-semibold text-white">KES {subtotal.toLocaleString()}</span>
+                      <span className="font-semibold text-slate-900 dark:text-white">KES {subtotal.toLocaleString()}</span>
                     </div>
-                    <div className="flex justify-between text-white/60">
+                    <div className="flex justify-between text-slate-600 dark:text-white/60">
                       <span>Delivery</span>
-                      <span className="font-medium text-emerald-400">FREE Standard</span>
+                      <span className="font-medium text-emerald-600 dark:text-emerald-400">FREE Standard</span>
                     </div>
-                    <div className="pt-2 border-t border-white/10 flex justify-between font-bold text-sm text-white">
+                    <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex justify-between font-bold text-sm text-slate-900 dark:text-white">
                       <span>Subtotal</span>
                       <span className="text-[#FF6A00] text-base">KES {subtotal.toLocaleString()}</span>
                     </div>
@@ -658,15 +658,15 @@ export const CartDrawer: React.FC = () => {
 
                   <button
                     onClick={handleProceedToCheckout}
-                    className="w-full min-h-[50px] py-3.5 px-4 rounded-xl bg-[#FF6A00] hover:bg-[#FF8526] text-black font-bold uppercase tracking-wider text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xl shadow-[#FF6A00]/30 active:scale-95 transition-all cursor-pointer"
+                    className="w-full min-h-[50px] py-3.5 px-4 rounded-xl bg-[#FF6A00] hover:bg-[#FF8526] text-white dark:text-black font-bold uppercase tracking-wider text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xl shadow-[#FF6A00]/30 active:scale-95 transition-all cursor-pointer"
                   >
                     <span>Proceed to Checkout</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
 
-                  <div className="flex items-center justify-center gap-4 text-[11px] text-white/40 pt-1">
+                  <div className="flex items-center justify-center gap-4 text-[11px] text-slate-500 dark:text-white/40 pt-1">
                     <span className="flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5 text-green-400" />
+                      <ShieldCheck className="w-3.5 h-3.5 text-green-500 dark:text-green-400" />
                       <span>Encrypted Checkout</span>
                     </span>
                     <span>•</span>

@@ -163,9 +163,16 @@ export function EventsManager() {
                 <div>
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="font-bold text-lg text-gray-900 truncate">{event.title}</h3>
-                    <span className={`px-2 py-1 text-[10px] uppercase font-bold rounded-full flex-shrink-0 ${event.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                      {event.is_active ? 'Active' : 'Draft'}
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      {new Date(event.event_date).getTime() <= Date.now() && (
+                        <span className="px-2 py-1 text-[10px] uppercase font-bold rounded-full bg-red-100 text-red-700">
+                          Sold Out
+                        </span>
+                      )}
+                      <span className={`px-2 py-1 text-[10px] uppercase font-bold rounded-full ${event.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                        {event.is_active ? 'Active' : 'Draft'}
+                      </span>
+                    </div>
                   </div>
                   <p className="text-sm text-gray-500 line-clamp-2 mt-1">{event.description}</p>
                 </div>

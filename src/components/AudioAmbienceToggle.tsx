@@ -97,20 +97,20 @@ export const AudioAmbienceToggle: React.FC = () => {
     <div className="fixed bottom-6 right-6 z-40">
       <button
         onClick={toggleSound}
-        className={`group flex items-center gap-2 px-3.5 py-2.5 rounded-full text-xs font-semibold backdrop-blur-md transition-all duration-300 shadow-xl border ${
+        className={`group flex items-center gap-2 px-3.5 py-2.5 rounded-full text-xs font-semibold backdrop-blur-md transition-all duration-300 shadow-xl border cursor-pointer ${
           isPlaying
-            ? 'bg-[#E67A3A]/20 border-[#E67A3A] text-[#F4E8D2] shadow-[#E67A3A]/30'
-            : 'bg-[#08121B]/80 border-[#F4E8D2]/20 text-[#F4E8D2]/80 hover:border-[#E67A3A]/60 hover:text-white'
+            ? 'bg-[#E67A3A] dark:bg-[#E67A3A]/20 border-[#E67A3A] text-white dark:text-[#F4E8D2] shadow-[#E67A3A]/30'
+            : 'bg-white/95 border-slate-200 text-slate-800 hover:border-[#E67A3A] hover:text-[#E67A3A] dark:bg-[#08121B]/80 dark:border-[#F4E8D2]/20 dark:text-[#F4E8D2]/80 dark:hover:border-[#E67A3A]/60 dark:hover:text-white'
         }`}
         title="Toggle Ambient Savannah Breeze & Campfire Sound"
       >
         {isPlaying ? (
           <>
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E67A3A] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#E67A3A]"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white dark:bg-[#E67A3A] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-white dark:bg-[#E67A3A]"></span>
             </span>
-            <Volume2 className="w-4 h-4 text-[#E67A3A] animate-pulse" />
+            <Volume2 className="w-4 h-4 text-white dark:text-[#E67A3A] animate-pulse" />
             <span className="hidden sm:inline">Savannah Atmosphere ON</span>
           </>
         ) : (
