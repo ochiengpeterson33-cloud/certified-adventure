@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { LoadingScreen } from './components/LoadingScreen';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { OurExperiences } from './components/OurExperiences';
@@ -87,9 +86,6 @@ export function PublicSite() {
     <div className="min-h-screen bg-[#FAF9F6] text-slate-900 dark:bg-[#070707] dark:text-white font-['Inter',sans-serif] selection:bg-[#FF6A00] selection:text-white relative transition-colors duration-300">
       {/* Sophisticated Ambient Background Glow */}
       <div className="fixed inset-0 pointer-events-none bg-ambient-glow opacity-20 dark:opacity-40 z-0" />
-
-      {/* Brand Intro Loading Screen */}
-      <LoadingScreen />
 
       {/* Navigation Header */}
       <Navbar
