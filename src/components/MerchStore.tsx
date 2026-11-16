@@ -126,9 +126,9 @@ export const MerchStore: React.FC = () => {
       {/* Background ambient lighting */}
       <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-[#FF6A00]/10 dark:bg-[#FF6A00]/5 blur-[120px] rounded-full pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 sm:mb-14 gap-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 sm:mb-14 gap-6 px-1 sm:px-0">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FF6A00]/10 border border-[#FF6A00]/30 text-[#FF6A00] text-xs font-bold uppercase tracking-wider mb-3">
               <Sparkles className="w-3.5 h-3.5" />
@@ -161,7 +161,7 @@ export const MerchStore: React.FC = () => {
         </div>
 
         {/* Product Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-7">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-7">
           {filteredProducts.map((prod, idx) => {
             const isAdded = addedIds[prod.id];
             const isLiked = likedIds[prod.id];
@@ -175,7 +175,7 @@ export const MerchStore: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: idx * 0.08 }}
-                className="group relative rounded-3xl overflow-hidden bg-white dark:bg-[#121721] border border-slate-200 dark:border-white/10 hover:border-[#FF6A00]/50 transition-all duration-300 shadow-md dark:shadow-xl hover:shadow-xl flex flex-col justify-between"
+                className="group relative rounded-2xl sm:rounded-3xl overflow-hidden bg-white dark:bg-[#121721] border border-slate-200 dark:border-white/10 hover:border-[#FF6A00]/50 transition-all duration-300 shadow-md dark:shadow-xl hover:shadow-xl flex flex-col justify-between min-w-0"
               >
                 {/* Image Section */}
                 <div className="relative aspect-square overflow-hidden bg-slate-100 dark:bg-black/40">
@@ -190,13 +190,13 @@ export const MerchStore: React.FC = () => {
                   <button
                     onClick={() => toggleLike(prod.id)}
                     aria-label="Save to Wishlist"
-                    className={`absolute top-3.5 right-3.5 w-10 h-10 rounded-xl backdrop-blur-md flex items-center justify-center transition-all z-10 active:scale-90 ${
+                    className={`absolute top-2.5 right-2.5 sm:top-3.5 sm:right-3.5 w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl backdrop-blur-md flex items-center justify-center transition-all z-10 active:scale-90 ${
                       isLiked
                         ? 'bg-red-500 text-white'
                         : 'bg-black/50 text-white/80 hover:text-white border border-white/10'
                     }`}
                   >
-                    <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+                    <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isLiked ? 'fill-current' : ''}`} />
                   </button>
 
                   {/* Desktop Hover Quick Overlay */}
@@ -225,21 +225,21 @@ export const MerchStore: React.FC = () => {
                 </div>
 
                 {/* Content Details */}
-                <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
+                <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between min-w-0">
                   <div>
-                    <div className="flex items-start justify-between gap-2 mb-1.5">
-                      <h3 className="text-slate-900 dark:text-white font-bold text-sm tracking-wide group-hover:text-[#FF6A00] transition-colors line-clamp-1">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-0.5 sm:gap-2 mb-1.5">
+                      <h3 className="text-slate-900 dark:text-white font-bold text-xs sm:text-sm tracking-wide group-hover:text-[#FF6A00] transition-colors line-clamp-2 sm:line-clamp-1 leading-snug">
                         {prod.name}
                       </h3>
-                      <span className="font-bold text-[#FF6A00] text-sm whitespace-nowrap">
+                      <span className="font-bold text-[#FF6A00] text-xs sm:text-sm whitespace-nowrap">
                         {prod.price}
                       </span>
                     </div>
 
                     {/* Sizes Selection */}
                     {availableSizes.length > 1 && (
-                      <div className="flex items-center gap-1.5 mt-2.5 mb-3">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-white/40 mr-1">
+                      <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 mt-2 mb-2 sm:mt-2.5 sm:mb-3">
+                        <span className="text-[9px] sm:text-[10px] uppercase font-bold text-slate-400 dark:text-white/40 mr-0.5 sm:mr-1">
                           Size:
                         </span>
                         {availableSizes.map((s) => (
@@ -247,7 +247,7 @@ export const MerchStore: React.FC = () => {
                             key={s}
                             type="button"
                             onClick={() => handleSizeChange(prod.id, s)}
-                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all ${
+                            className={`px-1.5 sm:px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-bold transition-all ${
                               currentSize === s
                                 ? 'bg-[#FF6A00] text-white dark:text-black ring-1 ring-[#FF6A00]'
                                 : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200 dark:bg-white/5 dark:text-white/60 dark:hover:text-white dark:border-white/10'
@@ -261,10 +261,10 @@ export const MerchStore: React.FC = () => {
                   </div>
 
                   {/* Mobile & Tablet Visible Add to Cart Button */}
-                  <div className="mt-3 pt-3 border-t border-slate-100 dark:border-white/5 flex lg:hidden">
+                  <div className="mt-2.5 sm:mt-3 pt-2.5 sm:pt-3 border-t border-slate-100 dark:border-white/5 flex lg:hidden">
                     <button
                       onClick={() => handleAddToCart(prod)}
-                      className={`w-full min-h-[44px] py-2.5 px-3 rounded-xl font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer ${
+                      className={`w-full min-h-[38px] sm:min-h-[44px] py-2 px-2 sm:py-2.5 sm:px-3 rounded-xl font-bold uppercase tracking-wider text-[10px] sm:text-xs flex items-center justify-center gap-1.5 sm:gap-2 transition-all active:scale-95 cursor-pointer ${
                         isAdded
                           ? 'bg-green-500 text-white shadow-md shadow-green-500/20'
                           : 'bg-[#FF6A00] text-white dark:text-black shadow-md shadow-[#FF6A00]/25'
@@ -272,13 +272,13 @@ export const MerchStore: React.FC = () => {
                     >
                       {isAdded ? (
                         <>
-                          <Check className="w-4 h-4 stroke-[3]" />
-                          <span>Added to Cart!</span>
+                          <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />
+                          <span>Added!</span>
                         </>
                       ) : (
                         <>
-                          <ShoppingCart className="w-4 h-4" />
-                          <span>Add to Cart</span>
+                          <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                          <span className="truncate">Add to Cart</span>
                         </>
                       )}
                     </button>
