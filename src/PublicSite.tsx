@@ -15,7 +15,6 @@ import { Footer } from './components/Footer';
 import { ExperienceModal } from './components/ExperienceModal';
 import { BookingModal } from './components/BookingModal';
 import { CustomTripBuilder } from './components/CustomTripBuilder';
-import { AudioAmbienceToggle } from './components/AudioAmbienceToggle';
 import { ExperienceItem } from './types';
 
 export function PublicSite() {
@@ -153,9 +152,6 @@ export function PublicSite() {
         onClose={() => setIsAiPlannerOpen(false)}
         onOpenBookingModal={handleOpenBookingModal}
       />
-
-      {/* Optional Ambient Nature Sound Synth Toggle */}
-      <AudioAmbienceToggle />
     </div>
   );
 }
