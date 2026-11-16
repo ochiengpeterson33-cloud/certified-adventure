@@ -89,138 +89,148 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
 
   return (
     <header
-  className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 font-['Poppins'] ${
-    isScrolled || mobileMenuOpen
-      ? 'bg-white/90 backdrop-blur-2xl border-b border-slate-200 shadow-md'
-      : 'bg-white/80 backdrop-blur-md'
-  }`} 
->
-      {/* Top Bar - #111111 */}
-      <div className={`w-full bg-slate-900 text-slate-200 text-[10px] sm:text-[11px] px-4 sm:px-8 transition-all duration-500 overflow-hidden ${
-  isScrolled
-    ? 'h-0 opacity-0'
-    : 'h-[34px] flex items-center'
-}`}>
-        <div className="max-w-[1400px] mx-auto flex items-center justify-between h-full">
-          <div className="flex items-center gap-3 sm:gap-6">
-            <div className="flex items-center gap-2 hover:text-[#FF7A00] transition-colors cursor-pointer">
-              <MapPin className="w-3.5 h-3.5 text-[#FF7A00]" />
-              <span>Nairobi, Kenya</span>
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 font-['Poppins'] ${
+        isScrolled || mobileMenuOpen
+          ? 'bg-white/95 backdrop-blur-2xl border-b border-slate-200 shadow-md'
+          : 'bg-white/85 backdrop-blur-md'
+      }`}
+    >
+      {/* Top Bar */}
+      <div
+        className={`w-full bg-slate-900 text-slate-200 text-[10px] sm:text-[11px] px-4 sm:px-6 xl:px-8 transition-all duration-500 overflow-hidden ${
+          isScrolled ? 'h-0 opacity-0' : 'h-[34px] flex items-center'
+        }`}
+      >
+        <div className="w-full max-w-[1440px] mx-auto flex items-center justify-between h-full">
+          <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+            <div className="flex items-center gap-2 hover:text-[#FF7A00] transition-colors cursor-pointer shrink-0">
+              <MapPin className="w-3.5 h-3.5 text-[#FF7A00] shrink-0" />
+              <span className="whitespace-nowrap">Nairobi, Kenya</span>
             </div>
-            <div className="flex items-center gap-2 hover:text-[#FF7A00] transition-colors cursor-pointer hidden md:flex">
-              <Phone className="w-3.5 h-3.5 text-[#FF7A00]" />
-              <span>+254 707630535</span>
+            <div className="hidden md:flex items-center gap-2 hover:text-[#FF7A00] transition-colors cursor-pointer shrink-0">
+              <Phone className="w-3.5 h-3.5 text-[#FF7A00] shrink-0" />
+              <span className="whitespace-nowrap">+254 707630535</span>
             </div>
-            <div className="flex items-center gap-2 hover:text-[#FF7A00] transition-colors cursor-pointer hidden sm:flex">
-              <Mail className="w-3.5 h-3.5 text-[#FF7A00]" />
-              <span>hello@certified.com</span>
+            <div className="hidden sm:flex items-center gap-2 hover:text-[#FF7A00] transition-colors cursor-pointer shrink-0">
+              <Mail className="w-3.5 h-3.5 text-[#FF7A00] shrink-0" />
+              <span className="whitespace-nowrap">hello@certified.com</span>
             </div>
           </div>
-          <div className="flex items-center gap-3 sm:gap-4">
-            <a href="#" className="hover:text-[#FF7A00] transition-colors"><Facebook className="w-4 h-4" /></a>
-            <a href="#" className="hover:text-[#FF7A00] transition-colors"><Instagram className="w-4 h-4" /></a>
-            <a href="#" className="hover:text-[#FF7A00] transition-colors"><MessageCircle className="w-4 h-4" /></a>
-            <a href="#" className="hover:text-[#FF7A00] transition-colors"><Twitter className="w-4 h-4" /></a>
+          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+            <a href="#" aria-label="Facebook" className="hover:text-[#FF7A00] transition-colors"><Facebook className="w-4 h-4" /></a>
+            <a href="#" aria-label="Instagram" className="hover:text-[#FF7A00] transition-colors"><Instagram className="w-4 h-4" /></a>
+            <a href="#" aria-label="Messages" className="hover:text-[#FF7A00] transition-colors"><MessageCircle className="w-4 h-4" /></a>
+            <a href="#" aria-label="Twitter" className="hover:text-[#FF7A00] transition-colors"><Twitter className="w-4 h-4" /></a>
           </div>
         </div>
       </div>
 
       {/* Main Nav */}
-      <div className={`max-w-[1400px] mx-auto px-3.5 sm:px-6 lg:px-8 transition-all duration-500 ${isScrolled ? 'h-[72px] sm:h-[80px]' : 'h-[66px] sm:h-[72px]'}`}>
-        <div className="flex items-center justify-between h-full w-full">
-          {/* Logo */}
-          <div onClick={() => handleLinkClick('home')} className="cursor-pointer flex items-center mr-2 sm:mr-6 lg:mr-12 min-w-0 flex-1 sm:flex-initial">
-             <Logo variant="full" darkText={true} showTagline={true} />
+      <div className={`w-full max-w-[1440px] mx-auto px-3.5 sm:px-6 2xl:px-8 transition-all duration-500 ${isScrolled ? 'h-[72px] sm:h-[78px]' : 'h-[66px] sm:h-[74px]'}`}>
+        <div className="flex items-center justify-between gap-3 sm:gap-4 xl:gap-3 min-[1400px]:gap-5 2xl:gap-8 h-full w-full">
+          {/* 1. Dedicated Logo Flex Container */}
+          <div
+            onClick={() => handleLinkClick('home')}
+            className="flex items-center min-w-0 flex-1 sm:flex-initial sm:shrink-0 cursor-pointer"
+          >
+            <Logo variant="full" darkText={true} showTagline={true} compactHeader={true} />
           </div>
 
-          {/* Center Links */}
-          <nav className="hidden lg:flex items-center gap-6 xl:gap-12 h-full">
-            {navLinks.map((link) => (
-              <div 
-                key={link.id}
-                className="h-full flex items-center relative"
-                onMouseEnter={() => link.hasMegaMenu && setMegaMenuOpen(true)}
-                onMouseLeave={() => link.hasMegaMenu && setMegaMenuOpen(false)}
-              >
-                <button
-                  onClick={() => link.hasMegaMenu ? setMegaMenuOpen(!megaMenuOpen) : handleLinkClick(link.id)}
-                  className={`relative font-medium text-[15px] text-slate-700 hover:text-[#F97316] transition-all duration-300 flex items-center gap-1 group ${
-                    activeSection === link.id ? 'text-[#FF7A00]' : 'text-gray-800 hover:text-[#FF7A00]'
-                  }`}
+          {/* 2. Dedicated Center Navigation Links Container */}
+          <nav
+            aria-label="Main Navigation"
+            className="hidden xl:flex items-center justify-center flex-1 min-w-0 h-full"
+          >
+            <div className="flex items-center justify-center gap-2.5 min-[1400px]:gap-4 2xl:gap-5 h-full">
+              {navLinks.map((link) => (
+                <div
+                  key={link.id}
+                  className="h-full flex items-center relative shrink-0"
+                  onMouseEnter={() => link.hasMegaMenu && setMegaMenuOpen(true)}
+                  onMouseLeave={() => link.hasMegaMenu && setMegaMenuOpen(false)}
                 >
-                  {link.name}
-                  {link.hasMegaMenu && <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${megaMenuOpen ? 'rotate-180' : ''}`} />}
-                  
-                  {/* Underline animation */}
-                  <span className={`absolute -bottom-1 left-0 h-[3px] rounded-full bg-[#FF7A00] transition-all duration-300 ${
-                    activeSection === link.id ? 'w-full' : 'w-0 group-hover:w-full'
-                  }`}></span>
-                </button>
+                  <button
+                    onClick={() => link.hasMegaMenu ? setMegaMenuOpen(!megaMenuOpen) : handleLinkClick(link.id)}
+                    className={`relative font-medium text-[11.5px] min-[1400px]:text-[13px] 2xl:text-[13.5px] min-[1400px]:tracking-wide whitespace-nowrap transition-all duration-300 flex items-center gap-1 py-1.5 group cursor-pointer ${
+                      activeSection === link.id ? 'text-[#FF7A00]' : 'text-gray-800 hover:text-[#FF7A00]'
+                    }`}
+                  >
+                    <span>{link.name}</span>
+                    {link.hasMegaMenu && <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform duration-300 ${megaMenuOpen ? 'rotate-180' : ''}`} />}
 
-                {/* Mega Menu Dropdown */}
-                {link.hasMegaMenu && (
-                  <AnimatePresence>
-                    {megaMenuOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 15 }}
-                        transition={{ duration: 0.3 }}
-                        className="absolute top-[100%] left-1/2 -translate-x-1/2 w-[95vw] lg:w-[900px] bg-white rounded-3xl shadow-xl border border-slate-200 p-6 overflow-hidden z-50 cursor-default"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className="flex justify-between items-center mb-6">
-                          <h3 className="text-xl font-bold text-gray-900">Featured Adventures</h3>
-                          <button onClick={() => { handleLinkClick('packages'); setMegaMenuOpen(false); }} className="text-[#FF7A00] font-semibold text-sm hover:underline flex items-center gap-1">
-                            View All <ArrowRight className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <div className="grid grid-cols-4 gap-4">
-                          {featuredPackages.map((pkg: any, idx: number) => (
-                            <div key={idx} onClick={() => { onOpenBookingModal(pkg.title); setMegaMenuOpen(false); }} className="group cursor-pointer rounded-xl overflow-hidden bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 hover:shadow-xl transition-all duration-300">
-                              <div className="aspect-[4/3] overflow-hidden relative">
-                                <img loading="lazy" src={pkg.image || 'https://images.unsplash.com/photo-1516426122078-c23e76319801'} alt={pkg.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                              </div>
-                              <div className="p-4">
-                                <h4 className="font-bold text-gray-900 text-sm mb-1 line-clamp-1 group-hover:text-[#FF7A00] transition-colors">{pkg.title}</h4>
-                                <p className="text-xs text-gray-500 line-clamp-2 mb-3">{pkg.description || 'Explore this amazing destination with us.'}</p>
-                                <div className="flex items-center justify-between">
-                                  <span className="font-bold text-[#FF7A00] text-sm">${pkg.price || '999'}</span>
-                                  <button className="text-xs font-bold text-gray-900 bg-gray-200 px-3 py-1.5 rounded-lg group-hover:bg-[#FF7A00] group-hover:text-white transition-colors">
-                                    View
-                                  </button>
+                    {/* Underline animation */}
+                    <span
+                      className={`absolute bottom-0 left-0 h-[3px] rounded-full bg-[#FF7A00] transition-all duration-300 ${
+                        activeSection === link.id ? 'w-full' : 'w-0 group-hover:w-full'
+                      }`}
+                    />
+                  </button>
+
+                  {/* Mega Menu Dropdown */}
+                  {link.hasMegaMenu && (
+                    <AnimatePresence>
+                      {megaMenuOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 15 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 15 }}
+                          transition={{ duration: 0.3 }}
+                          className="absolute top-full left-1/2 -translate-x-1/2 w-[90vw] max-w-[880px] bg-white rounded-3xl shadow-xl border border-slate-200 p-6 overflow-hidden z-50 cursor-default"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-gray-900">Featured Adventures</h3>
+                            <button onClick={() => { handleLinkClick('packages'); setMegaMenuOpen(false); }} className="text-[#FF7A00] font-semibold text-sm hover:underline flex items-center gap-1">
+                              View All <ArrowRight className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-4 gap-4">
+                            {featuredPackages.map((pkg: any, idx: number) => (
+                              <div key={idx} onClick={() => { onOpenBookingModal(pkg.title); setMegaMenuOpen(false); }} className="group cursor-pointer rounded-xl overflow-hidden bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 hover:shadow-xl transition-all duration-300">
+                                <div className="aspect-[4/3] overflow-hidden relative">
+                                  <img loading="lazy" src={pkg.image || 'https://images.unsplash.com/photo-1516426122078-c23e76319801'} alt={pkg.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                </div>
+                                <div className="p-4">
+                                  <h4 className="font-bold text-gray-900 text-sm mb-1 line-clamp-1 group-hover:text-[#FF7A00] transition-colors">{pkg.title}</h4>
+                                  <p className="text-xs text-gray-500 line-clamp-2 mb-3">{pkg.description || 'Explore this amazing destination with us.'}</p>
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-bold text-[#FF7A00] text-sm">${pkg.price || '999'}</span>
+                                    <button className="text-xs font-bold text-gray-900 bg-gray-200 px-3 py-1.5 rounded-lg group-hover:bg-[#FF7A00] group-hover:text-white transition-colors">
+                                      View
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                )}
-              </div>
-            ))}
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  )}
+                </div>
+              ))}
+            </div>
           </nav>
 
-          {/* Right Icons & CTA */}
-          <div className="hidden lg:flex items-center gap-4 xl:gap-6">
-            <div className="flex items-center gap-2 xl:gap-3">
+          {/* 3. Dedicated Right Action Icons & CTA Container (Desktop xl+) */}
+          <div className="hidden xl:flex items-center gap-2 min-[1400px]:gap-3 2xl:gap-4 shrink-0">
+            <div className="flex items-center gap-0.5 min-[1400px]:gap-1 2xl:gap-1.5 shrink-0">
               {[
-                { icon: Search, onClick: () => {} },
-                { icon: User, onClick: handleUserClick },
-                { icon: Heart, onClick: () => {} },
-                { icon: ShoppingCart, onClick: openCart, badge: totalCount }
+                { icon: Search, label: 'Search', onClick: () => {} },
+                { icon: User, label: 'User Profile', onClick: handleUserClick },
+                { icon: Heart, label: 'Wishlist', onClick: () => {} },
+                { icon: ShoppingCart, label: 'Shopping Cart', onClick: openCart, badge: totalCount }
               ].map((Action, i) => (
-                <button 
-                  key={i} 
-                  onClick={Action.onClick} 
-                  aria-label={i === 3 ? "Shopping Cart" : i === 1 ? "User Profile" : "Action"}
-                  className="w-11 h-11 rounded-full bg-transparent flex items-center justify-center text-slate-600 hover:bg-orange-50 hover:text-[#F97316] transition-all duration-200 group relative"
+                <button
+                  key={i}
+                  onClick={Action.onClick}
+                  aria-label={Action.label}
+                  className="w-8 h-8 min-[1400px]:w-9 min-[1400px]:h-9 2xl:w-10 2xl:h-10 rounded-full bg-transparent flex items-center justify-center text-slate-600 hover:bg-orange-50 hover:text-[#F97316] transition-all duration-200 group relative shrink-0 cursor-pointer"
                 >
-                  <Action.icon className="w-5 h-5 transition-transform group-active:scale-95" />
+                  <Action.icon className="w-[17px] h-[17px] min-[1400px]:w-[18px] min-[1400px]:h-[18px] 2xl:w-5 2xl:h-5 transition-transform group-active:scale-95" />
                   {i === 3 && totalCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-[#FF7A00] text-white text-[10px] font-bold min-w-4 h-4 px-1 rounded-full flex items-center justify-center border border-white shadow-sm shadow-[#FF7A00]/50 animate-pulse">
+                    <span className="absolute top-0 right-0 bg-[#FF7A00] text-white text-[10px] font-bold min-w-4 h-4 px-1 rounded-full flex items-center justify-center border border-white shadow-sm shadow-[#FF7A00]/50 animate-pulse">
                       {totalCount}
                     </span>
                   )}
@@ -230,18 +240,52 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
 
             <button
               onClick={() => onOpenBookingModal()}
-              className="h-[48px] px-6 rounded-2xl font-['Poppins'] text-sm font-bold uppercase tracking-wider text-white bg-[#F97316] to-[#FF9800] hover:from-[#ff8c20] hover:to-[#ffaa33] transition-all duration-300 shadow-lg shadow-[#FF7A00]/30 hover:shadow-[#FF7A00]/50 hover:-translate-y-1 hover:scale-105 active:translate-y-0 flex items-center gap-2 relative overflow-hidden group"
+              className="h-[38px] min-[1400px]:h-[42px] 2xl:h-[46px] px-3.5 min-[1400px]:px-4 2xl:px-5 rounded-2xl font-['Poppins'] text-[11px] min-[1400px]:text-[12px] 2xl:text-[13px] font-bold uppercase tracking-wider text-white bg-gradient-to-r from-[#F97316] to-[#FF9800] hover:from-[#ff8c20] hover:to-[#ffaa33] transition-all duration-300 shadow-lg shadow-[#FF7A00]/30 hover:shadow-[#FF7A00]/50 hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-1.5 2xl:gap-2 relative overflow-hidden group whitespace-nowrap shrink-0 cursor-pointer"
             >
               <span className="relative z-10">book your seat</span>
-              <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
-              {/* Glow effect */}
-              <div className="absolute inset-0 bg-white/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <ArrowRight className="w-3.5 h-3.5 min-[1400px]:w-4 min-[1400px]:h-4 2xl:w-5 2xl:h-5 relative z-10 shrink-0 group-hover:translate-x-1 transition-transform" />
+              <div className="absolute inset-0 bg-white/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
           </div>
 
-          {/* Mobile Actions: Only Hamburger by default, Cart appears when items are added */}
-          <div className="flex lg:hidden items-center gap-2 relative z-50 shrink-0">
-            {/* Cart Button: appears on mobile only when user has added items to cart */}
+          {/* Mobile & Tablet Actions (< xl):
+              - Phones (< md): Only Hamburger by default; Cart appears when items are added
+              - Tablets & Narrow Laptops (md to < xl): Action Icons + Book Your Seat + Hamburger */}
+          <div className="flex xl:hidden items-center gap-2 sm:gap-3 relative z-50 shrink-0">
+            {/* Tablet Action Icons (md to < xl) */}
+            <div className="hidden md:flex items-center gap-1 shrink-0">
+              {[
+                { icon: Search, label: 'Search', onClick: () => {} },
+                { icon: User, label: 'User Profile', onClick: handleUserClick },
+                { icon: Heart, label: 'Wishlist', onClick: () => {} },
+                { icon: ShoppingCart, label: 'Shopping Cart', onClick: openCart, badge: totalCount }
+              ].map((Action, i) => (
+                <button
+                  key={i}
+                  onClick={Action.onClick}
+                  aria-label={Action.label}
+                  className="w-9 h-9 rounded-full bg-transparent flex items-center justify-center text-slate-600 hover:bg-orange-50 hover:text-[#F97316] transition-all duration-200 group relative shrink-0 cursor-pointer"
+                >
+                  <Action.icon className="w-[18px] h-[18px] transition-transform group-active:scale-95" />
+                  {i === 3 && totalCount > 0 && (
+                    <span className="absolute top-0 right-0 bg-[#FF7A00] text-white text-[10px] font-bold min-w-4 h-4 px-1 rounded-full flex items-center justify-center border border-white shadow-sm shadow-[#FF7A00]/50 animate-pulse">
+                      {totalCount}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* Tablet Book Your Seat Button (md to < xl) */}
+            <button
+              onClick={() => onOpenBookingModal()}
+              className="hidden md:flex h-[40px] px-4 rounded-2xl font-['Poppins'] text-xs font-bold uppercase tracking-wider text-white bg-gradient-to-r from-[#F97316] to-[#FF9800] hover:from-[#ff8c20] hover:to-[#ffaa33] transition-all duration-300 shadow-md shadow-[#FF7A00]/30 items-center justify-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer"
+            >
+              <span>book your seat</span>
+              <ArrowRight className="w-4 h-4 shrink-0" />
+            </button>
+
+            {/* Mobile-only Cart Button (< md): appears only when user has added items to cart */}
             {totalCount > 0 && (
               <motion.button
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -249,7 +293,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
                 exit={{ opacity: 0, scale: 0.8 }}
                 onClick={openCart}
                 aria-label="Shopping Cart"
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gray-100 active:bg-orange-50 active:scale-95 flex items-center justify-center text-gray-800 hover:text-[#FF7A00] border border-gray-200 shadow-sm transition-all relative shrink-0"
+                className="md:hidden w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gray-100 active:bg-orange-50 active:scale-95 flex items-center justify-center text-gray-800 hover:text-[#FF7A00] border border-gray-200 shadow-sm transition-all relative shrink-0 cursor-pointer"
               >
                 <ShoppingCart className="w-5 h-5" />
                 <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#FF7A00] text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white shadow-sm">
@@ -258,7 +302,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
               </motion.button>
             )}
 
-            {/* Mobile Hamburger Toggle */}
+            {/* Mobile & Tablet Hamburger Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
@@ -270,7 +314,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
         </div>
       </div>
 
-      {/* Mobile Full-Screen Menu */}
+      {/* Mobile & Tablet Full-Screen Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
@@ -278,8 +322,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="lg:hidden fixed inset-0 z-40 bg-white flex flex-col h-screen overflow-y-auto"
-            style={{ paddingTop: '86px' }}
+            className={`xl:hidden fixed inset-0 z-40 bg-white flex flex-col h-screen overflow-y-auto ${
+              isScrolled ? 'pt-[76px] sm:pt-[84px]' : 'pt-[104px] sm:pt-[110px]'
+            }`}
           >
             <div className="flex flex-col px-5 py-5 gap-4 flex-1">
               {/* Account Quick Card inside Mobile Menu */}

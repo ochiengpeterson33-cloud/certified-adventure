@@ -6,9 +6,10 @@ interface LogoProps {
   variant?: 'full' | 'compact' | 'light' | 'large';
   className?: string;
   showTagline?: boolean;
+  compactHeader?: boolean;
 }
 
-export const Logo: React.FC<LogoProps> = ({ variant = 'full', className = '', showTagline = true, darkText = false }) => {
+export const Logo: React.FC<LogoProps> = ({ variant = 'full', className = '', showTagline = true, darkText = false, compactHeader = false }) => {
   const isLarge = variant === 'large';
   const isCompact = variant === 'compact';
 
@@ -29,7 +30,7 @@ export const Logo: React.FC<LogoProps> = ({ variant = 'full', className = '', sh
         {/* Brand Typography Header - Centered & Fluid */}
         <div className="flex flex-col items-center text-center max-w-full">
           <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 leading-none text-center">
-            <span className={`font-['Poppins'] font-black tracking-tight ${darkText ? 'text-gray-900' : 'text-[#F4E8D2]'} leading-none group-hover:text-white transition-colors text-[clamp(1.5rem,5.5vw,2.25rem)] sm:text-3xl lg:text-4xl`}>
+            <span className={`font-['Poppins'] font-black tracking-tight ${darkText ? 'text-gray-900 group-hover:text-gray-700' : 'text-[#F4E8D2] group-hover:text-white'} leading-none transition-colors text-[clamp(1.5rem,5.5vw,2.25rem)] sm:text-3xl lg:text-4xl`}>
               CERTIFIED
             </span>
             <span className="font-['Poppins'] font-black tracking-tight text-[#FF6A00] leading-none text-[clamp(1.5rem,5.5vw,2.25rem)] sm:text-3xl lg:text-4xl">
@@ -47,10 +48,14 @@ export const Logo: React.FC<LogoProps> = ({ variant = 'full', className = '', sh
   }
 
   return (
-    <div className={`flex items-center gap-2 sm:gap-3 select-none group cursor-pointer min-w-0 ${className}`}>
+    <div className={`flex items-center ${compactHeader ? 'gap-2 sm:gap-2.5' : 'gap-2 sm:gap-3'} select-none group cursor-pointer min-w-0 ${className}`}>
       {/* Official Certified Adventures Logo Image */}
       <div className={`relative shrink-0 flex items-center justify-center rounded-xl sm:rounded-2xl bg-[#08121B] border border-[#FF6A00]/40 shadow-lg group-hover:border-[#FF6A00] group-hover:shadow-[#FF6A00]/20 transition-all duration-300 overflow-hidden ${
-        isCompact ? 'w-9 h-9 sm:w-10 sm:h-10 p-1' : 'w-10 h-10 sm:w-12 sm:h-12 p-1'
+        isCompact
+          ? 'w-9 h-9 sm:w-10 sm:h-10 p-1'
+          : compactHeader
+            ? 'w-9 h-9 sm:w-10 sm:h-10 2xl:w-11 2xl:h-11 p-1'
+            : 'w-10 h-10 sm:w-12 sm:h-12 p-1'
       }`}>
         <img
           src={officialLogo}
@@ -65,15 +70,21 @@ export const Logo: React.FC<LogoProps> = ({ variant = 'full', className = '', sh
       {!isCompact && (
         <div className="flex flex-col min-w-0">
           <div className="flex items-center gap-1 leading-tight flex-nowrap">
-            <span className={`font-['Poppins'] font-black tracking-tight ${darkText ? 'text-gray-900' : 'text-[#F4E8D2]'} leading-none group-hover:text-white transition-colors text-xs xs:text-sm sm:text-lg lg:text-xl whitespace-nowrap`}>
+            <span className={`font-['Poppins'] font-black tracking-tight ${darkText ? 'text-gray-900 group-hover:text-gray-700' : 'text-[#F4E8D2] group-hover:text-white'} leading-none transition-colors ${
+              compactHeader ? 'text-xs sm:text-base xl:text-[14px] min-[1400px]:text-[16px] 2xl:text-lg' : 'text-xs xs:text-sm sm:text-lg lg:text-xl'
+            } whitespace-nowrap`}>
               CERTIFIED
             </span>
-            <span className="font-['Poppins'] font-black tracking-tight text-[#FF6A00] leading-none text-xs xs:text-sm sm:text-lg lg:text-xl whitespace-nowrap">
+            <span className={`font-['Poppins'] font-black tracking-tight text-[#FF6A00] leading-none ${
+              compactHeader ? 'text-xs sm:text-base xl:text-[14px] min-[1400px]:text-[16px] 2xl:text-lg' : 'text-xs xs:text-sm sm:text-lg lg:text-xl'
+            } whitespace-nowrap`}>
               ADVENTURES
             </span>
           </div>
           {showTagline && (
-            <span className="block uppercase tracking-[0.10em] sm:tracking-[0.16em] font-bold text-[#FF6A00] mt-0.5 sm:mt-1 transition-colors text-[8px] xs:text-[9px] sm:text-[10px] leading-tight truncate">
+            <span className={`block uppercase font-bold text-[#FF6A00] mt-0.5 sm:mt-1 transition-colors leading-tight truncate ${
+              compactHeader ? 'tracking-[0.08em] sm:tracking-[0.12em] text-[8px] sm:text-[9px] 2xl:text-[10px]' : 'tracking-[0.10em] sm:tracking-[0.16em] text-[8px] xs:text-[9px] sm:text-[10px]'
+            }`}>
               travel in comfort and style
             </span>
           )}
