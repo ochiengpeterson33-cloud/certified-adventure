@@ -72,6 +72,7 @@ export default function App() {
           <Route path="blog" element={<BlogManager />} />
           <Route path="users" element={<UsersManager />} />
           <Route path="settings" element={<SettingsManager />} />
+          <Route path="polls" element={<HomepageManager initialTab="features" />} />
           <Route path="homepage" element={<HomepageManager />} />
         </Route>
 

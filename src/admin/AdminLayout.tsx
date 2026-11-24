@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, Image as ImageIcon, Map, Compass, MapPin, 
   Camera, MessageSquare, FileText, Calendar, FolderOpen, 
-  Settings, Users, ShoppingBag, Mail, LogOut, Menu, X, ExternalLink, ShieldCheck
+  Settings, Users, ShoppingBag, Mail, LogOut, Menu, X, ExternalLink, ShieldCheck, Vote
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import officialLogo from '../assets/images/certified_logo_1785596043136.png';
@@ -30,6 +30,7 @@ export function AdminLayout() {
     { name: 'Bookings', path: '/admin/bookings', icon: ShoppingBag },
     { name: 'Messages', path: '/admin/messages', icon: Mail },
     { name: 'Website Settings', path: '/admin/settings', icon: Settings },
+    { name: 'Community Polls', path: '/admin/polls', icon: Vote },
     { name: 'Homepage Content', path: '/admin/homepage', icon: LayoutDashboard },
   ];
 

@@ -105,6 +105,20 @@ html.dark ::-webkit-scrollbar-track {
   animation: float-gentle 4s ease-in-out infinite;
 }
 
+@keyframes marquee-left {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-marquee-left {
+  animation: marquee-left 34s linear infinite;
+  will-change: transform;
+}
+
 /* Glassmorphism utility classes (Light & Dark) */
 .glass-panel {
   background: rgba(255, 255, 255, 0.85);

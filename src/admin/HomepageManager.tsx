@@ -1,24 +1,60 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
-import { Save, Plus, Trash2, CheckCircle2, Loader2, Upload, Image as ImageIcon, Video, X, AlertCircle, Sparkles } from 'lucide-react';
+import { Save, Plus, Trash2, CheckCircle2, Loader2, Upload, Image as ImageIcon, Video, X, AlertCircle, Sparkles, ArrowUp, ArrowDown, Vote, RotateCcw, Clock, Copy } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { motion } from 'motion/react';
+import { DEFAULT_CULTURE_POLLS, CulturePoll, PollStatusMode, resolvePollStatus, useCulturePollVotes } from '../hooks/useSupabaseData';
 
-export function HomepageManager() {
+const POLLS_SETUP_SQL = `CREATE TABLE IF NOT EXISTS culture_poll_votes (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  poll_id TEXT NOT NULL,
+  option_id TEXT NOT NULL,
+  voter_token TEXT NOT NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE (poll_id, voter_token)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS culture_poll_votes_poll_user_idx ON culture_poll_votes (poll_id, user_id) WHERE user_id IS NOT NULL;
+ALTER TABLE culture_poll_votes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read culture_poll_votes" ON culture_poll_votes FOR SELECT TO public USING (true);
+CREATE POLICY "Public insert culture_poll_votes" ON culture_poll_votes FOR INSERT TO anon, authenticated WITH CHECK (char_length(trim(poll_id)) > 0 AND char_length(trim(option_id)) > 0 AND char_length(trim(voter_token)) >= 8);
+CREATE POLICY "Admin delete culture_poll_votes" ON culture_poll_votes FOR DELETE TO authenticated USING (true);`;
+
+function isoToLocalInput(iso?: string): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+interface HomepageManagerProps {
+  initialTab?: 'stats' | 'features' | 'why' | 'experiences';
+}
+
+export function HomepageManager({ initialTab = 'stats' }: HomepageManagerProps) {
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'stats' | 'features' | 'why' | 'experiences'>('stats');
+  const [activeTab, setActiveTab] = useState<'stats' | 'features' | 'why' | 'experiences'>(initialTab);
   const [experiences, setExperiences] = useState<Record<string, string>>({});
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Sync tab when navigating between /admin/polls and /admin/homepage
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
+
   // States for each section
   const [stats, setStats] = useState<any[]>([]);
-  const [features, setFeatures] = useState<any[]>([]);
+  const [polls, setPolls] = useState<CulturePoll[]>([]);
+  const [pollsLoaded, setPollsLoaded] = useState(false);
   const [why, setWhy] = useState<any>({ title: '', subtitle: '', list: [], image_url: '' });
   const [isUploading, setIsUploading] = useState(false);
   const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
+  const [copiedSql, setCopiedSql] = useState(false);
+  const { data: liveVotesData } = useCulturePollVotes();
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
@@ -56,21 +92,35 @@ export function HomepageManager() {
             const parsed = JSON.parse(row.description || 'null');
             if (!parsed) return;
             if (row.slug === 'homepage-stats') setStats(parsed);
-            if (row.slug === 'homepage-features') setFeatures(parsed);
+            if (row.slug === 'homepage-culture-polls' && Array.isArray(parsed)) {
+              setPolls(parsed);
+            }
             if (row.slug === 'homepage-why-choose-us') setWhy(parsed);
             if (row.slug === 'homepage-merch-store') setMerch(parsed);
             if (row.slug === 'homepage-experiences') setExperiences(parsed);
           } catch (e) {}
         });
       }
+      setPollsLoaded(true);
     }
     fetchData();
   }, []);
 
   const handleSave = async (slug: string, data: any) => {
-    setIsSaving(true);
     setSaveSuccess(false);
     setErrorMsg(null);
+
+    if (slug === 'homepage-culture-polls' && Array.isArray(data)) {
+      const invalidPoll = (data as CulturePoll[]).find(
+        (p) => !p.question?.trim() || (p.options || []).filter((o) => o.title?.trim()).length < 2
+      );
+      if (invalidPoll) {
+        setErrorMsg('Every poll must have a question and at least 2 named voting choices before saving.');
+        return;
+      }
+    }
+
+    setIsSaving(true);
     try {
       const payload = {
         name: slug.replace(/-/g, ' ').toUpperCase(),
@@ -78,8 +128,12 @@ export function HomepageManager() {
         description: JSON.stringify(data)
       };
 
-      // Check if exists
-      const { data: existing } = await supabase.from('categories').select('id').eq('slug', slug).single();
+      const { data: existing, error: fetchErr } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('slug', slug)
+        .maybeSingle();
+      if (fetchErr) throw fetchErr;
 
       if (existing) {
         const { error } = await supabase.from('categories').update(payload).eq('slug', slug);
@@ -93,15 +147,74 @@ export function HomepageManager() {
         queryClient.invalidateQueries({ queryKey: ['homepage-experiences'] });
       } else if (slug === 'homepage-why-choose-us') {
         queryClient.invalidateQueries({ queryKey: ['categories-why'] });
+      } else if (slug === 'homepage-culture-polls') {
+        queryClient.invalidateQueries({ queryKey: ['homepage-culture-polls'] });
+        queryClient.invalidateQueries({ queryKey: ['culture-poll-votes'] });
       }
 
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving:", error);
-      setErrorMsg("Failed to save changes. Please try again.");
+      setErrorMsg(error?.message || "Failed to save changes. Please verify you are signed in as an Admin and try again.");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handlePollOptionImageUpload = async (
+    pollIdx: number,
+    optIdx: number,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    const fileExt = file.name.split('.').pop();
+    const fileName = `poll_${pollIdx}_${optIdx}_${Date.now()}.${fileExt}`;
+    setIsUploading(true);
+    setUploadingTarget(`poll_${pollIdx}_opt_${optIdx}`);
+    setErrorMsg(null);
+    try {
+      const { error: uploadError } = await supabase.storage.from('website-assets').upload(fileName, file);
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage.from('website-assets').getPublicUrl(fileName);
+      setPolls(prev =>
+        prev.map((poll, pIdx) =>
+          pIdx === pollIdx
+            ? {
+                ...poll,
+                options: poll.options.map((opt, oIdx) =>
+                  oIdx === optIdx ? { ...opt, image_url: publicUrl } : opt
+                ),
+              }
+            : poll
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      setErrorMsg('Failed to upload option image.');
+    } finally {
+      setIsUploading(false);
+      setUploadingTarget(null);
+      e.target.value = '';
+    }
+  };
+
+  const movePoll = (idx: number, direction: -1 | 1) => {
+    const targetIdx = idx + direction;
+    if (targetIdx < 0 || targetIdx >= polls.length) return;
+    const next = [...polls];
+    const [moved] = next.splice(idx, 1);
+    next.splice(targetIdx, 0, moved);
+    setPolls(next);
+  };
+
+  const handleResetPollVotes = async (pollId: string) => {
+    try {
+      await supabase.from('culture_poll_votes').delete().eq('poll_id', pollId);
+      queryClient.invalidateQueries({ queryKey: ['culture-poll-votes'] });
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -574,41 +687,525 @@ export function HomepageManager() {
     </div>
   );
 
+  const getOptionLiveVotes = (pollId: string, optionId: string) => {
+    const remoteRows = liveVotesData?.rows || [];
+    return remoteRows.filter(
+      (r) => r.poll_id === pollId && r.option_id === optionId
+    ).length;
+  };
+
   const renderFeatures = () => (
-    <div className="space-y-4">
-      <h3 className="text-xl font-bold mb-4">Feature Bar</h3>
-      {features.map((feature, idx) => (
-        <div key={idx} className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white p-4 rounded-xl border border-gray-100">
-          <div>
-            <label className="block text-sm text-gray-500 mb-1">Title</label>
-            <input type="text" value={feature.name} onChange={(e) => {
-              const newF = [...features];
-              newF[idx].name = e.target.value;
-              setFeatures(newF);
-            }} className="w-full border border-gray-200 rounded-lg p-2" />
-          </div>
-          <div className="md:col-span-2">
-            <label className="block text-sm text-gray-500 mb-1">Description</label>
-            <input type="text" value={feature.desc} onChange={(e) => {
-              const newF = [...features];
-              newF[idx].desc = e.target.value;
-              setFeatures(newF);
-            }} className="w-full border border-gray-200 rounded-lg p-2" />
-          </div>
-          <div className="flex items-end pb-2 justify-between">
-            <button onClick={() => setFeatures(features.filter((_, i) => i !== idx))} className="text-red-500 hover:text-red-700">
-              <Trash2 className="w-5 h-5" />
-            </button>
-          </div>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            <Vote className="w-5 h-5 text-[#FF6A00]" />
+            <span>Certified Adventures Vuka Mwaka Awards 2026</span>
+          </h3>
+          <p className="text-sm text-gray-500">
+            Create interactive award polls with thumbnails, LIVE/OPEN/CLOSED status control, and automatic expiry deadlines.
+          </p>
         </div>
-      ))}
-      <button onClick={() => setFeatures([...features, { name: '', desc: '', icon: 'CheckCircle2' }])} className="text-[#FF6A00] font-bold flex items-center gap-2 text-sm mt-4">
-        <Plus className="w-4 h-4" /> Add Feature
-      </button>
-      <div className="mt-8 flex justify-end">
-        <button onClick={() => handleSave('homepage-features', features)} disabled={isSaving} className="bg-[#FF6A00] text-white px-6 py-2 rounded-xl font-bold flex items-center gap-2">
-          {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />} Save Features
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() =>
+              setPolls([
+                {
+                  id: `poll-${Date.now()}`,
+                  question: '',
+                  category: 'Vuka Mwaka Awards 2026',
+                  subtitle: '',
+                  status: 'live',
+                  closes_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                  is_active: true,
+                  options: [
+                    { id: `opt-${Date.now()}-1`, title: '', subtitle: '', image_url: '' },
+                    { id: `opt-${Date.now()}-2`, title: '', subtitle: '', image_url: '' },
+                  ],
+                },
+                ...polls,
+              ])
+            }
+            className="bg-orange-50 hover:bg-orange-100 text-[#FF6A00] px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Poll</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSave('homepage-culture-polls', polls)}
+            disabled={isSaving || isUploading}
+            className="bg-[#FF6A00] hover:bg-[#e65c00] disabled:opacity-50 text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-colors cursor-pointer"
+          >
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            <span>Save Polls</span>
+          </button>
+        </div>
+      </div>
+
+      {liveVotesData && !liveVotesData.tableAvailable && (
+        <div className="p-4 rounded-xl bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="text-xs sm:text-sm text-slate-200">
+            <strong className="text-[#FF6A00]">Database Setup Required for Shared Voting:</strong> Run the `culture_poll_votes` SQL in your Supabase SQL Editor so votes sync across all visitors in real time.
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              navigator.clipboard?.writeText(POLLS_SETUP_SQL);
+              setCopiedSql(true);
+              setTimeout(() => setCopiedSql(false), 2500);
+            }}
+            className="px-3.5 py-2 rounded-lg bg-[#FF6A00] hover:bg-[#e65c00] text-white text-xs font-bold flex items-center gap-1.5 shrink-0 cursor-pointer"
+          >
+            <Copy className="w-3.5 h-3.5" />
+            <span>{copiedSql ? 'SQL Copied!' : 'Copy Setup SQL'}</span>
+          </button>
+        </div>
+      )}
+
+      <div className="space-y-5">
+        {polls.map((poll, pollIdx) => {
+          const resolvedStatus = resolvePollStatus(poll);
+          const totalPollVotes = poll.options.reduce(
+            (sum, o) => sum + getOptionLiveVotes(poll.id, o.id),
+            0
+          );
+
+          return (
+            <div key={poll.id} className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+              {/* Poll Header Controls */}
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-3">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <span className="w-6 h-6 rounded-full bg-[#FF6A00]/15 text-[#FF6A00] text-xs font-black flex items-center justify-center">
+                    {pollIdx + 1}
+                  </span>
+                  <span
+                    className={`px-2 py-0.5 rounded text-[11px] font-bold uppercase ${
+                      resolvedStatus === 'LIVE'
+                        ? 'bg-orange-100 text-[#FF6A00]'
+                        : resolvedStatus === 'OPEN'
+                        ? 'bg-slate-900 text-white'
+                        : 'bg-gray-200 text-gray-700'
+                    }`}
+                  >
+                    {resolvedStatus}
+                  </span>
+                  <span className="text-xs font-semibold text-gray-500 tabular-nums">
+                    {totalPollVotes} total votes
+                  </span>
+                  <label className="inline-flex items-center gap-1.5 ml-2 text-xs font-semibold text-gray-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={poll.is_active !== false}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setPolls((prev) =>
+                          prev.map((p, idx) => (idx === pollIdx ? { ...p, is_active: checked } : p))
+                        );
+                      }}
+                      className="accent-[#FF6A00] w-3.5 h-3.5 rounded"
+                    />
+                    <span>{poll.is_active !== false ? 'Visible' : 'Hidden'}</span>
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => handleResetPollVotes(poll.id)}
+                    title="Reset Database Votes"
+                    className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-100 flex items-center gap-1 cursor-pointer"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Reset Votes</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => movePoll(pollIdx, -1)}
+                    disabled={pollIdx === 0}
+                    title="Move Up"
+                    className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 disabled:opacity-30 cursor-pointer"
+                  >
+                    <ArrowUp className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => movePoll(pollIdx, 1)}
+                    disabled={pollIdx === polls.length - 1}
+                    title="Move Down"
+                    className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 disabled:opacity-30 cursor-pointer"
+                  >
+                    <ArrowDown className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPolls(polls.filter((_, i) => i !== pollIdx))}
+                    title="Delete Poll"
+                    className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 cursor-pointer ml-1"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Poll Metadata */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
+                    Poll Question
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Which Kenyan Cultural Experience Deserves Next Feature?"
+                    value={poll.question || ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setPolls((prev) =>
+                        prev.map((p, idx) => (idx === pollIdx ? { ...p, question: val } : p))
+                      );
+                    }}
+                    className="w-full border border-gray-200 rounded-xl p-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-[#FF6A00]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
+                    Category
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Culture Spotlight"
+                    value={poll.category || ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setPolls((prev) =>
+                        prev.map((p, idx) => (idx === pollIdx ? { ...p, category: val } : p))
+                      );
+                    }}
+                    className="w-full border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-[#FF6A00]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
+                    Poll Status Mode
+                  </label>
+                  <select
+                    value={poll.status || 'auto'}
+                    onChange={(e) => {
+                      const val = e.target.value as PollStatusMode;
+                      setPolls((prev) =>
+                        prev.map((p, idx) => (idx === pollIdx ? { ...p, status: val } : p))
+                      );
+                    }}
+                    className="w-full border border-gray-200 rounded-xl p-2.5 text-sm bg-white outline-none focus:ring-2 focus:ring-[#FF6A00]"
+                  >
+                    <option value="auto">Auto (Deadline Based)</option>
+                    <option value="live">LIVE (Until Deadline)</option>
+                    <option value="open">OPEN (Until Deadline)</option>
+                    <option value="closed">CLOSED (Highlight Winner)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
+                    Short Description (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Tell visitors what they are voting on..."
+                    value={poll.subtitle || ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setPolls((prev) =>
+                        prev.map((p, idx) => (idx === pollIdx ? { ...p, subtitle: val } : p))
+                      );
+                    }}
+                    className="w-full border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-[#FF6A00]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-[#FF6A00]" />
+                    <span>Voting Deadline (Auto-Closes Poll)</span>
+                  </label>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      type="datetime-local"
+                      value={isoToLocalInput(poll.closes_at)}
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        const iso = raw ? new Date(raw).toISOString() : '';
+                        setPolls((prev) =>
+                          prev.map((p, idx) => (idx === pollIdx ? { ...p, closes_at: iso } : p))
+                        );
+                      }}
+                      className="flex-1 min-w-[180px] border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-[#FF6A00]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const iso = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+                        setPolls((prev) =>
+                          prev.map((p, idx) => (idx === pollIdx ? { ...p, closes_at: iso } : p))
+                        );
+                      }}
+                      className="px-2.5 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-xs font-bold text-gray-700 cursor-pointer"
+                    >
+                      +24h
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const iso = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+                        setPolls((prev) =>
+                          prev.map((p, idx) => (idx === pollIdx ? { ...p, closes_at: iso } : p))
+                        );
+                      }}
+                      className="px-2.5 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-xs font-bold text-gray-700 cursor-pointer"
+                    >
+                      +7d
+                    </button>
+                    {poll.closes_at && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPolls((prev) =>
+                            prev.map((p, idx) => (idx === pollIdx ? { ...p, closes_at: '' } : p))
+                          );
+                        }}
+                        className="px-2 py-2 rounded-lg text-xs font-bold text-red-500 hover:bg-red-50 cursor-pointer"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Poll Choices / Nominees */}
+              <div className="pt-2 border-t border-gray-100 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-gray-600">
+                    Voting Choices ({poll.options.length})
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPolls((prev) =>
+                        prev.map((p, idx) =>
+                          idx === pollIdx
+                            ? {
+                                ...p,
+                                options: [
+                                  ...p.options,
+                                  { id: `opt-${Date.now()}`, title: '', subtitle: '', image_url: '' },
+                                ],
+                              }
+                            : p
+                        )
+                      );
+                    }}
+                    className="text-xs font-bold text-[#FF6A00] hover:text-[#e65c00] flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Choice</span>
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {poll.options.map((opt, optIdx) => {
+                    const totalOptVotes = getOptionLiveVotes(poll.id, opt.id);
+                    return (
+                      <div
+                        key={opt.id}
+                        className="p-3.5 rounded-xl bg-gray-50/70 border border-gray-200 grid grid-cols-1 md:grid-cols-12 gap-3 items-center"
+                      >
+                        <div className="md:col-span-4">
+                          <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">
+                            Choice #{optIdx + 1} Title
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Nairobi Nganya Night Tour"
+                            value={opt.title || ''}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setPolls((prev) =>
+                                prev.map((p, pIdx) =>
+                                  pIdx === pollIdx
+                                    ? {
+                                        ...p,
+                                        options: p.options.map((o, oIdx) =>
+                                          oIdx === optIdx ? { ...o, title: val } : o
+                                        ),
+                                      }
+                                    : p
+                                )
+                              );
+                            }}
+                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#FF6A00]"
+                          />
+                        </div>
+
+                        <div className="md:col-span-3">
+                          <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">
+                            Short Description
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Short description..."
+                            value={opt.subtitle || ''}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setPolls((prev) =>
+                                prev.map((p, pIdx) =>
+                                  pIdx === pollIdx
+                                    ? {
+                                        ...p,
+                                        options: p.options.map((o, oIdx) =>
+                                          oIdx === optIdx ? { ...o, subtitle: val } : o
+                                        ),
+                                      }
+                                    : p
+                                )
+                              );
+                            }}
+                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#FF6A00]"
+                          />
+                        </div>
+
+                        <div className="md:col-span-4">
+                          <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">
+                            Thumbnail Image
+                          </label>
+                          <div className="flex items-center gap-2">
+                            {opt.image_url && (
+                              <img
+                                src={opt.image_url}
+                                alt=""
+                                className="w-9 h-9 rounded-lg object-cover border border-gray-200 shrink-0"
+                              />
+                            )}
+                            <input
+                              type="text"
+                              placeholder="Thumbnail URL..."
+                              value={opt.image_url || ''}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setPolls((prev) =>
+                                  prev.map((p, pIdx) =>
+                                    pIdx === pollIdx
+                                      ? {
+                                          ...p,
+                                          options: p.options.map((o, oIdx) =>
+                                            oIdx === optIdx ? { ...o, image_url: val } : o
+                                          ),
+                                        }
+                                      : p
+                                  )
+                                );
+                              }}
+                              className="flex-1 min-w-0 bg-white border border-gray-200 rounded-lg px-2.5 py-2 text-xs outline-none focus:ring-2 focus:ring-[#FF6A00]"
+                            />
+                            <label className="px-2.5 py-2 rounded-lg bg-gray-900 hover:bg-[#FF6A00] text-white text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors shrink-0">
+                              {uploadingTarget === `poll_${pollIdx}_opt_${optIdx}` ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Upload className="w-3.5 h-3.5" />
+                              )}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handlePollOptionImageUpload(pollIdx, optIdx, e)}
+                                className="hidden"
+                              />
+                            </label>
+                          </div>
+                        </div>
+
+                        <div className="md:col-span-1 flex items-center justify-between md:justify-end gap-2 pt-3 md:pt-4">
+                          <span className="text-[11px] font-bold text-gray-600 tabular-nums whitespace-nowrap">
+                            {totalOptVotes}v
+                          </span>
+                          {poll.options.length > 2 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPolls((prev) =>
+                                  prev.map((p, idx) =>
+                                    idx === pollIdx
+                                      ? {
+                                          ...p,
+                                          options: p.options.filter((_, i) => i !== optIdx),
+                                        }
+                                      : p
+                                  )
+                                );
+                              }}
+                              className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 cursor-pointer"
+                              title="Remove Choice"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {!pollsLoaded ? (
+          <div className="p-8 flex justify-center bg-white rounded-2xl border border-gray-200">
+            <Loader2 className="w-6 h-6 animate-spin text-[#FF6A00]" />
+          </div>
+        ) : polls.length === 0 ? (
+          <div className="p-8 text-center bg-white rounded-2xl border border-dashed border-gray-300 space-y-3">
+            <p className="text-gray-700 font-semibold text-sm">
+              No polls added yet. Only polls created and saved here will appear on the website.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  setPolls([
+                    {
+                      id: `poll-${Date.now()}`,
+                      question: '',
+                      category: 'Vuka Mwaka Awards 2026',
+                      subtitle: '',
+                      status: 'live',
+                      closes_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                      is_active: true,
+                      options: [
+                        { id: `opt-${Date.now()}-1`, title: '', subtitle: '', image_url: '' },
+                        { id: `opt-${Date.now()}-2`, title: '', subtitle: '', image_url: '' },
+                      ],
+                    },
+                  ])
+                }
+                className="px-4 py-2 rounded-xl bg-[#FF6A00] hover:bg-[#e65c00] text-white text-xs font-bold cursor-pointer"
+              >
+                + Create First Poll
+              </button>
+              <button
+                type="button"
+                onClick={() => setPolls(DEFAULT_CULTURE_POLLS)}
+                className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold cursor-pointer"
+              >
+                Load Starter Templates
+              </button>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -777,7 +1374,7 @@ export function HomepageManager() {
 
       <div className="flex gap-2 sm:gap-4 mb-6 sm:mb-8 border-b border-gray-200 overflow-x-auto no-scrollbar">
         <button onClick={() => setActiveTab('stats')} className={`pb-4 px-4 font-bold uppercase tracking-wider text-sm whitespace-nowrap cursor-pointer ${activeTab === 'stats' ? 'border-b-2 border-[#FF6A00] text-[#FF6A00]' : 'text-gray-500'}`}>Stats Counter</button>
-        <button onClick={() => setActiveTab('features')} className={`pb-4 px-4 font-bold uppercase tracking-wider text-sm whitespace-nowrap cursor-pointer ${activeTab === 'features' ? 'border-b-2 border-[#FF6A00] text-[#FF6A00]' : 'text-gray-500'}`}>Feature Bar</button>
+        <button onClick={() => setActiveTab('features')} className={`pb-4 px-4 font-bold uppercase tracking-wider text-sm whitespace-nowrap cursor-pointer ${activeTab === 'features' ? 'border-b-2 border-[#FF6A00] text-[#FF6A00]' : 'text-gray-500'}`}>Community Polls</button>
         <button onClick={() => setActiveTab('why')} className={`pb-4 px-4 font-bold uppercase tracking-wider text-sm whitespace-nowrap cursor-pointer ${activeTab === 'why' ? 'border-b-2 border-[#FF6A00] text-[#FF6A00]' : 'text-gray-500'}`}>Why Choose Us</button>
         <button onClick={() => setActiveTab('experiences')} className={`pb-4 px-4 font-bold uppercase tracking-wider text-sm whitespace-nowrap cursor-pointer ${activeTab === 'experiences' ? 'border-b-2 border-[#FF6A00] text-[#FF6A00]' : 'text-gray-500'}`}>Our Experiences</button>
       </div>
