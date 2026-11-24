@@ -24,7 +24,9 @@ import {
   getLocalPollVoteAdjustments,
   getOrCreateVoterToken,
   resolvePollStatus,
+  LOCAL_POLL_SYNC_EVENT,
   CulturePoll,
+  CultureVoteRow,
   ResolvedPollStatus,
 } from '../hooks/useSupabaseData';
 
@@ -118,6 +120,16 @@ export const FeatureBar: React.FC = () => {
     supabase.auth.getUser().then(({ data }) => {
       setCurrentUserId(data?.user?.id || null);
     });
+  }, []);
+
+  // Refresh local fallback vote counts & saved choices when synced across tabs
+  useEffect(() => {
+    const syncLocalState = () => {
+      setMyVotes(getSavedUserPollVotes());
+      setLocalAdjustments(getLocalPollVoteAdjustments());
+    };
+    window.addEventListener(LOCAL_POLL_SYNC_EVENT, syncLocalState);
+    return () => window.removeEventListener(LOCAL_POLL_SYNC_EVENT, syncLocalState);
   }, []);
 
   const allPolls: CulturePoll[] = useMemo(() => {
@@ -282,6 +294,31 @@ export const FeatureBar: React.FC = () => {
 
       setMyVotes((prev) => ({ ...prev, [poll.id]: confirmedId }));
       setLocalAdjustments(getLocalPollVoteAdjustments());
+
+      if (result.persistedRemote) {
+        queryClient.setQueryData<{ rows: CultureVoteRow[]; tableAvailable: boolean }>(
+          ['culture-poll-votes'],
+          (prev) => {
+            if (!prev) return prev;
+            const exists = prev.rows.some(
+              (r) => r.poll_id === poll.id && r.voter_token === voterToken
+            );
+            if (exists) return prev;
+            return {
+              tableAvailable: true,
+              rows: [
+                ...prev.rows,
+                {
+                  poll_id: poll.id,
+                  option_id: confirmedId,
+                  voter_token: voterToken,
+                  user_id: currentUserId,
+                },
+              ],
+            };
+          }
+        );
+      }
 
       if (result.alreadyVoted) {
         setStatusMessage((prev) => ({

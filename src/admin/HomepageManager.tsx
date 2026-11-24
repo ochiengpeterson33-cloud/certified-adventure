@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Save, Plus, Trash2, CheckCircle2, Loader2, Upload, Image as ImageIcon, Video, X, AlertCircle, Sparkles, ArrowUp, ArrowDown, Vote, RotateCcw, Clock, Copy } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { motion } from 'motion/react';
-import { DEFAULT_CULTURE_POLLS, CulturePoll, PollStatusMode, resolvePollStatus, useCulturePollVotes } from '../hooks/useSupabaseData';
+import { DEFAULT_CULTURE_POLLS, CulturePoll, PollStatusMode, resolvePollStatus, useCulturePollVotes, broadcastPollsEvent } from '../hooks/useSupabaseData';
 
 const POLLS_SETUP_SQL = `CREATE TABLE IF NOT EXISTS culture_poll_votes (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -16,10 +16,13 @@ const POLLS_SETUP_SQL = `CREATE TABLE IF NOT EXISTS culture_poll_votes (
   UNIQUE (poll_id, voter_token)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS culture_poll_votes_poll_user_idx ON culture_poll_votes (poll_id, user_id) WHERE user_id IS NOT NULL;
+ALTER TABLE culture_poll_votes REPLICA IDENTITY FULL;
 ALTER TABLE culture_poll_votes ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read culture_poll_votes" ON culture_poll_votes FOR SELECT TO public USING (true);
 CREATE POLICY "Public insert culture_poll_votes" ON culture_poll_votes FOR INSERT TO anon, authenticated WITH CHECK (char_length(trim(poll_id)) > 0 AND char_length(trim(option_id)) > 0 AND char_length(trim(voter_token)) >= 8);
-CREATE POLICY "Admin delete culture_poll_votes" ON culture_poll_votes FOR DELETE TO authenticated USING (true);`;
+CREATE POLICY "Admin delete culture_poll_votes" ON culture_poll_votes FOR DELETE TO authenticated USING (true);
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE culture_poll_votes; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE categories; EXCEPTION WHEN duplicate_object THEN NULL; END $$;`;
 
 function isoToLocalInput(iso?: string): string {
   if (!iso) return '';
@@ -150,6 +153,7 @@ export function HomepageManager({ initialTab = 'stats' }: HomepageManagerProps) 
       } else if (slug === 'homepage-culture-polls') {
         queryClient.invalidateQueries({ queryKey: ['homepage-culture-polls'] });
         queryClient.invalidateQueries({ queryKey: ['culture-poll-votes'] });
+        void broadcastPollsEvent('polls_updated');
       }
 
       setSaveSuccess(true);
@@ -213,6 +217,7 @@ export function HomepageManager({ initialTab = 'stats' }: HomepageManagerProps) 
     try {
       await supabase.from('culture_poll_votes').delete().eq('poll_id', pollId);
       queryClient.invalidateQueries({ queryKey: ['culture-poll-votes'] });
+      void broadcastPollsEvent('votes_reset', { pollId });
     } catch (err) {
       console.error(err);
     }

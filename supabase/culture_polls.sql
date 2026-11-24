@@ -36,4 +36,18 @@ CREATE POLICY "Public insert culture_poll_votes"
 CREATE POLICY "Admin delete culture_poll_votes"
   ON culture_poll_votes FOR DELETE TO authenticated USING (true);
 
-ALTER PUBLICATION supabase_realtime ADD TABLE culture_poll_votes;
+ALTER TABLE culture_poll_votes REPLICA IDENTITY FULL;
+
+DO $$
+BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE culture_poll_votes;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE categories;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;

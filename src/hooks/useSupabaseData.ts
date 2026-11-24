@@ -328,6 +328,101 @@ export const DEFAULT_CULTURE_POLLS: CulturePoll[] = [
 const VOTER_TOKEN_KEY = 'ca_culture_voter_token_v1';
 const MY_VOTES_KEY = 'ca_culture_poll_my_votes_v1';
 const LOCAL_COUNTS_KEY = 'ca_culture_poll_local_counts_v1';
+const POLL_BROADCAST_CHANNEL = 'ca-culture-polls-live';
+export const LOCAL_POLL_SYNC_EVENT = 'ca-culture-polls-local-sync';
+
+type BroadcastListener = (event: 'vote_cast' | 'votes_reset' | 'polls_updated', payload: any) => void;
+const broadcastListeners = new Set<BroadcastListener>();
+let sharedPollsChannel: ReturnType<typeof supabase.channel> | null = null;
+let sharedPollsChannelPromise: Promise<void> | null = null;
+let browserBcInitialized = false;
+
+function dispatchToListeners(event: 'vote_cast' | 'votes_reset' | 'polls_updated', payload: any) {
+  broadcastListeners.forEach((cb) => {
+    try {
+      cb(event, payload);
+    } catch {
+      // Ignore individual listener errors
+    }
+  });
+}
+
+function ensureSharedPollsRealtime(): Promise<void> {
+  if (typeof window !== 'undefined' && !browserBcInitialized && typeof BroadcastChannel !== 'undefined') {
+    browserBcInitialized = true;
+    try {
+      const bc = new BroadcastChannel(POLL_BROADCAST_CHANNEL);
+      bc.onmessage = (ev) => {
+        if (ev?.data?.event) {
+          dispatchToListeners(ev.data.event, ev.data);
+          window.dispatchEvent(new CustomEvent(LOCAL_POLL_SYNC_EVENT, { detail: ev.data }));
+        }
+      };
+    } catch {
+      // Ignore if BroadcastChannel is blocked
+    }
+  }
+
+  if (sharedPollsChannelPromise) return sharedPollsChannelPromise;
+
+  sharedPollsChannel = supabase.channel(POLL_BROADCAST_CHANNEL, {
+    config: { broadcast: { self: false, ack: false } },
+  });
+
+  sharedPollsChannel
+    .on('broadcast', { event: 'vote_cast' }, (msg: any) => {
+      dispatchToListeners('vote_cast', msg?.payload || {});
+    })
+    .on('broadcast', { event: 'votes_reset' }, (msg: any) => {
+      dispatchToListeners('votes_reset', msg?.payload || {});
+    })
+    .on('broadcast', { event: 'polls_updated' }, (msg: any) => {
+      dispatchToListeners('polls_updated', msg?.payload || {});
+    });
+
+  sharedPollsChannelPromise = new Promise<void>((resolve) => {
+    const timer = typeof window !== 'undefined' ? window.setTimeout(resolve, 600) : null;
+    sharedPollsChannel!.subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        if (timer !== null) window.clearTimeout(timer);
+        resolve();
+      }
+    });
+  });
+
+  return sharedPollsChannelPromise;
+}
+
+export async function broadcastPollsEvent(
+  event: 'vote_cast' | 'votes_reset' | 'polls_updated',
+  payload?: Record<string, any>
+): Promise<void> {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(LOCAL_POLL_SYNC_EVENT, { detail: { event, ...payload } }));
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        const bc = new BroadcastChannel(POLL_BROADCAST_CHANNEL);
+        bc.postMessage({ event, ...payload });
+        bc.close();
+      }
+    } catch {
+      // Ignore if BroadcastChannel is unavailable
+    }
+  }
+
+  try {
+    await ensureSharedPollsRealtime();
+    if (sharedPollsChannel) {
+      await sharedPollsChannel.send({
+        type: 'broadcast',
+        event,
+        payload: payload || {},
+      });
+    }
+  } catch {
+    // Non-fatal: postgres_changes & polling interval keep all clients in sync
+  }
+}
 
 function readCookie(name: string): string | null {
   if (typeof document === 'undefined') return null;
@@ -374,8 +469,55 @@ export function getLocalPollVoteAdjustments(): Record<string, Record<string, num
   }
 }
 
+function appendVoteOptimistically(
+  prev: { rows: CultureVoteRow[]; tableAvailable: boolean } | undefined,
+  incoming: CultureVoteRow
+) {
+  if (!prev) return prev;
+  const exists = prev.rows.some(
+    (r) => r.poll_id === incoming.poll_id && r.voter_token === incoming.voter_token
+  );
+  if (exists) return prev;
+  return {
+    tableAvailable: true,
+    rows: [...prev.rows, incoming],
+  };
+}
+
 export function useCulturePolls() {
-  useRealtimeSync('categories', ['homepage-culture-polls']);
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    void ensureSharedPollsRealtime();
+
+    const listener: BroadcastListener = (event) => {
+      if (event === 'polls_updated') {
+        queryClient.invalidateQueries({ queryKey: ['homepage-culture-polls'] });
+        queryClient.invalidateQueries({ queryKey: ['culture-poll-votes'] });
+      }
+    };
+    broadcastListeners.add(listener);
+
+    const pgChannel = supabase
+      .channel(`polls-config-pg-${Math.random().toString(36).slice(2, 8)}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'categories' },
+        (payload: any) => {
+          const slug = payload?.new?.slug || payload?.old?.slug;
+          if (!slug || slug === 'homepage-culture-polls') {
+            queryClient.invalidateQueries({ queryKey: ['homepage-culture-polls'] });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      broadcastListeners.delete(listener);
+      supabase.removeChannel(pgChannel);
+    };
+  }, [queryClient]);
+
   return useQuery({
     queryKey: ['homepage-culture-polls'],
     queryFn: async () => {
@@ -395,7 +537,10 @@ export function useCulturePolls() {
       }
       return [];
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 5,
+    refetchInterval: 8000,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }
 
@@ -407,7 +552,84 @@ export interface CultureVoteRow {
 }
 
 export function useCulturePollVotes() {
-  useRealtimeSync('culture_poll_votes', ['culture-poll-votes']);
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    void ensureSharedPollsRealtime();
+
+    const listener: BroadcastListener = (event, payload) => {
+      if (event === 'vote_cast') {
+        const vote = payload?.vote as CultureVoteRow | undefined;
+        if (vote && vote.poll_id && vote.option_id && vote.voter_token) {
+          queryClient.setQueryData<{ rows: CultureVoteRow[]; tableAvailable: boolean }>(
+            ['culture-poll-votes'],
+            (prev) => appendVoteOptimistically(prev, vote)
+          );
+        }
+        queryClient.invalidateQueries({ queryKey: ['culture-poll-votes'] });
+      } else if (event === 'votes_reset') {
+        const pollId = payload?.pollId as string | undefined;
+        if (pollId) {
+          queryClient.setQueryData<{ rows: CultureVoteRow[]; tableAvailable: boolean }>(
+            ['culture-poll-votes'],
+            (prev) =>
+              prev
+                ? { ...prev, rows: prev.rows.filter((r) => r.poll_id !== pollId) }
+                : prev
+          );
+        }
+        queryClient.invalidateQueries({ queryKey: ['culture-poll-votes'] });
+      }
+    };
+    broadcastListeners.add(listener);
+
+    const pgChannel = supabase
+      .channel(`poll-votes-pg-${Math.random().toString(36).slice(2, 8)}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'culture_poll_votes' },
+        (payload: any) => {
+          const row = payload?.new as CultureVoteRow | undefined;
+          if (row && row.poll_id && row.option_id && row.voter_token) {
+            queryClient.setQueryData<{ rows: CultureVoteRow[]; tableAvailable: boolean }>(
+              ['culture-poll-votes'],
+              (prev) => appendVoteOptimistically(prev, row)
+            );
+          }
+          queryClient.invalidateQueries({ queryKey: ['culture-poll-votes'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'culture_poll_votes' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['culture-poll-votes'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'culture_poll_votes' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['culture-poll-votes'] });
+        }
+      )
+      .subscribe();
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === LOCAL_COUNTS_KEY || e.key === MY_VOTES_KEY) {
+        window.dispatchEvent(new CustomEvent(LOCAL_POLL_SYNC_EVENT));
+        queryClient.invalidateQueries({ queryKey: ['culture-poll-votes'] });
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    return () => {
+      broadcastListeners.delete(listener);
+      supabase.removeChannel(pgChannel);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, [queryClient]);
+
   return useQuery({
     queryKey: ['culture-poll-votes'],
     queryFn: async () => {
@@ -421,7 +643,10 @@ export function useCulturePollVotes() {
 
       return { rows: (data || []) as CultureVoteRow[], tableAvailable: true };
     },
-    staleTime: 1000 * 15,
+    staleTime: 0,
+    refetchInterval: 2000,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }
 
@@ -461,19 +686,22 @@ export async function castCulturePollVote(
     userId = null;
   }
 
-  // Insert-only so database unique constraints strictly enforce 1 vote per user/token
-  const { error } = await supabase.from('culture_poll_votes').insert({
+  const voteRow: CultureVoteRow = {
     poll_id: poll.id,
     option_id: optionId,
     voter_token: voterToken,
     user_id: userId,
-  });
+  };
+
+  // Insert-only so database unique constraints strictly enforce 1 vote per user/token
+  const { error } = await supabase.from('culture_poll_votes').insert(voteRow);
 
   if (!error) {
     if (typeof window !== 'undefined') {
       const nextMyVotes = { ...prevVotes, [poll.id]: optionId };
       window.localStorage.setItem(MY_VOTES_KEY, JSON.stringify(nextMyVotes));
     }
+    void broadcastPollsEvent('vote_cast', { vote: voteRow });
     return { ok: true, votedOptionId: optionId, persistedRemote: true };
   }
 
@@ -511,6 +739,7 @@ export async function castCulturePollVote(
     counts[poll.id] = pollCounts;
     window.localStorage.setItem(LOCAL_COUNTS_KEY, JSON.stringify(counts));
   }
+  void broadcastPollsEvent('vote_cast', { vote: voteRow });
 
   return { ok: true, votedOptionId: optionId, persistedRemote: false };
 }
