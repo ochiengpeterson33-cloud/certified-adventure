@@ -48,7 +48,7 @@ export const Hero: React.FC<{ onOpenBookingModal: () => void }> = ({ onOpenBooki
   };
 
   return (
-    <section id="home" className="relative min-h-[75svh] md:min-h-screen h-auto md:h-screen w-full flex flex-col justify-center overflow-hidden bg-[#070707] py-20 sm:py-24 md:py-0">
+    <section id="home" className="relative min-h-[75svh] md:min-h-screen h-auto md:h-screen w-full flex flex-col justify-end overflow-hidden bg-[#070707] pt-28 pb-20 sm:pt-32 sm:pb-24 md:pt-36 md:pb-24">
       {/* Hero Backgrounds */}
       {activeVideo ? (
         <div className="absolute inset-0 z-0">
@@ -112,8 +112,8 @@ export const Hero: React.FC<{ onOpenBookingModal: () => void }> = ({ onOpenBooki
       )}
 
       {/* Hero Content */}
-      <div className="relative z-20 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 w-full my-auto">
-        <div className="max-w-4xl">
+      <div className="relative z-20 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 w-full mt-auto">
+        <div className="max-w-4xl text-left">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentSlideIndex}
