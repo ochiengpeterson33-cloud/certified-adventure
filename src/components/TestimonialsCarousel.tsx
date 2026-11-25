@@ -14,9 +14,9 @@ export const TestimonialsCarousel: React.FC = () => {
        return dbTestimonials.map(t => ({
          id: t.id,
          name: t.client_name,
-         location: t.client_role || 'Happy Traveler',
-         avatar: t.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
-         trip: 'Custom Tour',
+         location: t.client_role || '',
+         avatar: t.avatar_url || '',
+         trip: t.package_title || '',
          rating: t.rating || 5,
          reviewText: t.content,
          date: new Date().toISOString(),
@@ -92,17 +92,25 @@ export const TestimonialsCarousel: React.FC = () => {
               </p>
 
               <div className="flex items-center gap-4">
-                <img loading="lazy" src={current.avatar} alt={current.name} className="w-14 h-14 rounded-full object-cover border-2 border-slate-200 dark:border-white/10" />
+                {current.avatar ? (
+                  <img loading="lazy" src={current.avatar} alt={current.name} className="w-14 h-14 rounded-full object-cover border-2 border-slate-200 dark:border-white/10" />
+                ) : (
+                  <div className="w-14 h-14 rounded-full bg-[#FF6A00]/15 border-2 border-[#FF6A00]/30 flex items-center justify-center font-black text-lg text-[#FF6A00] shrink-0">
+                    {(current.name?.[0] || 'C').toUpperCase()}
+                  </div>
+                )}
                 <div>
                   <h4 className="text-slate-900 dark:text-white font-bold tracking-wide flex items-center gap-2">
                     {current.name}
                     {current.verified && <CheckCircle2 className="w-4 h-4 text-green-500" />}
                   </h4>
-                  <div className="text-slate-500 dark:text-white/50 text-sm flex items-center gap-2">
-                    <span>{current.location}</span>
-                    <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-white/20" />
-                    <span className="text-[#FF6A00]">{current.trip}</span>
-                  </div>
+                  {(current.location || current.trip) && (
+                    <div className="text-slate-500 dark:text-white/50 text-sm flex items-center gap-2">
+                      {current.location && <span>{current.location}</span>}
+                      {current.location && current.trip && <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-white/20" />}
+                      {current.trip && <span className="text-[#FF6A00]">{current.trip}</span>}
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>

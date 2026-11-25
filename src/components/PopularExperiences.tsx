@@ -40,7 +40,7 @@ export const PopularExperiences: React.FC<PopularExperiencesProps> = ({
          seatsRemaining: 8,
          totalSeats: 15,
          nextDeparture: 'Flexible',
-         image: pkg.featured_image || 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=1200&q=80',
+         image: pkg.featured_image || '',
          gallery: pkg.featured_image ? [pkg.featured_image] : [],
          description: pkg.description || '',
          highlights: [],
@@ -161,13 +161,19 @@ export const PopularExperiences: React.FC<PopularExperiencesProps> = ({
                 className="group relative rounded-3xl glass-card border border-[#F4E8D2]/10 hover:border-[#E67A3A]/60 overflow-hidden flex flex-col justify-between transition-all duration-300 shadow-xl"
               >
                 {/* Top Image Banner */}
-                <div className="relative h-64 overflow-hidden">
-                  <img
-                    src={exp.image}
-                    alt={exp.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 filter brightness-95"
-                    loading="lazy"
-                  />
+                <div className="relative h-64 overflow-hidden bg-[#08121B]">
+                  {exp.image ? (
+                    <img
+                      src={exp.image}
+                      alt={exp.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 filter brightness-95"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#08121B] to-[#13293d] text-[#E67A3A]/40">
+                      <Compass className="w-12 h-12" />
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#08121B] via-transparent to-black/30" />
 
                   {/* Category Pill */}

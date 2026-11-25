@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Compass, Plus, Trash2, X, Save, Image as ImageIcon } from 'lucide-react';
+import { invalidateServerCache } from '../hooks/useSupabaseData';
 
 interface Package {
   id: string;
@@ -15,6 +16,7 @@ interface Package {
 }
 
 export function PackagesManager() {
+  const queryClient = useQueryClient();
   const [editingItem, setEditingItem] = useState<Package | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -51,6 +53,8 @@ export function PackagesManager() {
       setEditingItem(null);
       setIsCreating(false);
       refetch();
+      queryClient.invalidateQueries({ queryKey: ['packages'] });
+      void invalidateServerCache(['cms']);
     } catch (error) {
       console.error("Error saving package:", error);
       alert("Failed to save changes");
@@ -63,6 +67,8 @@ export function PackagesManager() {
       const { error } = await supabase.from('packages').delete().eq('id', id);
       if (error) throw error;
       refetch();
+      queryClient.invalidateQueries({ queryKey: ['packages'] });
+      void invalidateServerCache(['cms']);
     } catch (error) {
       console.error("Error deleting package:", error);
       alert("Failed to delete package");

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
@@ -12,22 +12,45 @@ import { MerchStore } from './components/MerchStore';
 import { TestimonialsCarousel } from './components/TestimonialsCarousel';
 import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
-import { ExperienceModal } from './components/ExperienceModal';
-import { BookingModal } from './components/BookingModal';
-import { CustomTripBuilder } from './components/CustomTripBuilder';
 import { ExperienceItem } from './types';
+
+const ExperienceModal = lazy(() =>
+  import('./components/ExperienceModal').then((m) => ({ default: m.ExperienceModal }))
+);
+const BookingModal = lazy(() =>
+  import('./components/BookingModal').then((m) => ({ default: m.BookingModal }))
+);
+const CustomTripBuilder = lazy(() =>
+  import('./components/CustomTripBuilder').then((m) => ({ default: m.CustomTripBuilder }))
+);
 
 export function PublicSite() {
   const location = useLocation();
   const [selectedExperience, setSelectedExperience] = useState<ExperienceItem | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [isAiPlannerOpen, setIsAiPlannerOpen] = useState(false);
-  
+
+  const [hasOpenedExperience, setHasOpenedExperience] = useState(false);
+  const [hasOpenedBooking, setHasOpenedBooking] = useState(false);
+  const [hasOpenedAiPlanner, setHasOpenedAiPlanner] = useState(false);
+
   const [bookingDestination, setBookingDestination] = useState<string>('Maasai Mara');
   const [bookingPackageTitle, setBookingPackageTitle] = useState<string>('');
 
   const [filterDestination, setFilterDestination] = useState<string>('');
   const [filterType, setFilterType] = useState<string>('');
+
+  useEffect(() => {
+    if (selectedExperience) setHasOpenedExperience(true);
+  }, [selectedExperience]);
+
+  useEffect(() => {
+    if (isBookingModalOpen) setHasOpenedBooking(true);
+  }, [isBookingModalOpen]);
+
+  useEffect(() => {
+    if (isAiPlannerOpen) setHasOpenedAiPlanner(true);
+  }, [isAiPlannerOpen]);
 
   // Handle section scrolling on page mount or refresh
   useEffect(() => {
@@ -61,6 +84,7 @@ export function PublicSite() {
   const handleOpenBookingModal = (destination?: string, packageTitle?: string) => {
     if (destination) setBookingDestination(destination);
     if (packageTitle) setBookingPackageTitle(packageTitle);
+    setHasOpenedBooking(true);
     setIsBookingModalOpen(true);
   };
 
@@ -74,11 +98,6 @@ export function PublicSite() {
   const handleFilterExperience = (destination: string, type: string) => {
     setFilterDestination(destination);
     setFilterType(type);
-  };
-
-  const handleSelectDestinationFromGrid = (destName: string) => {
-    setFilterDestination(destName);
-    handleNavigateSection('packages');
   };
 
   return (
@@ -97,10 +116,13 @@ export function PublicSite() {
         onOpenBookingModal={handleOpenBookingModal}
         onNavigateSection={handleNavigateSection}
         onFilterExperience={handleFilterExperience}
-        onOpenAiPlanner={() => setIsAiPlannerOpen(true)}
+        onOpenAiPlanner={() => {
+          setHasOpenedAiPlanner(true);
+          setIsAiPlannerOpen(true);
+        }}
       />
 
-      {/* Feature Bar */}
+      {/* Feature Bar / Community Voting */}
       <FeatureBar />
 
       {/* Our Experiences Section */}
@@ -133,25 +155,37 @@ export function PublicSite() {
         onOpenBookingModal={() => handleOpenBookingModal()}
       />
 
-      {/* Modals */}
-      <ExperienceModal
-        experience={selectedExperience}
-        onClose={() => setSelectedExperience(null)}
-        onOpenBookingModal={handleOpenBookingModal}
-      />
+      {/* Lazy-Loaded Interactive Modals (only downloaded & mounted when opened) */}
+      {hasOpenedExperience && (
+        <Suspense fallback={null}>
+          <ExperienceModal
+            experience={selectedExperience}
+            onClose={() => setSelectedExperience(null)}
+            onOpenBookingModal={handleOpenBookingModal}
+          />
+        </Suspense>
+      )}
 
-      <BookingModal
-        isOpen={isBookingModalOpen}
-        onClose={() => setIsBookingModalOpen(false)}
-        destination={bookingDestination}
-        packageTitle={bookingPackageTitle}
-      />
+      {hasOpenedBooking && (
+        <Suspense fallback={null}>
+          <BookingModal
+            isOpen={isBookingModalOpen}
+            onClose={() => setIsBookingModalOpen(false)}
+            destination={bookingDestination}
+            packageTitle={bookingPackageTitle}
+          />
+        </Suspense>
+      )}
 
-      <CustomTripBuilder
-        isOpen={isAiPlannerOpen}
-        onClose={() => setIsAiPlannerOpen(false)}
-        onOpenBookingModal={handleOpenBookingModal}
-      />
+      {hasOpenedAiPlanner && (
+        <Suspense fallback={null}>
+          <CustomTripBuilder
+            isOpen={isAiPlannerOpen}
+            onClose={() => setIsAiPlannerOpen(false)}
+            onOpenBookingModal={handleOpenBookingModal}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

@@ -46,12 +46,18 @@ export const AdventuresSection: React.FC<{ onOpenBookingModal: () => void }> = (
               className="group relative rounded-3xl overflow-hidden glass-panel bg-slate-50 hover:bg-white dark:bg-[#111111]/60 dark:hover:bg-[#111111] transition-all duration-500 border border-slate-200 dark:border-white/5 hover:border-[#FF6A00]/40 shadow-sm hover:shadow-xl"
             >
               {/* Image */}
-              <div className="relative h-64 overflow-hidden">
-                <img loading="lazy" 
-                  src={adv.image_url || 'https://images.unsplash.com/photo-1549468057-5ce754b4fa26?auto=format&fit=crop&w=800&q=80'} 
-                  alt={adv.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 filter brightness-95 dark:brightness-90"
-                />
+              <div className="relative h-64 overflow-hidden bg-[#08121B]">
+                {(adv.featured_image || adv.image_url) ? (
+                  <img loading="lazy" 
+                    src={adv.featured_image || adv.image_url} 
+                    alt={adv.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 filter brightness-95 dark:brightness-90"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#08121B] to-[#13293d] text-[#FF6A00]/40">
+                    <ArrowRight className="w-12 h-12" />
+                  </div>
+                )}
                 <div className="absolute top-4 right-4 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
                   <span className="text-[#FF6A00] font-bold font-['Poppins']">${adv.price}</span>
                 </div>

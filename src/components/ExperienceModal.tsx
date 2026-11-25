@@ -53,12 +53,18 @@ export const ExperienceModal: React.FC<ExperienceModalProps> = ({
           className="relative w-full max-w-4xl bg-white dark:bg-[#0d1c29] border border-slate-200 dark:border-[#E67A3A]/40 rounded-3xl shadow-2xl overflow-hidden z-10 my-2 sm:my-8 max-h-[95vh] sm:max-h-[90vh] flex flex-col"
         >
           {/* Top Header Banner */}
-          <div className="relative h-48 sm:h-64 md:h-80 flex-shrink-0">
-            <img
-              src={currentHeroImage}
-              alt={displayExp.title}
-              className="w-full h-full object-cover"
-            />
+          <div className="relative h-48 sm:h-64 md:h-80 flex-shrink-0 bg-[#08121B]">
+            {currentHeroImage ? (
+              <img
+                src={currentHeroImage}
+                alt={displayExp.title}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#08121B] to-[#13293d] text-[#E67A3A]/40">
+                <Compass className="w-16 h-16" />
+              </div>
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
 
             {/* Close Button */}

@@ -25,7 +25,7 @@ export const UpcomingRoadTrips: React.FC<UpcomingRoadTripsProps> = ({ onOpenBook
          route: 'Nairobi to Destination',
          vehicleType: '4x4 Luxury Safari Cruiser',
          status: 'Booking Open',
-         image: trip.featured_image || 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=1200&q=80'
+         image: trip.featured_image || ''
        }));
     }
     return list;
@@ -73,12 +73,18 @@ export const UpcomingRoadTrips: React.FC<UpcomingRoadTripsProps> = ({ onOpenBook
               >
                 {/* Left Thumbnail + Basic Info */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 flex-1">
-                  <div className="relative w-full sm:w-44 h-32 rounded-2xl overflow-hidden flex-shrink-0">
-                    <img
-                      src={trip.image}
-                      alt={trip.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
+                  <div className="relative w-full sm:w-44 h-32 rounded-2xl overflow-hidden flex-shrink-0 bg-[#08121B]">
+                    {trip.image ? (
+                      <img
+                        src={trip.image}
+                        alt={trip.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#08121B] to-[#13293d] text-[#E67A3A]/40">
+                        <Bus className="w-10 h-10" />
+                      </div>
+                    )}
                     <div className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full bg-[#08121B]/80 text-[#E67A3A] text-[10px] font-bold">
                       {trip.status}
                     </div>

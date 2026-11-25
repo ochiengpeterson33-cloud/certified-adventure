@@ -19,14 +19,15 @@ import { supabase } from '../lib/supabase';
 import {
   useCulturePolls,
   useCulturePollVotes,
+  useMyRemotePollVotes,
   castCulturePollVote,
   getSavedUserPollVotes,
-  getLocalPollVoteAdjustments,
   getOrCreateVoterToken,
   resolvePollStatus,
+  mergePollTallyRows,
   LOCAL_POLL_SYNC_EVENT,
   CulturePoll,
-  CultureVoteRow,
+  TallyMap,
   ResolvedPollStatus,
 } from '../hooks/useSupabaseData';
 
@@ -88,24 +89,38 @@ function formatCountdownAndDeadline(closesAt?: string, nowMs: number = Date.now(
 export const FeatureBar: React.FC = () => {
   const queryClient = useQueryClient();
 
-  const { data: dbPolls, isLoading } = useCulturePolls();
-  const { data: votesData } = useCulturePollVotes();
+  const voterToken = useMemo(() => getOrCreateVoterToken(), []);
 
+  const { data: dbPolls, isLoading } = useCulturePolls();
   const [nowMs, setNowMs] = useState<number>(() => Date.now());
   const [filter, setFilter] = useState<PollFilter>('ALL');
   const [myVotes, setMyVotes] = useState<Record<string, string>>(() => getSavedUserPollVotes());
-  const [localAdjustments, setLocalAdjustments] = useState<Record<string, Record<string, number>>>(() =>
-    getLocalPollVoteAdjustments()
-  );
   const [peekPollIds, setPeekPollIds] = useState<Record<string, boolean>>({});
   const [submittingPollId, setSubmittingPollId] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
-  const [statusMessage, setStatusMessage] = useState<Record<string, string>>({});
+  const [statusMessage, setStatusMessage] = useState<Record<string, { text: string; isError?: boolean }>>({});
   const [mobileSlideIdx, setMobileSlideIdx] = useState<number>(0);
   const mobileTrackRef = useRef<HTMLDivElement>(null);
 
-  const voterToken = useMemo(() => getOrCreateVoterToken(), []);
+  const allPolls: CulturePoll[] = useMemo(() => {
+    const source = Array.isArray(dbPolls) ? dbPolls : [];
+    return source
+      .filter((p) => Boolean(p.question?.trim()))
+      .map((p) => ({
+        ...p,
+        options: (p.options || []).filter((o) => Boolean(o.title?.trim())),
+      }))
+      .filter((p) => p.options.length >= 2);
+  }, [dbPolls]);
+
+  const hasActivePolls = useMemo(
+    () => allPolls.some((p) => resolvePollStatus(p, nowMs) !== 'CLOSED'),
+    [allPolls, nowMs]
+  );
+
+  const { data: votesData } = useCulturePollVotes({ hasActivePolls });
+  const { data: remoteMyVotes } = useMyRemotePollVotes(voterToken, currentUserId);
 
   // Tick every second for accurate countdown timers & automatic poll expiry
   useEffect(() => {
@@ -122,56 +137,45 @@ export const FeatureBar: React.FC = () => {
     });
   }, []);
 
-  // Refresh local fallback vote counts & saved choices when synced across tabs
+  // Reconcile confirmed remote votes when get_culture_poll_state returns
   useEffect(() => {
-    const syncLocalState = () => {
+    if (remoteMyVotes?.rpcAvailable && remoteMyVotes.myVotes) {
+      setMyVotes(remoteMyVotes.myVotes);
+    }
+  }, [remoteMyVotes]);
+
+  // Refresh confirmed vote choices when synced across same-browser tabs
+  useEffect(() => {
+    const syncLocalState = (ev: Event) => {
+      const detail = (ev as CustomEvent)?.detail;
+      if (detail?.event === 'votes_reset') {
+        queryClient.invalidateQueries({ queryKey: ['culture-my-votes'] });
+        if (detail.pollId) {
+          setMyVotes((prev) => {
+            const next = { ...prev };
+            delete next[detail.pollId];
+            return next;
+          });
+        }
+        return;
+      }
       setMyVotes(getSavedUserPollVotes());
-      setLocalAdjustments(getLocalPollVoteAdjustments());
     };
     window.addEventListener(LOCAL_POLL_SYNC_EVENT, syncLocalState);
     return () => window.removeEventListener(LOCAL_POLL_SYNC_EVENT, syncLocalState);
-  }, []);
-
-  const allPolls: CulturePoll[] = useMemo(() => {
-    const source = Array.isArray(dbPolls) ? dbPolls : [];
-    return source
-      .filter((p) => Boolean(p.question?.trim()))
-      .map((p) => ({
-        ...p,
-        options: (p.options || []).filter((o) => Boolean(o.title?.trim())),
-      }))
-      .filter((p) => p.options.length >= 2);
-  }, [dbPolls]);
+  }, [queryClient]);
 
   const enrichedPolls = useMemo(() => {
-    const remoteRows = votesData?.rows || [];
-    const tableAvailable = votesData?.tableAvailable ?? false;
+    const tallies: TallyMap = votesData?.tallies || {};
 
     return allPolls.map((poll) => {
       const status = resolvePollStatus(poll, nowMs);
       const counts: Record<string, number> = {};
-      let userVotedOptionId: string | null = myVotes[poll.id] || null;
+      const pollTallies = tallies[poll.id] || {};
+      const userVotedOptionId: string | null = myVotes[poll.id] || null;
 
       for (const opt of poll.options) {
-        counts[opt.id] = 0;
-      }
-
-      if (tableAvailable) {
-        for (const row of remoteRows) {
-          if (row.poll_id === poll.id && counts[row.option_id] !== undefined) {
-            counts[row.option_id] += 1;
-            const matchesToken = row.voter_token === voterToken;
-            const matchesUser = Boolean(currentUserId && row.user_id === currentUserId);
-            if (matchesToken || matchesUser) {
-              userVotedOptionId = row.option_id;
-            }
-          }
-        }
-      } else {
-        const localPollCounts = localAdjustments[poll.id] || {};
-        for (const opt of poll.options) {
-          counts[opt.id] = Number(localPollCounts[opt.id] || 0);
-        }
+        counts[opt.id] = Number(pollTallies[opt.id] || 0);
       }
 
       let total = 0;
@@ -205,7 +209,7 @@ export const FeatureBar: React.FC = () => {
         userVotedOptionId,
       };
     });
-  }, [allPolls, votesData, myVotes, localAdjustments, voterToken, currentUserId, nowMs]);
+  }, [allPolls, votesData, myVotes, nowMs]);
 
   const summaryStats = useMemo(() => {
     let totalVotes = 0;
@@ -276,7 +280,10 @@ export const FeatureBar: React.FC = () => {
     if (resolved === 'CLOSED') {
       setStatusMessage((prev) => ({
         ...prev,
-        [poll.id]: 'This poll has closed and is no longer accepting votes.',
+        [poll.id]: {
+          text: 'This poll has closed and is no longer accepting votes.',
+          isError: true,
+        },
       }));
       return;
     }
@@ -286,48 +293,62 @@ export const FeatureBar: React.FC = () => {
     }
 
     setSubmittingPollId(poll.id);
-    setStatusMessage((prev) => ({ ...prev, [poll.id]: '' }));
+    setStatusMessage((prev) => {
+      const next = { ...prev };
+      delete next[poll.id];
+      return next;
+    });
 
     try {
       const result = await castCulturePollVote(poll, optionId);
-      const confirmedId = result.votedOptionId || optionId;
 
-      setMyVotes((prev) => ({ ...prev, [poll.id]: confirmedId }));
-      setLocalAdjustments(getLocalPollVoteAdjustments());
+      if (result.ok) {
+        const confirmedId = result.votedOptionId || optionId;
+        setMyVotes((prev) => ({ ...prev, [poll.id]: confirmedId }));
 
-      if (result.persistedRemote) {
-        queryClient.setQueryData<{ rows: CultureVoteRow[]; tableAvailable: boolean }>(
-          ['culture-poll-votes'],
-          (prev) => {
-            if (!prev) return prev;
-            const exists = prev.rows.some(
-              (r) => r.poll_id === poll.id && r.voter_token === voterToken
-            );
-            if (exists) return prev;
-            return {
-              tableAvailable: true,
-              rows: [
-                ...prev.rows,
-                {
-                  poll_id: poll.id,
-                  option_id: confirmedId,
-                  voter_token: voterToken,
-                  user_id: currentUserId,
-                },
-              ],
-            };
-          }
-        );
+        if (result.tallies && result.tallies.length > 0) {
+          queryClient.setQueryData<{ tallies: TallyMap; tableAvailable: boolean }>(
+            ['culture-poll-tallies'],
+            (prev) => mergePollTallyRows(prev, poll.id, result.tallies!)
+          );
+        }
+        void queryClient.invalidateQueries({ queryKey: ['culture-poll-tallies'] });
+        return;
       }
 
       if (result.alreadyVoted) {
+        const confirmedId = result.votedOptionId || optionId;
+        setMyVotes((prev) => ({ ...prev, [poll.id]: confirmedId }));
+        if (result.tallies && result.tallies.length > 0) {
+          queryClient.setQueryData<{ tallies: TallyMap; tableAvailable: boolean }>(
+            ['culture-poll-tallies'],
+            (prev) => mergePollTallyRows(prev, poll.id, result.tallies!)
+          );
+        }
         setStatusMessage((prev) => ({
           ...prev,
-          [poll.id]: 'Your previous vote for this poll is already recorded.',
+          [poll.id]: {
+            text: result.error || 'Your previous vote for this poll is already recorded.',
+            isError: false,
+          },
         }));
+        return;
       }
 
-      await queryClient.invalidateQueries({ queryKey: ['culture-poll-votes'] });
+      if (result.expired) {
+        void queryClient.invalidateQueries({ queryKey: ['homepage-culture-polls'] });
+      }
+
+      // Never falsely confirm on failure — show clear retry message
+      setStatusMessage((prev) => ({
+        ...prev,
+        [poll.id]: {
+          text:
+            result.error ||
+            'Could not save your vote due to a connection issue. Please tap again to retry.',
+          isError: true,
+        },
+      }));
     } finally {
       setSubmittingPollId(null);
     }
@@ -631,9 +652,16 @@ export const FeatureBar: React.FC = () => {
                         </div>
                       )}
 
-                      {statusMessage[poll.id] && (
-                        <p className="mb-3 text-xs font-medium text-[#FF6A00]">
-                          {statusMessage[poll.id]}
+                      {statusMessage[poll.id]?.text && (
+                        <p
+                          role="status"
+                          className={`mb-3 text-xs font-semibold rounded-lg px-3 py-2 ${
+                            statusMessage[poll.id].isError
+                              ? 'bg-red-50 text-red-700 border border-red-200'
+                              : 'text-[#FF6A00]'
+                          }`}
+                        >
+                          {statusMessage[poll.id].text}
                         </p>
                       )}
 
@@ -683,6 +711,7 @@ export const FeatureBar: React.FC = () => {
                                       alt={opt.title}
                                       referrerPolicy="no-referrer"
                                       loading="lazy"
+                                      decoding="async"
                                       onError={() =>
                                         setFailedImages((prev) => ({ ...prev, [opt.id]: true }))
                                       }

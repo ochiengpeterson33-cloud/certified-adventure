@@ -9,7 +9,6 @@ interface ExperienceData {
   location: string;
   description: string;
   icon: React.ComponentType<{ className?: string }>;
-  image: string;
   tag: string;
 }
 
@@ -20,7 +19,6 @@ const experiences: ExperienceData[] = [
     location: 'Nairobi City & Street Culture',
     description: "Ride Nairobi's most iconic matatus with music, lights and street culture.",
     icon: Bus,
-    image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80',
     tag: 'Culture & Vibe',
   },
   {
@@ -29,7 +27,6 @@ const experiences: ExperienceData[] = [
     location: 'Rift Valley & Scenic Escapes',
     description: 'Weekend escapes and unforgettable destinations across Kenya.',
     icon: Map,
-    image: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80',
     tag: 'Adventure',
   },
   {
@@ -38,7 +35,6 @@ const experiences: ExperienceData[] = [
     location: 'Nairobi & Countrywide',
     description: 'Comfortable and stylish transport for special occasions and weddings.',
     icon: Heart,
-    image: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80',
     tag: 'Special Events',
   },
   {
@@ -47,7 +43,6 @@ const experiences: ExperienceData[] = [
     location: 'Maasai Mara & Amboseli',
     description: 'Guided wildlife adventures and game drives across Kenya.',
     icon: Compass,
-    image: 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=800&q=80',
     tag: 'Wildlife',
   },
   {
@@ -56,7 +51,6 @@ const experiences: ExperienceData[] = [
     location: 'Kenya Nationwide Charter',
     description: 'Perfect for schools, churches, corporates, retreats and group events.',
     icon: Users,
-    image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80',
     tag: 'Group Hire',
   },
   {
@@ -65,7 +59,6 @@ const experiences: ExperienceData[] = [
     location: 'Nairobi & Executive Travel',
     description: 'Comfortable executive transport and chauffeurs for individuals and families.',
     icon: Car,
-    image: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=800&q=80',
     tag: 'Executive',
   }
 ];
@@ -205,7 +198,8 @@ export const OurExperiences: React.FC<OurExperiencesProps> = ({ onOpenBookingMod
 
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
           {experiences.map((exp, idx) => {
-            const imgUrl = dynamicImages?.[exp.id] || exp.image;
+            const imgUrl = dynamicImages?.[exp.id];
+            const videoUrl = dynamicImages?.[exp.id + '_video'];
             return (
             <motion.div
               key={exp.id}
@@ -216,16 +210,20 @@ export const OurExperiences: React.FC<OurExperiencesProps> = ({ onOpenBookingMod
               onClick={() => handleBook(exp)}
               className="group relative rounded-2xl sm:rounded-3xl overflow-hidden glass-card bg-white dark:bg-transparent border border-slate-200 dark:border-[#F4E8D2]/10 hover:border-[#E67A3A]/50 transition-all duration-500 shadow-lg dark:shadow-xl flex flex-col cursor-pointer hover:shadow-2xl hover:shadow-[#E67A3A]/10 min-w-0"
             >
-              <div className="aspect-[4/3] w-full overflow-hidden relative">
-                {dynamicImages?.[exp.id + '_video'] ? (
-                  <ExperienceVideo src={dynamicImages[exp.id + '_video']} />
-                ) : (
+              <div className="aspect-[4/3] w-full overflow-hidden relative bg-[#08121B]">
+                {videoUrl ? (
+                  <ExperienceVideo src={videoUrl} />
+                ) : imgUrl ? (
                   <img 
                     src={imgUrl} 
                     alt={exp.title}
                     loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-[#08121B] via-[#102436] to-[#1a110a] flex items-center justify-center">
+                    <exp.icon className="w-14 h-14 sm:w-20 sm:h-20 text-[#FF6A00]/25 group-hover:text-[#FF6A00]/45 group-hover:scale-110 transition-all duration-500" />
+                  </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-white via-white/30 dark:from-[#08121B] dark:via-[#08121B]/60 to-transparent" />
                 

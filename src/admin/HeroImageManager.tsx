@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDropzone, DropzoneOptions } from 'react-dropzone';
 import { Image as ImageIcon, Upload, Edit, Trash2, Plus, Save, X } from 'lucide-react';
+import { invalidateServerCache } from '../hooks/useSupabaseData';
+import { optimizeImageForUpload } from '../lib/imageOptimizer';
 
 interface HeroSlide {
   id: string;
@@ -14,6 +16,7 @@ interface HeroSlide {
 }
 
 export function HeroImageManager() {
+  const queryClient = useQueryClient();
   const [realtimeSlides, setRealtimeSlides] = useState<HeroSlide[]>([]);
   const [editingSlide, setEditingSlide] = useState<HeroSlide | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -34,30 +37,18 @@ export function HeroImageManager() {
     }
   }, [initialSlides]);
 
-  useEffect(() => {
-    const channel = supabase
-      .channel('hero_slides_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'hero_slides' }, (payload) => {
-        refetch();
-      })
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [refetch]);
-
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (!editingSlide || acceptedFiles.length === 0) return;
     
     setIsUploading(true);
     try {
-      const file = acceptedFiles[0];
-      const fileExt = file.name.split('.').pop();
+      const optimized = await optimizeImageForUpload(acceptedFiles[0]);
+      const fileExt = optimized.name.split('.').pop() || 'webp';
       const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from('hero-images')
-        .upload(fileName, file);
+        .upload(fileName, optimized, { contentType: optimized.type || undefined });
 
       if (uploadError) throw uploadError;
 
@@ -110,6 +101,8 @@ export function HeroImageManager() {
       setEditingSlide(null);
       setIsCreating(false);
       refetch();
+      queryClient.invalidateQueries({ queryKey: ['hero_slides'] });
+      void invalidateServerCache(['cms']);
     } catch (error) {
       console.error("Error saving slide:", error);
       alert("Failed to save changes");
@@ -139,6 +132,8 @@ export function HeroImageManager() {
         setEditingSlide(null);
       }
       refetch();
+      queryClient.invalidateQueries({ queryKey: ['hero_slides'] });
+      void invalidateServerCache(['cms']);
     } catch (error) {
       console.error("Error deleting slide:", error);
       alert("Failed to delete slide");

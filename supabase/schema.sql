@@ -482,39 +482,9 @@ CREATE TABLE media_files (
 ALTER TABLE media_files ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Public read media_files" ON media_files FOR SELECT TO public USING (true);
-CREATE POLICY "Authenticated insert media_files" ON media_files FOR INSERT TO authenticated WITH CHECK (true);
-CREATE POLICY "Authenticated update media_files" ON media_files FOR UPDATE TO authenticated USING (true);
-CREATE POLICY "Authenticated delete media_files" ON media_files FOR DELETE TO authenticated USING (true);
--- Allow anon to upload files and write to media_files for the admin panel in development
-DROP POLICY IF EXISTS "Authenticated insert media_files" ON media_files;
-DROP POLICY IF EXISTS "Authenticated update media_files" ON media_files;
-DROP POLICY IF EXISTS "Authenticated delete media_files" ON media_files;
-
-CREATE POLICY "Public insert media_files" ON media_files FOR INSERT TO public WITH CHECK (true);
-CREATE POLICY "Public update media_files" ON media_files FOR UPDATE TO public USING (true);
-CREATE POLICY "Public delete media_files" ON media_files FOR DELETE TO public USING (true);
-
-DROP POLICY IF EXISTS "Admin Insert Access" ON storage.objects;
-DROP POLICY IF EXISTS "Admin Update Access" ON storage.objects;
-DROP POLICY IF EXISTS "Admin Delete Access" ON storage.objects;
-
-CREATE POLICY "Public Insert Access" ON storage.objects FOR INSERT TO public WITH CHECK (true);
-CREATE POLICY "Public Update Access" ON storage.objects FOR UPDATE TO public USING (true);
-CREATE POLICY "Public Delete Access" ON storage.objects FOR DELETE TO public USING (true);
--- DEVELOPMENT ONLY: Allow public access to all tables so the admin panel works without login
-CREATE POLICY "Public full access hero_slides" ON hero_slides FOR ALL TO public USING (true) WITH CHECK (true);
-CREATE POLICY "Public full access packages" ON packages FOR ALL TO public USING (true) WITH CHECK (true);
-CREATE POLICY "Public full access road_trips" ON road_trips FOR ALL TO public USING (true) WITH CHECK (true);
-CREATE POLICY "Public full access gallery" ON gallery FOR ALL TO public USING (true) WITH CHECK (true);
-CREATE POLICY "Public full access testimonials" ON testimonials FOR ALL TO public USING (true) WITH CHECK (true);
-CREATE POLICY "Public full access events" ON events FOR ALL TO public USING (true) WITH CHECK (true);
-CREATE POLICY "Public full access destinations" ON destinations FOR ALL TO public USING (true) WITH CHECK (true);
-CREATE POLICY "Public full access contact_messages" ON contact_messages FOR ALL TO public USING (true) WITH CHECK (true);
-CREATE POLICY "Public full access bookings" ON bookings FOR ALL TO public USING (true) WITH CHECK (true);
-CREATE POLICY "Public full access media_files" ON media_files FOR ALL TO public USING (true) WITH CHECK (true);
-
--- Allow public access to all storage buckets
-CREATE POLICY "Public Storage full access" ON storage.objects FOR ALL TO public USING (true) WITH CHECK (true);
+CREATE POLICY "Admin write media_files" ON media_files FOR ALL TO authenticated
+  USING (has_role(ARRAY['Super Admin', 'Admin', 'Editor', 'Content Manager', 'Marketing Manager']::user_role[]))
+  WITH CHECK (has_role(ARRAY['Super Admin', 'Admin', 'Editor', 'Content Manager', 'Marketing Manager']::user_role[]));
 
 -- MERCH
 CREATE TABLE merch (
@@ -531,12 +501,11 @@ CREATE TABLE merch (
 ALTER TABLE merch ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read" ON merch FOR SELECT USING (is_active = true);
 CREATE POLICY "Admin write" ON merch FOR ALL USING (has_role(ARRAY['Super Admin', 'Admin', 'Editor', 'Content Manager']::user_role[]));
-CREATE POLICY "Public full access merch" ON merch FOR ALL TO public USING (true) WITH CHECK (true);
 CREATE TRIGGER set_timestamp_merch BEFORE UPDATE ON merch FOR EACH ROW EXECUTE PROCEDURE trigger_set_timestamp();
 
 INSERT INTO storage.buckets (id, name, public) VALUES ('merch-images', 'merch-images', true) ON CONFLICT (id) DO UPDATE SET public = true;
 
--- CULTURE POLL VOTES
+-- CULTURE POLL VOTES & TALLIES (see supabase/culture_polls.sql for full trigger & RPC migration)
 CREATE TABLE IF NOT EXISTS culture_poll_votes (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   poll_id TEXT NOT NULL,
@@ -551,9 +520,26 @@ CREATE UNIQUE INDEX IF NOT EXISTS culture_poll_votes_poll_user_idx
   ON culture_poll_votes (poll_id, user_id)
   WHERE user_id IS NOT NULL;
 
+CREATE INDEX IF NOT EXISTS culture_poll_votes_poll_option_idx
+  ON culture_poll_votes (poll_id, option_id);
+
+CREATE TABLE IF NOT EXISTS culture_poll_tallies (
+  poll_id TEXT NOT NULL,
+  option_id TEXT NOT NULL,
+  vote_count BIGINT NOT NULL DEFAULT 0 CHECK (vote_count >= 0),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (poll_id, option_id)
+);
+
 ALTER TABLE culture_poll_votes ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Public read culture_poll_votes" ON culture_poll_votes FOR SELECT TO public USING (true);
-CREATE POLICY "Public insert culture_poll_votes" ON culture_poll_votes FOR INSERT TO anon, authenticated WITH CHECK (char_length(trim(poll_id)) > 0 AND char_length(trim(option_id)) > 0 AND char_length(trim(voter_token)) >= 8);
-CREATE POLICY "Admin delete culture_poll_votes" ON culture_poll_votes FOR DELETE TO authenticated USING (true);
+ALTER TABLE culture_poll_tallies ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admin read culture_poll_votes" ON culture_poll_votes FOR SELECT TO authenticated
+  USING (has_role(ARRAY['Super Admin', 'Admin']::user_role[]));
+CREATE POLICY "Admin delete culture_poll_votes" ON culture_poll_votes FOR DELETE TO authenticated
+  USING (has_role(ARRAY['Super Admin', 'Admin']::user_role[]));
+CREATE POLICY "Public read culture_poll_tallies" ON culture_poll_tallies FOR SELECT TO public
+  USING (true);
+
 
 

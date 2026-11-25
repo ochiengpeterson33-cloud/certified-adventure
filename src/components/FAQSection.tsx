@@ -1,21 +1,31 @@
-import React, { useState } from 'react';
-import { FAQS_DATA } from '../data/adventureData';
-import { HelpCircle, ChevronDown, Search, Sparkles } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { useFaqs } from '../hooks/useSupabaseData';
+import { HelpCircle, ChevronDown, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export const FAQSection: React.FC = () => {
-  const [openFaqId, setOpenFaqId] = useState<string | null>('faq-1');
+  const { data: dbFaqs } = useFaqs();
+  const [openFaqId, setOpenFaqId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  const categories = ['All', 'Booking & Payments', 'Safety & Guides', 'Road Trips & Vehicles', 'Packing & Preparation', 'Custom Trips'];
+  const faqs = useMemo(() => (Array.isArray(dbFaqs) ? dbFaqs : []), [dbFaqs]);
+  const categories = useMemo(() => {
+    const cats = new Set<string>(['All']);
+    faqs.forEach((f: any) => {
+      if (f.category) cats.add(f.category);
+    });
+    return Array.from(cats);
+  }, [faqs]);
 
-  const filteredFaqs = FAQS_DATA.filter((faq) => {
+  if (faqs.length === 0) return null;
+
+  const filteredFaqs = faqs.filter((faq: any) => {
     const matchesCategory = selectedCategory === 'All' || faq.category === selectedCategory;
     const matchesSearch =
       searchQuery === '' ||
-      faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
+      faq.question?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      faq.answer?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 

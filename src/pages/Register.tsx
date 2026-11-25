@@ -115,16 +115,19 @@ export const Register: React.FC = () => {
         return;
       }
 
-      // Direct profile creation/sync fallback in case remote trigger isn't instantaneous
+      // Direct profile creation fallback in case remote trigger isn't instantaneous
       if (data.user) {
         try {
-          await supabase.from('profiles').upsert({
-            id: data.user.id,
-            first_name: firstName,
-            last_name: lastName,
-            phone: phone.trim(),
-            role: 'Viewer',
-          });
+          await supabase.from('profiles').upsert(
+            {
+              id: data.user.id,
+              first_name: firstName,
+              last_name: lastName,
+              phone: phone.trim(),
+              role: 'Viewer',
+            },
+            { onConflict: 'id', ignoreDuplicates: true }
+          );
         } catch (profileErr) {
           console.warn('Profile sync fallback caught:', profileErr);
         }

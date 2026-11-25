@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingCart, Heart, ArrowRight, Check, Sparkles } from 'lucide-react';
+import { ShoppingCart, Heart, ArrowRight, Check, Sparkles, ShoppingBag } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useMerch } from '../hooks/useSupabaseData';
 import { useCart } from '../contexts/CartContext';
@@ -14,44 +14,9 @@ interface ProductItem {
   sizes?: string[];
 }
 
-const DEFAULT_PRODUCTS: ProductItem[] = [
-  {
-    id: 'merch-hoodie-1',
-    name: 'Certified Signature Safari Hoodie',
-    price: 'KES 4,500',
-    category: 'Apparel',
-    image_url: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=800&q=80',
-    sizes: ['S', 'M', 'L', 'XL'],
-  },
-  {
-    id: 'merch-cap-2',
-    name: 'Wilderness Explorer Camp Cap',
-    price: 'KES 2,200',
-    category: 'Headwear',
-    image_url: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=800&q=80',
-    sizes: ['One Size'],
-  },
-  {
-    id: 'merch-bottle-3',
-    name: 'Certified Stainless Thermal Bottle',
-    price: 'KES 2,800',
-    category: 'Gear',
-    image_url: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=800&q=80',
-    sizes: ['1000ml'],
-  },
-  {
-    id: 'merch-tee-4',
-    name: 'Savannah Sunset Graphic Tee',
-    price: 'KES 2,500',
-    category: 'Apparel',
-    image_url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80',
-    sizes: ['S', 'M', 'L', 'XL'],
-  },
-];
-
 const formatPriceToKES = (priceStr: string | number): string => {
   if (typeof priceStr === 'number') return `KES ${Math.round(priceStr).toLocaleString()}`;
-  if (!priceStr) return 'KES 3,500';
+  if (!priceStr) return '';
   if (priceStr.toUpperCase().includes('KES') || priceStr.toUpperCase().includes('KSH')) return priceStr;
   const num = parseFloat(priceStr.replace(/[^0-9.]/g, ''));
   if (isNaN(num)) return priceStr;
@@ -70,15 +35,20 @@ export const MerchStore: React.FC = () => {
   const [likedIds, setLikedIds] = useState<{ [id: string]: boolean }>({});
   const [activeCategory, setActiveCategory] = useState<string>('All');
 
-  // If database products exist, use them; otherwise use default products
-  const products: ProductItem[] = 
-    dbProducts && dbProducts.length > 0 
-      ? dbProducts.filter((p: any) => p.is_active !== false).map((p: any) => ({
-          ...p,
-          price: formatPriceToKES(p.price),
-          sizes: p.sizes || (p.name.toLowerCase().includes('bottle') || p.name.toLowerCase().includes('cap') ? ['Standard'] : ['S', 'M', 'L', 'XL']),
-        }))
-      : DEFAULT_PRODUCTS;
+  const products: ProductItem[] =
+    dbProducts && dbProducts.length > 0
+      ? dbProducts
+          .filter((p: any) => p.is_active !== false)
+          .map((p: any) => ({
+            ...p,
+            price: formatPriceToKES(p.price),
+            sizes:
+              p.sizes ||
+              (p.name?.toLowerCase().includes('bottle') || p.name?.toLowerCase().includes('cap')
+                ? ['Standard']
+                : ['S', 'M', 'L', 'XL']),
+          }))
+      : [];
 
   const handleSizeChange = (productId: string, size: string) => {
     setSelectedSizes((prev) => ({ ...prev, [productId]: size }));
@@ -161,6 +131,17 @@ export const MerchStore: React.FC = () => {
         </div>
 
         {/* Product Cards Grid */}
+        {filteredProducts.length === 0 ? (
+          <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#121721] p-10 text-center">
+            <ShoppingBag className="w-10 h-10 text-[#FF6A00] mx-auto mb-3 opacity-80" />
+            <p className="text-slate-900 dark:text-white font-bold text-base mb-1">
+              No official merch products listed yet
+            </p>
+            <p className="text-slate-500 dark:text-white/60 text-sm font-['Inter',sans-serif]">
+              Products added in the Admin Merch Manager will appear here.
+            </p>
+          </div>
+        ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-7">
           {filteredProducts.map((prod, idx) => {
             const isAdded = addedIds[prod.id];
@@ -179,12 +160,18 @@ export const MerchStore: React.FC = () => {
               >
                 {/* Image Section */}
                 <div className="relative aspect-square overflow-hidden bg-slate-100 dark:bg-black/40">
-                  <img
-                    loading="lazy"
-                    src={prod.image_url}
-                    alt={prod.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
+                  {prod.image_url ? (
+                    <img
+                      loading="lazy"
+                      src={prod.image_url}
+                      alt={prod.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#08121B] to-[#13293d] text-[#FF6A00]/40">
+                      <ShoppingBag className="w-12 h-12" />
+                    </div>
+                  )}
 
                   {/* Like Button */}
                   <button
@@ -288,6 +275,7 @@ export const MerchStore: React.FC = () => {
             );
           })}
         </div>
+        )}
       </div>
     </section>
   );

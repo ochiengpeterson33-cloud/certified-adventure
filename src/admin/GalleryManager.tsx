@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDropzone, DropzoneOptions } from 'react-dropzone';
 import { Image as ImageIcon, Upload, Trash2, Plus, Save, X } from 'lucide-react';
+import { invalidateServerCache } from '../hooks/useSupabaseData';
+import { optimizeImageForUpload } from '../lib/imageOptimizer';
 
 interface GalleryItem {
   id: string;
@@ -12,6 +14,7 @@ interface GalleryItem {
 }
 
 export function GalleryManager() {
+  const queryClient = useQueryClient();
   const [editingItem, setEditingItem] = useState<GalleryItem | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -30,13 +33,13 @@ export function GalleryManager() {
     
     setIsUploading(true);
     try {
-      const file = acceptedFiles[0];
-      const fileExt = file.name.split('.').pop();
+      const optimized = await optimizeImageForUpload(acceptedFiles[0]);
+      const fileExt = optimized.name.split('.').pop() || 'webp';
       const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from('gallery-images')
-        .upload(fileName, file);
+        .upload(fileName, optimized, { contentType: optimized.type || undefined });
 
       if (uploadError) throw uploadError;
 
@@ -86,6 +89,8 @@ export function GalleryManager() {
       setEditingItem(null);
       setIsCreating(false);
       refetch();
+      queryClient.invalidateQueries({ queryKey: ['gallery'] });
+      void invalidateServerCache(['cms']);
     } catch (error) {
       console.error("Error saving item:", error);
       alert("Failed to save changes");
@@ -98,6 +103,8 @@ export function GalleryManager() {
       const { error } = await supabase.from('gallery').delete().eq('id', id);
       if (error) throw error;
       refetch();
+      queryClient.invalidateQueries({ queryKey: ['gallery'] });
+      void invalidateServerCache(['cms']);
     } catch (error) {
       console.error("Error deleting item:", error);
       alert("Failed to delete item");

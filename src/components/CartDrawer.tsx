@@ -273,11 +273,17 @@ export const CartDrawer: React.FC = () => {
                             key={`${item.id}-${item.size || 'std'}`}
                             className="p-3 sm:p-3.5 rounded-2xl bg-slate-50 dark:bg-[#141B26] border border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-colors flex gap-3 sm:gap-4 items-center"
                           >
-                            <img
-                              src={item.image_url}
-                              alt={item.name}
-                              className="w-16 h-16 sm:w-18 sm:h-18 rounded-xl object-cover bg-slate-200 dark:bg-white/5 border border-slate-200 dark:border-white/5 flex-shrink-0"
-                            />
+                            {item.image_url ? (
+                              <img
+                                src={item.image_url}
+                                alt={item.name}
+                                className="w-16 h-16 sm:w-18 sm:h-18 rounded-xl object-cover bg-slate-200 dark:bg-white/5 border border-slate-200 dark:border-white/5 flex-shrink-0"
+                              />
+                            ) : (
+                              <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-xl bg-slate-200 dark:bg-white/5 border border-slate-200 dark:border-white/5 flex items-center justify-center text-[#FF6A00] flex-shrink-0">
+                                <ShoppingBag className="w-6 h-6" />
+                              </div>
+                            )}
 
                             <div className="flex-1 min-w-0">
                               <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">

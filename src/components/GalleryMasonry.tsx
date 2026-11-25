@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { X, ChevronLeft, ChevronRight, Maximize2, Sparkles } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Maximize2, Sparkles, Image as ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useGallery } from '../hooks/useSupabaseData';
 
@@ -11,77 +11,10 @@ interface GalleryPhoto {
   objectPosition?: string;
 }
 
-// Fallback high-fidelity photos from the project's actual assets
-const FALLBACK_PHOTOS: GalleryPhoto[] = [
-  {
-    id: 'fe428ad4-75b3-47d3-bc6b-53b2a38d81f3',
-    title: 'Park & Chill — Night Bus & Vibes',
-    image_url: 'https://hfhhrdnljpkqmnmvvmun.supabase.co/storage/v1/object/public/gallery-images/8volcg72k2_1785606351318.jpeg',
-    category: 'events',
-    objectPosition: 'center 32%',
-  },
-  {
-    id: '015a34ce-f8f0-43ee-9274-579482d9db6a',
-    title: 'Club Illumination & Sound',
-    image_url: 'https://hfhhrdnljpkqmnmvvmun.supabase.co/storage/v1/object/public/gallery-images/d886lc9nkgl_1785796112517.jpg',
-    category: 'moments',
-    objectPosition: 'center 22%',
-  },
-  {
-    id: '253d0e4c-bd64-4b3b-bba5-5f6efb4e89dd',
-    title: 'Electric Atmosphere',
-    image_url: 'https://hfhhrdnljpkqmnmvvmun.supabase.co/storage/v1/object/public/gallery-images/ue2mf6fgvwa_1785761176015.jpg',
-    category: 'events',
-    objectPosition: 'center 35%',
-  },
-  {
-    id: '046adb01-2cfe-47ab-a424-c7c976521ff9',
-    title: 'Family & Culture',
-    image_url: 'https://hfhhrdnljpkqmnmvvmun.supabase.co/storage/v1/object/public/gallery-images/klgln9v89k_1785607234774.png',
-    category: 'crowd',
-    objectPosition: 'center 25%',
-  },
-  {
-    id: '89922e04-c66c-4fcb-8710-0809dce931f6',
-    title: 'Golden Hour Memories',
-    image_url: 'https://hfhhrdnljpkqmnmvvmun.supabase.co/storage/v1/object/public/gallery-images/87eg0mugs2t_1785796141823.jpg',
-    category: 'moments',
-    objectPosition: 'center 25%',
-  },
-  {
-    id: 'faea079c-fae0-49bf-9b92-d31b2f79b354',
-    title: 'Unfiltered Stage Energy',
-    image_url: 'https://hfhhrdnljpkqmnmvvmun.supabase.co/storage/v1/object/public/gallery-images/0m2j2dkbw97m_1785607316446.png',
-    category: 'crowd',
-    objectPosition: 'center 35%',
-  },
-  {
-    id: '1391af0e-4abd-4346-a850-ed7ff135c92e',
-    title: 'Midnight Beats',
-    image_url: 'https://hfhhrdnljpkqmnmvvmun.supabase.co/storage/v1/object/public/gallery-images/r6jdr86hkbl_1785796250772.jpg',
-    category: 'backstage',
-    objectPosition: 'center 25%',
-  },
-  {
-    id: '0a4fd2aa-2fd6-47cf-9995-33b825660237',
-    title: 'Night Glow & Crowd',
-    image_url: 'https://hfhhrdnljpkqmnmvvmun.supabase.co/storage/v1/object/public/gallery-images/0kew69esrg8n_1785796127068.jpg',
-    category: 'crowd',
-    objectPosition: 'center 25%',
-  },
-  {
-    id: 'ca96ddc5-0fca-4c78-9eb8-49c014c53bb3',
-    title: 'Backstage Chronicles',
-    image_url: 'https://hfhhrdnljpkqmnmvvmun.supabase.co/storage/v1/object/public/gallery-images/x1amarqnps_1785796166677.jpg',
-    category: 'backstage',
-    objectPosition: 'center 25%',
-  },
-];
-
 type FilterCategory = 'All' | 'Events' | 'Crowd' | 'Moments' | 'Backstage';
 
 export const GalleryMasonry: React.FC = () => {
-  const { data: dbGallery } = useGallery();
+  const { data: dbGallery, isLoading } = useGallery();
   const [activeFilter, setActiveFilter] = useState<FilterCategory>('All');
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [showAllPhotos, setShowAllPhotos] = useState<boolean>(false);
@@ -90,12 +23,12 @@ export const GalleryMasonry: React.FC = () => {
   const touchStartXRef = useRef<number | null>(null);
   const touchEndXRef = useRef<number | null>(null);
 
-  // Combine DB photos with fallback while respecting admin updates
   const processedPhotos = useMemo(() => {
-    let rawList: GalleryPhoto[] = [];
+    if (!dbGallery || dbGallery.length === 0) return [];
 
-    if (dbGallery && dbGallery.length > 0) {
-      rawList = dbGallery.map((item, idx) => {
+    return dbGallery
+      .filter((item) => Boolean(item.image_url))
+      .map((item, idx) => {
         const titleLower = (item.title || '').toLowerCase();
         let cat: 'events' | 'crowd' | 'moments' | 'backstage' = 'moments';
         if (
@@ -119,59 +52,21 @@ export const GalleryMasonry: React.FC = () => {
           cat = cats[idx % cats.length];
         }
 
-        let objectPosition = 'center 25%';
-        if (item.image_url.includes('8volcg72k2') || titleLower.includes('park and chill')) {
-          objectPosition = 'center 32%';
-        } else if (item.image_url.includes('ue2mf6fgvwa') || item.image_url.includes('0m2j2dkbw97m')) {
-          objectPosition = 'center 35%';
-        }
-
         return {
           id: item.id,
-          title: item.title || `Gallery Moment ${idx + 1}`,
+          title: item.title || `Gallery Capture ${idx + 1}`,
           image_url: item.image_url,
           category: cat,
-          objectPosition,
+          objectPosition: 'center 25%',
         };
       });
-    } else {
-      rawList = FALLBACK_PHOTOS;
-    }
-
-    // PRIORITIZE FEATURED IMAGE:
-    // Prioritize the photograph showing the illuminated graffiti bus with two people in front (8volcg72k2 / PARK AND CHILL)
-    const featuredBusIndex = rawList.findIndex(
-      (p) =>
-        p.image_url.includes('8volcg72k2') ||
-        p.title.toLowerCase().includes('park and chill') ||
-        p.title.toLowerCase().includes('bus')
-    );
-
-    if (featuredBusIndex > 0) {
-      const [featured] = rawList.splice(featuredBusIndex, 1);
-      rawList.unshift(featured);
-    }
-
-    // Ensure we have at least 7 items for the full editorial layout
-    if (rawList.length < 7) {
-      const existingUrls = new Set(rawList.map((p) => p.image_url));
-      for (const fallback of FALLBACK_PHOTOS) {
-        if (!existingUrls.has(fallback.image_url)) {
-          rawList.push(fallback);
-          if (rawList.length >= 7) break;
-        }
-      }
-    }
-
-    return rawList;
   }, [dbGallery]);
 
   // Filter photos based on tab selection
   const filteredPhotos = useMemo(() => {
     if (activeFilter === 'All') return processedPhotos;
     const key = activeFilter.toLowerCase();
-    const matches = processedPhotos.filter((p) => p.category === key);
-    return matches.length > 0 ? matches : processedPhotos;
+    return processedPhotos.filter((p) => p.category === key);
   }, [processedPhotos, activeFilter]);
 
   // The 7 centerpiece editorial slots
@@ -327,6 +222,35 @@ export const GalleryMasonry: React.FC = () => {
             - Consistent 16–18px rounded corners (rounded-2xl)
             - No distorted images, no horizontal page scrolling, no tiny images
             ========================================================================= */}
+        {isLoading ? (
+          <div className="py-16 flex justify-center">
+            <div className="w-10 h-10 border-4 border-[#FF6A00] border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : filteredPhotos.length === 0 ? (
+          <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50/70 dark:bg-white/5 p-10 text-center">
+            <ImageIcon className="w-10 h-10 text-[#FF6A00] mx-auto mb-3 opacity-80" />
+            <p className="text-slate-900 dark:text-white font-bold text-base mb-1">
+              {processedPhotos.length === 0
+                ? 'No gallery photos published yet'
+                : `No photos in ${activeFilter} right now`}
+            </p>
+            <p className="text-slate-500 dark:text-white/60 text-sm font-['Inter',sans-serif] mb-4">
+              {processedPhotos.length === 0
+                ? 'Photos uploaded in the Admin Gallery Manager will appear right here.'
+                : 'Switch filter tabs to view all uploaded event photos.'}
+            </p>
+            {processedPhotos.length > 0 && activeFilter !== 'All' && (
+              <button
+                type="button"
+                onClick={() => setActiveFilter('All')}
+                className="px-5 py-2.5 rounded-xl bg-[#FF6A00] text-white text-xs font-bold uppercase tracking-wider cursor-pointer"
+              >
+                Show All Photos
+              </button>
+            )}
+          </div>
+        ) : (
+        <>
         <div className="grid md:hidden grid-cols-2 gap-2.5 sm:gap-3">
           {/* 1. FEATURED PHOTOGRAPH (Col-span-2: Occupies almost full available width) */}
           {editorialSlots[0] && (
@@ -885,6 +809,8 @@ export const GalleryMasonry: React.FC = () => {
               </div>
             )}
           </div>
+        )}
+        </>
         )}
       </div>
 

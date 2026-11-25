@@ -6,7 +6,8 @@ import {
   Trash2, Copy, Edit2, Filter, MoreVertical, X, CheckCircle2,
   FolderOpen
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
+import { optimizeImageForUpload } from '../lib/imageOptimizer';
 
 const BUCKETS = [
   'hero-images', 'gallery-images', 'destination-images', 
@@ -65,16 +66,17 @@ export function MediaLibrary() {
     const newUploads = acceptedFiles.map(file => ({ file, progress: 0 }));
     setUploadingFiles(prev => [...prev, ...newUploads]);
 
-    for (const file of acceptedFiles) {
+    for (const rawFile of acceptedFiles) {
       try {
-        const fileExt = file.name.split('.').pop();
+        const file = await optimizeImageForUpload(rawFile);
+        const fileExt = file.name.split('.').pop() || 'webp';
         const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
         const filePath = `${fileName}`;
 
         // Upload to storage
         const { error: uploadError } = await supabase.storage
           .from(selectedBucket)
-          .upload(filePath, file, { upsert: false });
+          .upload(filePath, file, { upsert: false, contentType: file.type || undefined });
 
         if (uploadError) throw uploadError;
 
@@ -96,11 +98,11 @@ export function MediaLibrary() {
 
         if (dbError) throw dbError;
 
-        setUploadingFiles(prev => prev.filter(p => p.file.name !== file.name));
+        setUploadingFiles(prev => prev.filter(p => p.file.name !== rawFile.name));
         fetchFiles();
       } catch (error) {
         console.error("Error uploading file:", error);
-        setUploadingFiles(prev => prev.filter(p => p.file.name !== file.name));
+        setUploadingFiles(prev => prev.filter(p => p.file.name !== rawFile.name));
       }
     }
   }, [selectedBucket]);

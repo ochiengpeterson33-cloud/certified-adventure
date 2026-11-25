@@ -3,10 +3,8 @@ import { Calendar, User, ArrowRight, BookOpen } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
-import { useRealtimeSync } from '../hooks/useSupabaseData';
 
 export const BlogSection: React.FC = () => {
-  useRealtimeSync('blog_posts', ['blog_posts']);
   const { data: dbPosts } = useQuery({
     queryKey: ['blog_posts'],
     queryFn: async () => {
@@ -14,7 +12,9 @@ export const BlogSection: React.FC = () => {
       if (error) throw error;
       return data;
     },
-    staleTime: 1000 * 60 * 5
+    staleTime: 1000 * 60 * 15,
+    gcTime: 1000 * 60 * 30,
+    refetchOnWindowFocus: false,
   });
 
   if (!dbPosts || dbPosts.length === 0) return null;
@@ -46,12 +46,20 @@ export const BlogSection: React.FC = () => {
               className="group rounded-3xl overflow-hidden glass-card border border-[#F4E8D2]/10 hover:border-[#E67A3A]/40 transition-all shadow-lg flex flex-col h-full bg-[#12212F]/40"
             >
               {/* Featured Image */}
-              <div className="relative h-48 overflow-hidden">
-                <img
-                  src={post.featured_image || 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=800&q=80'}
-                  alt={post.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 filter brightness-90"
-                />
+              <div className="relative h-48 overflow-hidden bg-[#08121B]">
+                {post.featured_image ? (
+                  <img
+                    src={post.featured_image}
+                    alt={post.title}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 filter brightness-90"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#08121B] to-[#13293d] text-[#E67A3A]/40">
+                    <BookOpen className="w-12 h-12" />
+                  </div>
+                )}
               </div>
 
               {/* Content */}

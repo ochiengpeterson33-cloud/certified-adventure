@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Calendar, Plus, Edit, Trash2, X, Save, Image as ImageIcon } from 'lucide-react';
 import { useDropzone, DropzoneOptions } from 'react-dropzone';
+import { invalidateServerCache } from '../hooks/useSupabaseData';
+import { optimizeImageForUpload } from '../lib/imageOptimizer';
 
 interface Event {
   id: string;
@@ -16,6 +18,7 @@ interface Event {
 }
 
 export function EventsManager() {
+  const queryClient = useQueryClient();
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -34,13 +37,13 @@ export function EventsManager() {
     
     setIsUploading(true);
     try {
-      const file = acceptedFiles[0];
-      const fileExt = file.name.split('.').pop();
+      const optimized = await optimizeImageForUpload(acceptedFiles[0]);
+      const fileExt = optimized.name.split('.').pop() || 'webp';
       const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from('website-assets')
-        .upload(`events/${fileName}`, file);
+        .upload(`events/${fileName}`, optimized, { contentType: optimized.type || undefined });
 
       if (uploadError) throw uploadError;
 
@@ -85,6 +88,8 @@ export function EventsManager() {
       setEditingEvent(null);
       setIsCreating(false);
       refetch();
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      void invalidateServerCache(['cms']);
     } catch (error) {
       console.error("Error saving event:", error);
       alert("Failed to save changes");
@@ -97,6 +102,8 @@ export function EventsManager() {
       const { error } = await supabase.from('events').delete().eq('id', id);
       if (error) throw error;
       refetch();
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      void invalidateServerCache(['cms']);
     } catch (error) {
       console.error("Error deleting event:", error);
       alert("Failed to delete event");

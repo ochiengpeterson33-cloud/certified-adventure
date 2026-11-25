@@ -31,30 +31,21 @@ export const Hero: React.FC<{ onOpenBookingModal: () => void }> = ({ onOpenBooki
     );
   }
 
-  if (slides.length === 0) {
-    slides.push({
-      id: 'fallback',
-      title: "Discover The Unknown",
-      subtitle: "Join us on epic adventures across the globe.",
-      button_text: "Explore Now",
-      image_url: "https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=1920&q=80"
-    });
-  }
+  const activeVideos = (dbVideos || []).filter((v: any) => v.is_active).sort((a: any, b: any) => a.display_order - b.display_order);
+  const activeVideo = activeVideos.length > 0 ? activeVideos[0] : null;
+  const currentSlide = slides.length > 0 ? slides[currentSlideIndex % slides.length] : null;
 
   const handlePrevSlide = () => {
+    if (slides.length <= 1) return;
     setIsAutoPlaying(false);
     setCurrentSlideIndex((prev) => (prev - 1 + slides.length) % slides.length);
   };
 
   const handleNextSlide = () => {
+    if (slides.length <= 1) return;
     setIsAutoPlaying(false);
     setCurrentSlideIndex((prev) => (prev + 1) % slides.length);
   };
-
-  const currentSlide = slides[currentSlideIndex];
-  
-  const activeVideos = (dbVideos || []).filter((v: any) => v.is_active).sort((a: any, b: any) => a.display_order - b.display_order);
-  const activeVideo = activeVideos.length > 0 ? activeVideos[0] : null;
 
   return (
     <section id="home" className="relative min-h-[75svh] md:min-h-screen h-auto md:h-screen w-full flex flex-col justify-center overflow-hidden bg-[#070707] py-20 sm:py-24 md:py-0">
@@ -63,7 +54,7 @@ export const Hero: React.FC<{ onOpenBookingModal: () => void }> = ({ onOpenBooki
         <div className="absolute inset-0 z-0">
           <video
             src={activeVideo.video_url}
-            poster={activeVideo.poster_url}
+            poster={activeVideo.poster_url || undefined}
             autoPlay
             muted
             loop
@@ -73,7 +64,7 @@ export const Hero: React.FC<{ onOpenBookingModal: () => void }> = ({ onOpenBooki
           <div className="absolute inset-0 bg-gradient-to-b from-[#070707]/30 via-[#070707]/50 to-[#070707]/80" />
           <div className="absolute inset-0 bg-black/50" />
         </div>
-      ) : (
+      ) : currentSlide && currentSlide.image_url ? (
         <AnimatePresence initial={false}>
           <motion.div
             key={currentSlideIndex}
@@ -85,7 +76,7 @@ export const Hero: React.FC<{ onOpenBookingModal: () => void }> = ({ onOpenBooki
           >
             <img
               src={currentSlide.image_url}
-              alt={currentSlide.title || 'Adventure'}
+              alt={currentSlide.title || 'Hero background'}
               fetchPriority={currentSlideIndex === 0 ? "high" : "auto"}
               className="w-full h-full object-cover object-center"
             />
@@ -94,6 +85,10 @@ export const Hero: React.FC<{ onOpenBookingModal: () => void }> = ({ onOpenBooki
             <div className="absolute inset-0 bg-black/40" />
           </motion.div>
         </AnimatePresence>
+      ) : (
+        <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#08121B] via-[#070707] to-[#120a04]">
+          <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-[#FF6A00]/10 blur-[140px] rounded-full pointer-events-none" />
+        </div>
       )}
 
       {/* Slider Controls */}
@@ -127,11 +122,23 @@ export const Hero: React.FC<{ onOpenBookingModal: () => void }> = ({ onOpenBooki
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
-              <h1 className="font-['Poppins'] font-black text-[clamp(1.85rem,5.5vw+0.75rem,5.5rem)] leading-[1.08] text-white tracking-tight mb-4 sm:mb-6 uppercase break-words hyphens-auto" dangerouslySetInnerHTML={{ __html: (activeVideo ? activeVideo.title : currentSlide.title) || '' }}>
-              </h1>
-              <p className="text-sm sm:text-base md:text-xl lg:text-2xl text-white/90 leading-relaxed font-medium mb-6 sm:mb-10 max-w-2xl break-words">
-                {activeVideo ? activeVideo.subtitle : currentSlide.subtitle}
-              </p>
+              {(activeVideo?.title || currentSlide?.title) && (
+                <h1 className="font-['Poppins'] font-black text-[clamp(1.85rem,5.5vw+0.75rem,5.5rem)] leading-[1.08] text-white tracking-tight mb-4 sm:mb-6 uppercase break-words hyphens-auto">
+                  {String(activeVideo ? activeVideo.title : currentSlide?.title || '')
+                    .split(/<br\s*\/?>/i)
+                    .map((line, i) => (
+                      <React.Fragment key={i}>
+                        {i > 0 && <br />}
+                        {line.replace(/<[^>]*>/g, '')}
+                      </React.Fragment>
+                    ))}
+                </h1>
+              )}
+              {(activeVideo?.subtitle || currentSlide?.subtitle) && (
+                <p className="text-sm sm:text-base md:text-xl lg:text-2xl text-white/90 leading-relaxed font-medium mb-6 sm:mb-10 max-w-2xl break-words">
+                  {activeVideo ? activeVideo.subtitle : currentSlide?.subtitle}
+                </p>
+              )}
               
               <motion.button 
                 onClick={onOpenBookingModal}

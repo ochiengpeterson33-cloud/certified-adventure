@@ -19,7 +19,7 @@ export const DestinationsGrid: React.FC<DestinationsGridProps> = ({ onSelectDest
          name: d.name,
          tagline: d.description || 'Explore this amazing destination',
          region: d.county || d.country || 'Kenya',
-         image: d.hero_image || 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=1200&q=80',
+         image: d.hero_image || '',
          packageCount: 5,
          bestTime: 'July - October',
          highlight: 'Wildlife & Scenery',
@@ -30,6 +30,8 @@ export const DestinationsGrid: React.FC<DestinationsGridProps> = ({ onSelectDest
     }
     return list;
   }, [dbDestinations]);
+
+  if (combinedDestinations.length === 0) return null;
 
   return (
     <section id="destinations" className="relative py-24 bg-[#08121B]">
@@ -63,12 +65,18 @@ export const DestinationsGrid: React.FC<DestinationsGridProps> = ({ onSelectDest
                 idx === 0 || idx === 3 ? 'lg:col-span-2 h-80 sm:h-96' : 'h-80 sm:h-96'
               }`}
             >
-              <img
-                src={dest.image}
-                alt={dest.name}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 filter brightness-90 contrast-105"
-                loading="lazy"
-              />
+              {dest.image ? (
+                <img
+                  src={dest.image}
+                  alt={dest.name}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 filter brightness-90 contrast-105"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#08121B] to-[#13293d] text-[#E67A3A]/35">
+                  <Compass className="w-12 h-12" />
+                </div>
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-[#08121B] via-[#08121B]/30 to-transparent" />
 
               {/* Package Badge */}

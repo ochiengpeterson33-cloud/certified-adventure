@@ -5,7 +5,7 @@ import {
   Facebook, Instagram, MessageCircle, Twitter,
   Search, User, Heart, ShoppingCart, 
   Menu, X, ArrowRight, ChevronDown, LogOut, Shield, UserPlus,
-  Sun, Moon
+  Sun, Moon, Compass
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
@@ -187,26 +187,40 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
                               View All <ArrowRight className="w-4 h-4" />
                             </button>
                           </div>
-                          <div className="grid grid-cols-4 gap-4">
-                            {featuredPackages.map((pkg: any, idx: number) => (
-                              <div key={idx} onClick={() => { onOpenBookingModal(pkg.title); setMegaMenuOpen(false); }} className="group cursor-pointer rounded-xl overflow-hidden bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 hover:shadow-xl transition-all duration-300">
-                                <div className="aspect-[4/3] overflow-hidden relative">
-                                  <img loading="lazy" src={pkg.image || 'https://images.unsplash.com/photo-1516426122078-c23e76319801'} alt={pkg.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                </div>
-                                <div className="p-4">
-                                  <h4 className="font-bold text-gray-900 text-sm mb-1 line-clamp-1 group-hover:text-[#FF7A00] transition-colors">{pkg.title}</h4>
-                                  <p className="text-xs text-gray-500 line-clamp-2 mb-3">{pkg.description || 'Explore this amazing destination with us.'}</p>
-                                  <div className="flex items-center justify-between">
-                                    <span className="font-bold text-[#FF7A00] text-sm">${pkg.price || '999'}</span>
-                                    <button className="text-xs font-bold text-gray-900 bg-gray-200 px-3 py-1.5 rounded-lg group-hover:bg-[#FF7A00] group-hover:text-white transition-colors">
-                                      View
-                                    </button>
+                          {featuredPackages.length > 0 ? (
+                            <div className="grid grid-cols-4 gap-4">
+                              {featuredPackages.map((pkg: any, idx: number) => (
+                                <div key={idx} onClick={() => { onOpenBookingModal(pkg.title); setMegaMenuOpen(false); }} className="group cursor-pointer rounded-xl overflow-hidden bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 hover:shadow-xl transition-all duration-300">
+                                  <div className="aspect-[4/3] overflow-hidden relative bg-[#08121B]">
+                                    {(pkg.featured_image || pkg.image_url || pkg.image) ? (
+                                      <img loading="lazy" src={pkg.featured_image || pkg.image_url || pkg.image} alt={pkg.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#08121B] to-[#13293d] text-[#FF7A00]/45">
+                                        <Compass className="w-8 h-8" />
+                                      </div>
+                                    )}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                  </div>
+                                  <div className="p-4">
+                                    <h4 className="font-bold text-gray-900 text-sm mb-1 line-clamp-1 group-hover:text-[#FF7A00] transition-colors">{pkg.title}</h4>
+                                    {pkg.description && (
+                                      <p className="text-xs text-gray-500 line-clamp-2 mb-3">{pkg.description}</p>
+                                    )}
+                                    <div className="flex items-center justify-between">
+                                      <span className="font-bold text-[#FF7A00] text-sm">{pkg.price ? `$${pkg.price}` : 'Custom Quote'}</span>
+                                      <button className="text-xs font-bold text-gray-900 bg-gray-200 px-3 py-1.5 rounded-lg group-hover:bg-[#FF7A00] group-hover:text-white transition-colors">
+                                        View
+                                      </button>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            ))}
-                          </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="py-8 text-center text-sm text-gray-500">
+                              No featured packages published yet. Add packages from the admin panel.
+                            </div>
+                          )}
                         </motion.div>
                       )}
                     </AnimatePresence>

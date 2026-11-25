@@ -4,8 +4,7 @@ import { Mail, ArrowRight } from 'lucide-react';
 export const ContactSection: React.FC = () => {
   return (
     <section id="contact" className="py-24 bg-[#FF6A00] relative overflow-hidden">
-      <div className="absolute inset-0 bg-black/10 mix-blend-multiply" />
-      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center opacity-20 mix-blend-overlay" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#FF6A00] via-[#ea580c] to-[#08121B]/35 pointer-events-none" />
       
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
         <h2 className="font-['Poppins'] font-black text-[clamp(2.25rem,4vw+1rem,4.5rem)] text-white uppercase tracking-tighter leading-none mb-6">

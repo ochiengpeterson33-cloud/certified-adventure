@@ -119,17 +119,23 @@ export const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ onOpenBookingMod
                     : 'border-slate-200 dark:border-white/5 hover:border-[#FF6A00]/40 dark:hover:bg-[#111111] hover:shadow-xl'
                 }`}
               >
-                <div className="lg:w-1/3 h-64 lg:h-auto rounded-2xl overflow-hidden relative shrink-0">
-                  <img
-                    loading="lazy"
-                    src={evt.image_url || 'https://images.unsplash.com/photo-1549468057-5ce754b4fa26?auto=format&fit=crop&w=800&q=80'}
-                    alt={evt.title}
-                    className={`w-full h-full object-cover transition-transform duration-700 ${
-                      isSoldOut
-                        ? 'grayscale-[55%] brightness-75'
-                        : 'group-hover:scale-105 filter brightness-95 dark:brightness-90'
-                    }`}
-                  />
+                <div className="lg:w-1/3 h-64 lg:h-auto rounded-2xl overflow-hidden relative shrink-0 bg-[#08121B]">
+                  {evt.image_url ? (
+                    <img
+                      loading="lazy"
+                      src={evt.image_url}
+                      alt={evt.title}
+                      className={`w-full h-full object-cover transition-transform duration-700 ${
+                        isSoldOut
+                          ? 'grayscale-[55%] brightness-75'
+                          : 'group-hover:scale-105 filter brightness-95 dark:brightness-90'
+                      }`}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#08121B] to-[#13293d] text-[#FF6A00]/40">
+                      <Calendar className="w-14 h-14" />
+                    </div>
+                  )}
                   <div
                     className={`absolute top-4 left-4 px-3.5 py-1.5 text-xs font-black uppercase tracking-widest rounded-full shadow-md ${
                       isSoldOut

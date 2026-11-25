@@ -4,9 +4,18 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Save, Plus, Trash2, CheckCircle2, Loader2, Upload, Image as ImageIcon, Video, X, AlertCircle, Sparkles, ArrowUp, ArrowDown, Vote, RotateCcw, Clock, Copy } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { motion } from 'motion/react';
-import { DEFAULT_CULTURE_POLLS, CulturePoll, PollStatusMode, resolvePollStatus, useCulturePollVotes, broadcastPollsEvent } from '../hooks/useSupabaseData';
+import {
+  CulturePoll,
+  PollStatusMode,
+  resolvePollStatus,
+  useCulturePollVotes,
+  broadcastPollsEvent,
+  invalidateServerCache,
+} from '../hooks/useSupabaseData';
+import { optimizeImageForUpload } from '../lib/imageOptimizer';
 
-const POLLS_SETUP_SQL = `CREATE TABLE IF NOT EXISTS culture_poll_votes (
+const POLLS_SETUP_SQL = `-- Run supabase/culture_polls.sql in Supabase SQL Editor (non-destructive)
+CREATE TABLE IF NOT EXISTS public.culture_poll_votes (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   poll_id TEXT NOT NULL,
   option_id TEXT NOT NULL,
@@ -15,14 +24,22 @@ const POLLS_SETUP_SQL = `CREATE TABLE IF NOT EXISTS culture_poll_votes (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE (poll_id, voter_token)
 );
-CREATE UNIQUE INDEX IF NOT EXISTS culture_poll_votes_poll_user_idx ON culture_poll_votes (poll_id, user_id) WHERE user_id IS NOT NULL;
-ALTER TABLE culture_poll_votes REPLICA IDENTITY FULL;
-ALTER TABLE culture_poll_votes ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Public read culture_poll_votes" ON culture_poll_votes FOR SELECT TO public USING (true);
-CREATE POLICY "Public insert culture_poll_votes" ON culture_poll_votes FOR INSERT TO anon, authenticated WITH CHECK (char_length(trim(poll_id)) > 0 AND char_length(trim(option_id)) > 0 AND char_length(trim(voter_token)) >= 8);
-CREATE POLICY "Admin delete culture_poll_votes" ON culture_poll_votes FOR DELETE TO authenticated USING (true);
-DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE culture_poll_votes; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE categories; EXCEPTION WHEN duplicate_object THEN NULL; END $$;`;
+CREATE UNIQUE INDEX IF NOT EXISTS culture_poll_votes_poll_user_idx ON public.culture_poll_votes (poll_id, user_id) WHERE user_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS culture_poll_votes_poll_option_idx ON public.culture_poll_votes (poll_id, option_id);
+CREATE TABLE IF NOT EXISTS public.culture_poll_tallies (
+  poll_id TEXT NOT NULL,
+  option_id TEXT NOT NULL,
+  vote_count BIGINT NOT NULL DEFAULT 0 CHECK (vote_count >= 0),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (poll_id, option_id)
+);
+INSERT INTO public.culture_poll_tallies (poll_id, option_id, vote_count, updated_at)
+SELECT poll_id, option_id, COUNT(*)::BIGINT, NOW() FROM public.culture_poll_votes GROUP BY poll_id, option_id
+ON CONFLICT (poll_id, option_id) DO UPDATE SET vote_count = EXCLUDED.vote_count, updated_at = NOW();
+ALTER TABLE public.culture_poll_tallies ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public read culture_poll_tallies" ON public.culture_poll_tallies;
+CREATE POLICY "Public read culture_poll_tallies" ON public.culture_poll_tallies FOR SELECT TO public USING (true);
+-- Run the full /supabase/culture_polls.sql and /supabase/security_hardening.sql scripts for RPCs & strict Admin RLS.`;
 
 function isoToLocalInput(iso?: string): string {
   if (!iso) return '';
@@ -65,10 +82,12 @@ export function HomepageManager({ initialTab = 'stats' }: HomepageManagerProps) 
     setUploadingTarget('why');
     setErrorMsg(null);
     try {
-      const file = acceptedFiles[0];
-      const fileExt = file.name.split('.').pop();
+      const optimized = await optimizeImageForUpload(acceptedFiles[0]);
+      const fileExt = optimized.name.split('.').pop() || 'webp';
       const fileName = `why_${Date.now()}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from('website-assets').upload(fileName, file);
+      const { error: uploadError } = await supabase.storage.from('website-assets').upload(fileName, optimized, {
+        contentType: optimized.type || undefined,
+      });
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from('website-assets').getPublicUrl(fileName);
       setWhy((prev: any) => ({ ...prev, image_url: publicUrl }));
@@ -148,12 +167,17 @@ export function HomepageManager({ initialTab = 'stats' }: HomepageManagerProps) 
 
       if (slug === 'homepage-experiences') {
         queryClient.invalidateQueries({ queryKey: ['homepage-experiences'] });
+        void invalidateServerCache(['cms']);
       } else if (slug === 'homepage-why-choose-us') {
         queryClient.invalidateQueries({ queryKey: ['categories-why'] });
+        void invalidateServerCache(['cms']);
       } else if (slug === 'homepage-culture-polls') {
         queryClient.invalidateQueries({ queryKey: ['homepage-culture-polls'] });
-        queryClient.invalidateQueries({ queryKey: ['culture-poll-votes'] });
+        queryClient.invalidateQueries({ queryKey: ['culture-poll-tallies'] });
+        void invalidateServerCache(['polls', 'tallies']);
         void broadcastPollsEvent('polls_updated');
+      } else {
+        void invalidateServerCache(['cms']);
       }
 
       setSaveSuccess(true);
@@ -172,14 +196,17 @@ export function HomepageManager({ initialTab = 'stats' }: HomepageManagerProps) 
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
-    const fileExt = file.name.split('.').pop();
-    const fileName = `poll_${pollIdx}_${optIdx}_${Date.now()}.${fileExt}`;
+    const rawFile = e.target.files[0];
     setIsUploading(true);
     setUploadingTarget(`poll_${pollIdx}_opt_${optIdx}`);
     setErrorMsg(null);
     try {
-      const { error: uploadError } = await supabase.storage.from('website-assets').upload(fileName, file);
+      const optimized = await optimizeImageForUpload(rawFile, { maxWidth: 960, maxHeight: 960 });
+      const fileExt = optimized.name.split('.').pop() || 'webp';
+      const fileName = `poll_${pollIdx}_${optIdx}_${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage.from('website-assets').upload(fileName, optimized, {
+        contentType: optimized.type || undefined,
+      });
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from('website-assets').getPublicUrl(fileName);
       setPolls(prev =>
@@ -214,25 +241,33 @@ export function HomepageManager({ initialTab = 'stats' }: HomepageManagerProps) 
   };
 
   const handleResetPollVotes = async (pollId: string) => {
+    setErrorMsg(null);
     try {
-      await supabase.from('culture_poll_votes').delete().eq('poll_id', pollId);
-      queryClient.invalidateQueries({ queryKey: ['culture-poll-votes'] });
+      const { error } = await supabase.rpc('reset_culture_poll_votes', { p_poll_id: pollId });
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['culture-poll-tallies'] });
+      queryClient.invalidateQueries({ queryKey: ['culture-my-votes'] });
+      void invalidateServerCache(['polls', 'tallies']);
       void broadcastPollsEvent('votes_reset', { pollId });
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setErrorMsg(err?.message || 'Failed to reset poll votes. Ensure supabase/culture_polls.sql has been run and you are signed in as Admin.');
     }
   };
 
   const handleExperienceUpload = async (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
-    const fileExt = file.name.split('.').pop();
-    const fileName = `exp_${id}_${Date.now()}.${fileExt}`;
+    const rawFile = e.target.files[0];
     setIsUploading(true);
     setUploadingTarget(`img_${id}`);
     setErrorMsg(null);
     try {
-      const { error: uploadError } = await supabase.storage.from('website-assets').upload(fileName, file);
+      const optimized = await optimizeImageForUpload(rawFile);
+      const fileExt = optimized.name.split('.').pop() || 'webp';
+      const fileName = `exp_${id}_${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage.from('website-assets').upload(fileName, optimized, {
+        contentType: optimized.type || undefined,
+      });
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from('website-assets').getPublicUrl(fileName);
       setExperiences(prev => ({ ...prev, [id]: publicUrl }));
@@ -271,14 +306,17 @@ export function HomepageManager({ initialTab = 'stats' }: HomepageManagerProps) 
 
   const handleSectionBgUpload = async (mediaType: 'image' | 'video', e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
-    const fileExt = file.name.split('.').pop();
-    const fileName = `exp_section_bg_${mediaType}_${Date.now()}.${fileExt}`;
+    const rawFile = e.target.files[0];
     setIsUploading(true);
     setUploadingTarget(`section_${mediaType}`);
     setErrorMsg(null);
     try {
-      const { error: uploadError } = await supabase.storage.from('website-assets').upload(fileName, file);
+      const fileToUpload = mediaType === 'image' ? await optimizeImageForUpload(rawFile) : rawFile;
+      const fileExt = fileToUpload.name.split('.').pop() || (mediaType === 'image' ? 'webp' : 'mp4');
+      const fileName = `exp_section_bg_${mediaType}_${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage.from('website-assets').upload(fileName, fileToUpload, {
+        contentType: fileToUpload.type || undefined,
+      });
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from('website-assets').getPublicUrl(fileName);
       setExperiences(prev => ({
@@ -693,10 +731,7 @@ export function HomepageManager({ initialTab = 'stats' }: HomepageManagerProps) 
   );
 
   const getOptionLiveVotes = (pollId: string, optionId: string) => {
-    const remoteRows = liveVotesData?.rows || [];
-    return remoteRows.filter(
-      (r) => r.poll_id === pollId && r.option_id === optionId
-    ).length;
+    return Number(liveVotesData?.tallies?.[pollId]?.[optionId] || 0);
   };
 
   const renderFeatures = () => (
@@ -752,7 +787,7 @@ export function HomepageManager({ initialTab = 'stats' }: HomepageManagerProps) 
       {liveVotesData && !liveVotesData.tableAvailable && (
         <div className="p-4 rounded-xl bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="text-xs sm:text-sm text-slate-200">
-            <strong className="text-[#FF6A00]">Database Setup Required for Shared Voting:</strong> Run the `culture_poll_votes` SQL in your Supabase SQL Editor so votes sync across all visitors in real time.
+            <strong className="text-[#FF6A00]">Database Setup Required for Shared Voting:</strong> Run <code className="text-white">/supabase/culture_polls.sql</code> in your Supabase SQL Editor so tallies and atomic vote validation work cleanly.
           </div>
           <button
             type="button"
@@ -1200,13 +1235,6 @@ export function HomepageManager({ initialTab = 'stats' }: HomepageManagerProps) 
                 className="px-4 py-2 rounded-xl bg-[#FF6A00] hover:bg-[#e65c00] text-white text-xs font-bold cursor-pointer"
               >
                 + Create First Poll
-              </button>
-              <button
-                type="button"
-                onClick={() => setPolls(DEFAULT_CULTURE_POLLS)}
-                className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold cursor-pointer"
-              >
-                Load Starter Templates
               </button>
             </div>
           </div>
