@@ -356,7 +356,7 @@ export const FeatureBar: React.FC = () => {
 
   if (isLoading && !dbPolls) {
     return (
-      <section className="bg-white py-14 relative z-20 border-b border-slate-200 flex justify-center">
+      <section className="bg-white dark:bg-[#08121B] py-14 relative z-20 border-b border-slate-200 dark:border-white/10 flex justify-center transition-colors duration-300">
         <div className="w-8 h-8 border-4 border-[#FF6A00] border-t-transparent rounded-full animate-spin" />
       </section>
     );
@@ -365,7 +365,7 @@ export const FeatureBar: React.FC = () => {
   return (
     <section
       id="culture-updates"
-      className="bg-white text-[#08121B] py-12 sm:py-16 lg:py-20 relative z-20 border-b border-slate-200 font-['Poppins',sans-serif] overflow-x-hidden"
+      className="bg-white dark:bg-[#08121B] text-[#08121B] dark:text-[#F4E8D2] py-12 sm:py-16 lg:py-20 relative z-20 border-b border-slate-200 dark:border-white/10 font-['Poppins',sans-serif] overflow-x-hidden transition-colors duration-300"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Top Hero Header & Dark Navy Community Statistics */}
@@ -374,16 +374,16 @@ export const FeatureBar: React.FC = () => {
             <p className="text-xs sm:text-sm font-semibold text-[#FF6A00] tracking-wide mb-2">
               Your Voice. Your Choice. &middot; Official Awards Voting
             </p>
-            <h2 className="font-black text-3xl sm:text-4xl lg:text-[2.65rem] text-[#08121B] tracking-tight leading-[1.08] text-balance mb-3">
+            <h2 className="font-black text-3xl sm:text-4xl lg:text-[2.65rem] text-[#08121B] dark:text-white tracking-tight leading-[1.08] text-balance mb-3">
               Certified Adventures <span className="text-[#FF6A00]">Vuka Mwaka Awards 2026</span>
             </h2>
-            <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl font-['Inter',sans-serif]">
+            <p className="text-sm sm:text-base text-slate-600 dark:text-[#F4E8D2]/75 leading-relaxed max-w-2xl font-['Inter',sans-serif]">
               Cast one verified vote per category in the Certified Adventures Vuka Mwaka Awards 2026 and follow live community standings.
             </p>
           </div>
 
           {/* Dark Navy Community Statistics Panel */}
-          <div className="lg:col-span-5 bg-[#08121B] text-white rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
+          <div className="lg:col-span-5 bg-[#08121B] dark:bg-white/[0.04] border border-transparent dark:border-white/10 text-white rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
             <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
               <span className="text-xs font-semibold text-slate-300">Community Participation</span>
               <Users className="w-4 h-4 text-[#FF6A00]" aria-hidden="true" />
@@ -421,11 +421,11 @@ export const FeatureBar: React.FC = () => {
         </div>
 
         {/* Status Filter Tabs */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-6 sm:mb-8 pb-4 border-b border-slate-200">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6 sm:mb-8 pb-4 border-b border-slate-200 dark:border-white/10">
           <div
             role="tablist"
             aria-label="Filter polls by status"
-            className="inline-flex flex-wrap items-center gap-1 p-1 rounded-xl bg-slate-100"
+            className="inline-flex flex-wrap items-center gap-1 p-1 rounded-xl bg-slate-100 dark:bg-white/[0.06]"
           >
             {(
               [
@@ -445,8 +445,8 @@ export const FeatureBar: React.FC = () => {
                   onClick={() => setFilter(tab.key)}
                   className={`min-h-[40px] px-3.5 sm:px-4 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 transition-colors cursor-pointer tabular-nums ${
                     active
-                      ? 'bg-[#08121B] text-white'
-                      : 'text-slate-600 hover:text-[#08121B]'
+                      ? 'bg-[#08121B] dark:bg-[#FF6A00] text-white'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-[#08121B] dark:hover:text-white'
                   }`}
                 >
                   {tab.label}
@@ -455,36 +455,36 @@ export const FeatureBar: React.FC = () => {
             })}
           </div>
 
-          <span className="text-xs text-slate-500 font-['Inter',sans-serif]">
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-['Inter',sans-serif]">
             One vote per participant &middot; Live updates enabled
           </span>
         </div>
 
         {/* Empty State when no admin polls exist or filtered tab has none */}
         {allPolls.length === 0 ? (
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-8 sm:p-12 text-center">
-            <div className="w-12 h-12 rounded-xl bg-[#08121B] text-[#FF6A00] flex items-center justify-center mx-auto mb-3">
+          <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50/70 dark:bg-white/[0.03] p-8 sm:p-12 text-center">
+            <div className="w-12 h-12 rounded-xl bg-[#08121B] dark:bg-[#FF6A00]/15 text-[#FF6A00] flex items-center justify-center mx-auto mb-3">
               <Vote className="w-6 h-6" aria-hidden="true" />
             </div>
-            <p className="text-base sm:text-lg font-bold text-[#08121B] mb-1">
+            <p className="text-base sm:text-lg font-bold text-[#08121B] dark:text-white mb-1">
               No Vuka Mwaka Awards 2026 polls published yet
             </p>
-            <p className="text-sm text-slate-600 max-w-md mx-auto font-['Inter',sans-serif]">
+            <p className="text-sm text-slate-600 dark:text-[#F4E8D2]/75 max-w-md mx-auto font-['Inter',sans-serif]">
               Award categories and nominees added by our admin team will appear right here for voting.
             </p>
           </div>
         ) : filteredPolls.length === 0 ? (
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-8 sm:p-12 text-center">
-            <p className="text-base font-bold text-[#08121B] mb-1">
+          <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50/70 dark:bg-white/[0.03] p-8 sm:p-12 text-center">
+            <p className="text-base font-bold text-[#08121B] dark:text-white mb-1">
               No {filter.toLowerCase()} polls right now
             </p>
-            <p className="text-sm text-slate-600 mb-4 font-['Inter',sans-serif]">
+            <p className="text-sm text-slate-600 dark:text-[#F4E8D2]/75 mb-4 font-['Inter',sans-serif]">
               Switch tabs to view other active or completed community polls.
             </p>
             <button
               type="button"
               onClick={() => setFilter('ALL')}
-              className="min-h-[44px] px-5 rounded-xl bg-[#08121B] hover:bg-[#FF6A00] text-white text-sm font-semibold transition-colors cursor-pointer"
+              className="min-h-[44px] px-5 rounded-xl bg-[#08121B] dark:bg-[#FF6A00] hover:bg-[#FF6A00] dark:hover:bg-[#e65c00] text-white text-sm font-semibold transition-colors cursor-pointer"
             >
               Show All Polls
             </button>
@@ -494,7 +494,7 @@ export const FeatureBar: React.FC = () => {
             {/* Phone Horizontal Swipe Controls when multiple polls exist */}
             {filteredPolls.length > 1 && (
               <div className="flex md:hidden items-center justify-between gap-3 mb-3">
-                <span className="text-xs font-semibold text-slate-600 tabular-nums">
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 tabular-nums">
                   Swipe live polls &middot; {mobileSlideIdx + 1} of {filteredPolls.length}
                 </span>
                 <div className="flex items-center gap-1.5">
@@ -503,7 +503,7 @@ export const FeatureBar: React.FC = () => {
                     onClick={() => scrollToMobilePoll(mobileSlideIdx - 1)}
                     disabled={mobileSlideIdx === 0}
                     aria-label="Previous poll"
-                    className="w-11 h-11 rounded-xl border border-slate-200 bg-white text-[#08121B] disabled:opacity-35 flex items-center justify-center active:scale-95 transition-all cursor-pointer"
+                    className="w-11 h-11 rounded-xl border border-slate-200 dark:border-white/15 bg-white dark:bg-white/[0.05] text-[#08121B] dark:text-white disabled:opacity-35 flex items-center justify-center active:scale-95 transition-all cursor-pointer"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
@@ -512,7 +512,7 @@ export const FeatureBar: React.FC = () => {
                     onClick={() => scrollToMobilePoll(mobileSlideIdx + 1)}
                     disabled={mobileSlideIdx >= filteredPolls.length - 1}
                     aria-label="Next poll"
-                    className="w-11 h-11 rounded-xl border border-slate-200 bg-white text-[#08121B] disabled:opacity-35 flex items-center justify-center active:scale-95 transition-all cursor-pointer"
+                    className="w-11 h-11 rounded-xl border border-slate-200 dark:border-white/15 bg-white dark:bg-white/[0.05] text-[#08121B] dark:text-white disabled:opacity-35 flex items-center justify-center active:scale-95 transition-all cursor-pointer"
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>
@@ -560,15 +560,15 @@ export const FeatureBar: React.FC = () => {
                         filteredPolls.length > 1
                           ? 'w-[86vw] max-w-[380px] shrink-0 snap-center md:w-auto md:max-w-none md:shrink'
                           : 'w-full'
-                      } rounded-2xl border bg-white p-5 sm:p-7 flex flex-col justify-between transition-colors ${
+                      } rounded-2xl border p-5 sm:p-7 flex flex-col justify-between transition-colors ${
                         isClosed
-                          ? 'border-slate-200 bg-slate-50/40'
-                          : 'border-slate-200 hover:border-[#08121B]/30'
+                          ? 'border-slate-200 dark:border-white/10 bg-slate-50/40 dark:bg-[#0D1A26]/80'
+                          : 'border-slate-200 dark:border-white/10 bg-white dark:bg-[#0D1B28] hover:border-[#08121B]/30 dark:hover:border-[#FF6A00]/45'
                       }`}
                     >
                     <div>
                       {/* Clean Unboxed Status, Category & Deadline Metadata */}
-                      <div className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-100">
+                      <div className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-100 dark:border-white/10">
                         <div className="flex items-center gap-2 text-xs font-bold">
                           {status === 'LIVE' && (
                             <span className="inline-flex items-center gap-1.5 text-[#FF6A00]">
@@ -577,48 +577,48 @@ export const FeatureBar: React.FC = () => {
                             </span>
                           )}
                           {status === 'OPEN' && (
-                            <span className="inline-flex items-center gap-1.5 text-[#08121B]">
+                            <span className="inline-flex items-center gap-1.5 text-[#08121B] dark:text-white">
                               <Vote className="w-3.5 h-3.5 text-[#FF6A00]" aria-hidden="true" />
                               <span>OPEN</span>
                             </span>
                           )}
                           {status === 'CLOSED' && (
-                            <span className="inline-flex items-center gap-1.5 text-slate-600">
+                            <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
                               <Lock className="w-3.5 h-3.5" aria-hidden="true" />
                               <span>CLOSED</span>
                             </span>
                           )}
                           {poll.category && (
                             <>
-                              <span className="text-slate-300" aria-hidden="true">
+                              <span className="text-slate-300 dark:text-white/25" aria-hidden="true">
                                 &middot;
                               </span>
-                              <span className="font-medium text-slate-600">
+                              <span className="font-medium text-slate-600 dark:text-slate-300">
                                 {poll.category}
                               </span>
                             </>
                           )}
                         </div>
 
-                        <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600 tabular-nums">
+                        <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 tabular-nums">
                           <Clock className="w-3.5 h-3.5 text-[#FF6A00] shrink-0" aria-hidden="true" />
                           <span>{timeInfo.countdown}</span>
                         </div>
                       </div>
 
                       {/* Poll Heading & Description */}
-                      <h3 className="font-bold text-xl sm:text-2xl text-[#08121B] tracking-tight leading-snug text-balance mb-1.5">
+                      <h3 className="font-bold text-xl sm:text-2xl text-[#08121B] dark:text-white tracking-tight leading-snug text-balance mb-1.5">
                         {poll.question}
                       </h3>
                       {poll.subtitle && (
-                        <p className="text-sm text-slate-600 leading-relaxed mb-4 font-['Inter',sans-serif]">
+                        <p className="text-sm text-slate-600 dark:text-[#F4E8D2]/75 leading-relaxed mb-4 font-['Inter',sans-serif]">
                           {poll.subtitle}
                         </p>
                       )}
 
                       {/* Automatic Winner Spotlight when Voting Closes */}
                       {isClosed && (
-                        <div className="mb-4 rounded-xl bg-[#08121B] text-white px-4 py-3 flex items-center justify-between gap-3">
+                        <div className="mb-4 rounded-xl bg-[#08121B] dark:bg-white/[0.06] border border-transparent dark:border-[#FF6A00]/30 text-white px-4 py-3 flex items-center justify-between gap-3">
                           <div className="flex items-center gap-2.5 min-w-0">
                             <div className="w-8 h-8 rounded-lg bg-[#FF6A00] text-white flex items-center justify-center shrink-0">
                               <Trophy className="w-4 h-4" aria-hidden="true" />
@@ -644,7 +644,7 @@ export const FeatureBar: React.FC = () => {
 
                       {/* Post-Vote Confirmation Banner */}
                       {hasVoted && selectedOption && (
-                        <div className="mb-4 rounded-xl border border-[#FF6A00]/30 bg-orange-50/70 px-4 py-3 flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-[#08121B]">
+                        <div className="mb-4 rounded-xl border border-[#FF6A00]/30 bg-orange-50/70 dark:bg-[#FF6A00]/12 px-4 py-3 flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-[#08121B] dark:text-[#F4E8D2]">
                           <CheckCircle2 className="w-4 h-4 text-[#FF6A00] shrink-0" aria-hidden="true" />
                           <span>
                             Vote confirmed for <strong className="text-[#FF6A00]">{selectedOption.title}</strong>
@@ -657,7 +657,7 @@ export const FeatureBar: React.FC = () => {
                           role="status"
                           className={`mb-3 text-xs font-semibold rounded-lg px-3 py-2 ${
                             statusMessage[poll.id].isError
-                              ? 'bg-red-50 text-red-700 border border-red-200'
+                              ? 'bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-500/30'
                               : 'text-[#FF6A00]'
                           }`}
                         >
@@ -684,10 +684,10 @@ export const FeatureBar: React.FC = () => {
                               aria-pressed={isSelected}
                               className={`relative w-full min-h-[84px] text-left rounded-xl border overflow-hidden transition-all duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6A00] ${
                                 isSelected || isLeading
-                                  ? 'border-[#FF6A00] bg-orange-50/35'
+                                  ? 'border-[#FF6A00] bg-orange-50/35 dark:bg-[#FF6A00]/10'
                                   : isDisabled
-                                  ? 'border-slate-200 bg-white'
-                                  : 'border-slate-200 bg-white hover:border-[#FF6A00] hover:bg-slate-50/50 cursor-pointer active:scale-[0.99]'
+                                  ? 'border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.03]'
+                                  : 'border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.03] hover:border-[#FF6A00] hover:bg-slate-50/50 dark:hover:bg-white/[0.06] cursor-pointer active:scale-[0.99]'
                               }`}
                             >
                               {/* GPU-Accelerated Animated Percentage Progress Bar (transform: scaleX) */}
@@ -697,14 +697,14 @@ export const FeatureBar: React.FC = () => {
                                 transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                                 className={`absolute inset-0 origin-left pointer-events-none ${
                                   isSelected || isLeading
-                                    ? 'bg-[#FF6A00]/14'
-                                    : 'bg-[#08121B]/6'
+                                    ? 'bg-[#FF6A00]/14 dark:bg-[#FF6A00]/22'
+                                    : 'bg-[#08121B]/6 dark:bg-white/[0.07]'
                                 }`}
                               />
 
                               <div className="relative z-10 p-3 sm:p-3.5 flex items-center gap-3.5">
                                 {/* Relevant Option Thumbnail with Resilient Fallback */}
-                                <div className="w-16 h-14 sm:w-20 sm:h-16 rounded-lg overflow-hidden shrink-0 border border-slate-200 bg-slate-100">
+                                <div className="w-16 h-14 sm:w-20 sm:h-16 rounded-lg overflow-hidden shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-[#08121B]">
                                   {!imageBroken ? (
                                     <img
                                       src={opt.image_url}
@@ -727,7 +727,7 @@ export const FeatureBar: React.FC = () => {
                                 {/* Title & Short Description */}
                                 <div className="flex-1 min-w-0">
                                   <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                                    <span className="font-bold text-sm sm:text-base text-[#08121B] leading-snug">
+                                    <span className="font-bold text-sm sm:text-base text-[#08121B] dark:text-white leading-snug">
                                       {opt.title}
                                     </span>
 
@@ -739,7 +739,7 @@ export const FeatureBar: React.FC = () => {
                                     )}
 
                                     {isSelected && (
-                                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#08121B]">
+                                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#08121B] dark:text-[#F4E8D2]">
                                         <Check className="w-3 h-3 text-[#FF6A00]" aria-hidden="true" />
                                         <span>Your Vote</span>
                                       </span>
@@ -747,7 +747,7 @@ export const FeatureBar: React.FC = () => {
                                   </div>
 
                                   {opt.subtitle && (
-                                    <p className="text-xs sm:text-sm text-slate-600 mt-0.5 line-clamp-2 font-['Inter',sans-serif]">
+                                    <p className="text-xs sm:text-sm text-slate-600 dark:text-[#F4E8D2]/70 mt-0.5 line-clamp-2 font-['Inter',sans-serif]">
                                       {opt.subtitle}
                                     </p>
                                   )}
@@ -759,17 +759,17 @@ export const FeatureBar: React.FC = () => {
                                     <div className="text-right tabular-nums">
                                       <div
                                         className={`text-base sm:text-lg font-black leading-none ${
-                                          isSelected || isLeading ? 'text-[#FF6A00]' : 'text-[#08121B]'
+                                          isSelected || isLeading ? 'text-[#FF6A00]' : 'text-[#08121B] dark:text-white'
                                         }`}
                                       >
                                         {pct}%
                                       </div>
-                                      <div className="text-[11px] font-medium text-slate-500 mt-1">
+                                      <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1">
                                         {count.toLocaleString()} {count === 1 ? 'vote' : 'votes'}
                                       </div>
                                     </div>
                                   ) : (
-                                    <span className="min-h-[38px] px-3.5 rounded-lg bg-[#08121B] group-hover:bg-[#FF6A00] text-white text-xs font-semibold inline-flex items-center justify-center transition-colors whitespace-nowrap">
+                                    <span className="min-h-[38px] px-3.5 rounded-lg bg-[#08121B] dark:bg-[#FF6A00] group-hover:bg-[#FF6A00] dark:group-hover:bg-[#ff8524] text-white text-xs font-semibold inline-flex items-center justify-center transition-colors whitespace-nowrap">
                                       {submittingPollId === poll.id ? 'Saving...' : 'Vote'}
                                     </span>
                                   )}
@@ -782,9 +782,9 @@ export const FeatureBar: React.FC = () => {
                     </div>
 
                     {/* Poll Card Footer: Live Total, Deadline & Standings Peek */}
-                    <div className="mt-5 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 font-['Inter',sans-serif] tabular-nums">
+                    <div className="mt-5 pt-4 border-t border-slate-100 dark:border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400 font-['Inter',sans-serif] tabular-nums">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-[#08121B]">
+                        <span className="font-semibold text-[#08121B] dark:text-white">
                           {total.toLocaleString()} {total === 1 ? 'vote' : 'votes'}
                         </span>
                         {timeInfo.deadline && (
@@ -801,7 +801,7 @@ export const FeatureBar: React.FC = () => {
                           onClick={() =>
                             setPeekPollIds((prev) => ({ ...prev, [poll.id]: !prev[poll.id] }))
                           }
-                          className="min-h-[36px] px-2 font-semibold text-[#08121B] hover:text-[#FF6A00] inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+                          className="min-h-[36px] px-2 font-semibold text-[#08121B] dark:text-[#F4E8D2] hover:text-[#FF6A00] inline-flex items-center gap-1.5 cursor-pointer transition-colors"
                         >
                           <BarChart3 className="w-3.5 h-3.5" aria-hidden="true" />
                           <span>{showResults ? 'Hide results' : 'View results'}</span>
@@ -825,7 +825,7 @@ export const FeatureBar: React.FC = () => {
                     className={`h-2 rounded-full transition-all cursor-pointer ${
                       mobileSlideIdx === idx
                         ? 'w-7 bg-[#FF6A00]'
-                        : 'w-2 bg-slate-300 hover:bg-slate-400'
+                        : 'w-2 bg-slate-300 dark:bg-white/25 hover:bg-slate-400 dark:hover:bg-white/40'
                     }`}
                   />
                 ))}

@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 
 // ============================================================================
 // Server Micro-Cache Proxy Detection (Cloud Run Express /api/public/*)
@@ -372,6 +372,104 @@ export function useHomepageExperiences() {
     gcTime: CMS_GC_TIME,
     refetchOnWindowFocus: false,
   });
+}
+
+export interface ExperiencesGlassConfig {
+  glass_opacity: number;
+  glass_blur: number;
+  glass_contrast: number;
+  section_dim: number;
+  bg_contrast: number;
+  bg_brightness: number;
+}
+
+export const DEFAULT_EXPERIENCES_GLASS: ExperiencesGlassConfig = {
+  glass_opacity: 26,
+  glass_blur: 20,
+  glass_contrast: 50,
+  section_dim: 50,
+  bg_contrast: 106,
+  bg_brightness: 94,
+};
+
+export function parseExperiencesGlassConfig(data?: Record<string, any> | null): ExperiencesGlassConfig {
+  if (!data || typeof data !== 'object') {
+    return { ...DEFAULT_EXPERIENCES_GLASS };
+  }
+
+  const legacyOverlayNum = Number(data.section_bg_overlay);
+  const fallbackSectionDim = Number.isFinite(legacyOverlayNum) && legacyOverlayNum > 0
+    ? legacyOverlayNum
+    : DEFAULT_EXPERIENCES_GLASS.section_dim;
+
+  return {
+    glass_opacity: clampNum(data.glass_opacity, DEFAULT_EXPERIENCES_GLASS.glass_opacity, 5, 85),
+    glass_blur: clampNum(data.glass_blur, DEFAULT_EXPERIENCES_GLASS.glass_blur, 0, 36),
+    glass_contrast: clampNum(data.glass_contrast, DEFAULT_EXPERIENCES_GLASS.glass_contrast, 0, 100),
+    section_dim: clampNum(data.section_dim, fallbackSectionDim, 0, 85),
+    bg_contrast: clampNum(data.bg_contrast, DEFAULT_EXPERIENCES_GLASS.bg_contrast, 60, 160),
+    bg_brightness: clampNum(data.bg_brightness, DEFAULT_EXPERIENCES_GLASS.bg_brightness, 40, 140),
+  };
+}
+
+export function computeExperiencesGlassStyles(config: ExperiencesGlassConfig, isDark: boolean) {
+  const opacityRatio = config.glass_opacity / 100;
+  const contrastRatio = config.glass_contrast / 100;
+  const dimRatio = config.section_dim / 100;
+
+  const cardBgAlpha = isDark
+    ? Math.min(0.88, Math.max(0.08, 0.06 + opacityRatio * 0.68 + contrastRatio * 0.24))
+    : Math.min(0.94, Math.max(0.24, 0.18 + opacityRatio * 0.62 + contrastRatio * 0.24));
+
+  const cardBg = isDark
+    ? `rgba(10, 20, 32, ${cardBgAlpha.toFixed(3)})`
+    : `rgba(255, 255, 255, ${cardBgAlpha.toFixed(3)})`;
+
+  const cardBorder = isDark
+    ? `rgba(255, 255, 255, ${Math.min(0.42, 0.08 + contrastRatio * 0.26).toFixed(3)})`
+    : `rgba(255, 255, 255, ${Math.min(0.95, 0.45 + contrastRatio * 0.42).toFixed(3)})`;
+
+  const highlightAlpha = isDark
+    ? Math.min(0.32, 0.08 + contrastRatio * 0.18)
+    : Math.min(0.95, 0.55 + contrastRatio * 0.35);
+
+  const shadowAlpha = isDark
+    ? 0.26 + contrastRatio * 0.24
+    : 0.06 + contrastRatio * 0.08;
+
+  const outerRing = isDark
+    ? ''
+    : `, 0 0 0 1px rgba(15, 23, 42, ${(0.05 + contrastRatio * 0.09).toFixed(3)})`;
+
+  const cardStyle: CSSProperties = {
+    backgroundColor: cardBg,
+    borderColor: cardBorder,
+    backdropFilter: `blur(${config.glass_blur}px) saturate(155%)`,
+    WebkitBackdropFilter: `blur(${config.glass_blur}px) saturate(155%)`,
+    boxShadow: `inset 0 1px 0 rgba(255, 255, 255, ${highlightAlpha.toFixed(3)})${outerRing}, 0 20px 44px -16px rgba(8, 18, 27, ${shadowAlpha.toFixed(3)})`,
+  };
+
+  const sectionScrimColor = isDark
+    ? `rgba(8, 18, 27, ${dimRatio.toFixed(3)})`
+    : `rgba(248, 246, 242, ${Math.min(0.92, dimRatio * 1.05).toFixed(3)})`;
+
+  const mediaFilter = `contrast(${config.bg_contrast}%) brightness(${config.bg_brightness}%)`;
+
+  const dividerColor = isDark
+    ? `rgba(255, 255, 255, ${(0.08 + contrastRatio * 0.14).toFixed(3)})`
+    : `rgba(15, 23, 42, ${(0.07 + contrastRatio * 0.11).toFixed(3)})`;
+
+  const descriptionColor = isDark
+    ? `rgba(244, 232, 210, ${(0.68 + contrastRatio * 0.24).toFixed(3)})`
+    : `rgba(51, 65, 85, ${(0.78 + contrastRatio * 0.20).toFixed(3)})`;
+
+  return {
+    cardStyle,
+    sectionScrimColor,
+    mediaFilter,
+    dividerColor,
+    descriptionColor,
+  };
 }
 
 export interface AuthPageThemeConfig {

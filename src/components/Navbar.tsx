@@ -32,6 +32,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
 
   const { data: packages } = usePackages();
   const featuredPackages = packages?.filter(p => p.active !== false).slice(0, 4) || [];
+  const hamburgerButtonRef = useRef<HTMLButtonElement>(null);
+  const drawerCloseButtonRef = useRef<HTMLButtonElement>(null);
+  const wasOpenRef = useRef(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -52,6 +55,40 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Lock background scrolling, handle Escape key, and manage focus for the drawer
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      wasOpenRef.current = true;
+      const previousOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+
+      const focusTimer = window.setTimeout(() => {
+        drawerCloseButtonRef.current?.focus();
+      }, 60);
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          setMobileMenuOpen(false);
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+
+      return () => {
+        window.clearTimeout(focusTimer);
+        window.removeEventListener('keydown', handleKeyDown);
+        document.body.style.overflow = previousOverflow;
+      };
+    } else if (wasOpenRef.current) {
+      wasOpenRef.current = false;
+      hamburgerButtonRef.current?.focus();
+    }
+  }, [mobileMenuOpen]);
+
+  // Close drawer automatically on route changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const navLinks = [
     { name: 'HOME', id: 'home' },
@@ -91,9 +128,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
   };
 
   return (
+    <>
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 font-['Poppins'] ${
-        isScrolled || mobileMenuOpen
+        isScrolled
           ? 'bg-white/95 backdrop-blur-2xl border-b border-slate-200 shadow-md'
           : 'bg-white/85 backdrop-blur-md'
       }`}
@@ -347,207 +385,390 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBookingModal, onNavigateSe
 
             {/* Mobile & Tablet Hamburger Toggle */}
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-              className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gray-100 active:scale-95 flex items-center justify-center text-gray-900 border border-gray-200 shadow-sm transition-all shrink-0 cursor-pointer"
+              ref={hamburgerButtonRef}
+              type="button"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-navigation-drawer"
+              aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gray-100 hover:bg-orange-50 active:scale-95 flex items-center justify-center text-gray-900 hover:text-[#FF7A00] border border-gray-200 shadow-sm transition-colors duration-200 shrink-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF7A00]"
             >
               {mobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
             </button>
           </div>
         </div>
       </div>
+    </header>
 
-      {/* Mobile & Tablet Full-Screen Menu */}
+      {/* Slide-In Right Navigation Drawer (Mobile & Tablet < xl) */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: '100%' }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className={`xl:hidden fixed inset-0 z-40 bg-white flex flex-col h-screen overflow-y-auto ${
-              isScrolled ? 'pt-[76px] sm:pt-[84px]' : 'pt-[104px] sm:pt-[110px]'
-            }`}
-          >
-            <div className="flex flex-col px-5 py-5 gap-4 flex-1">
-              {/* Account Quick Card inside Mobile Menu */}
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm">
-                {user ? (
-                  <div className="flex flex-col gap-3">
-                    <div 
-                      onClick={() => { setMobileMenuOpen(false); navigate('/profile'); }}
-                      className="flex items-center gap-3 cursor-pointer group"
-                    >
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#FF7A00] to-[#FF9800] text-white flex items-center justify-center font-bold text-sm shadow-md shadow-[#FF7A00]/25 group-hover:scale-105 transition-transform flex-shrink-0">
-                        {(profile?.first_name ? profile.first_name[0] : '') || user.email?.[0]?.toUpperCase() || 'U'}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-slate-900 truncate group-hover:text-[#FF7A00] transition-colors">
-                          {profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : user.email?.split('@')[0]}
-                        </p>
-                        <p className="text-xs text-slate-500 truncate">{user.email}</p>
-                      </div>
-                      <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-orange-100 text-[#FF7A00]">
-                        {isAdmin ? 'Admin' : 'Member'}
-                      </span>
-                    </div>
+          <div className="xl:hidden fixed inset-0 z-[70] font-['Poppins']" role="presentation">
+            {/* Dark Semi-Transparent Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+              onClick={() => setMobileMenuOpen(false)}
+              aria-hidden="true"
+              className="fixed inset-0 bg-[#08121B]/65 backdrop-blur-[3px]"
+            />
 
-                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200">
-                      <button
-                        onClick={() => { setMobileMenuOpen(false); navigate('/profile'); }}
-                        className="py-2.5 px-3 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-800 hover:text-[#FF7A00] hover:border-[#FF7A00]/40 flex items-center justify-center gap-1.5 active:scale-95 shadow-sm cursor-pointer"
-                      >
-                        <User className="w-3.5 h-3.5 text-[#FF7A00]" />
-                        <span>My Profile</span>
-                      </button>
-
-                      {isAdmin ? (
-                        <button
-                          onClick={() => { setMobileMenuOpen(false); navigate('/admin'); }}
-                          className="py-2.5 px-3 rounded-xl bg-[#FF7A00] text-white text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 shadow-md shadow-[#FF7A00]/30 cursor-pointer"
-                        >
-                          <Shield className="w-3.5 h-3.5" />
-                          <span>Admin Portal</span>
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => { signOut(); setMobileMenuOpen(false); }}
-                          className="py-2.5 px-3 rounded-xl bg-white border border-slate-200 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center justify-center gap-1.5 active:scale-95 shadow-sm cursor-pointer"
-                        >
-                          <LogOut className="w-3.5 h-3.5" />
-                          <span>Sign Out</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-2.5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-                        <User className="w-4 h-4 text-[#FF7A00]" />
-                        <span>Account & Profile</span>
-                      </div>
-                      <span className="text-[11px] text-slate-500">Sign in or register</span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 mt-1">
-                      <button
-                        onClick={() => { setMobileMenuOpen(false); navigate('/login'); }}
-                        className="py-2.5 px-3 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-800 hover:border-[#FF7A00] flex items-center justify-center gap-1.5 active:scale-95 shadow-sm cursor-pointer"
-                      >
-                        <span>Sign In</span>
-                      </button>
-
-                      <button
-                        onClick={() => { setMobileMenuOpen(false); navigate('/register'); }}
-                        className="py-2.5 px-3 rounded-xl bg-[#FF7A00] text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 active:scale-95 shadow-md shadow-[#FF7A00]/25 cursor-pointer"
-                      >
-                        <UserPlus className="w-3.5 h-3.5" />
-                        <span>Register</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Theme Mode Switcher inside Mobile/Tablet Drawer */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-orange-100 text-[#FF7A00] flex items-center justify-center shrink-0">
-                    {isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold text-slate-900">Appearance</p>
-                    <p className="text-[11px] text-slate-500">
-                      {isDark ? 'Dark Mode Active' : 'Light Mode Active'}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={toggleTheme}
-                  className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#FF7A00] text-xs font-bold text-slate-800 flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer shrink-0"
+            {/* Right Slide-In Drawer Panel (88% width on phones, max 400px on tablet/desktop) */}
+            <motion.aside
+              id="mobile-navigation-drawer"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Site navigation"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+              className={`fixed top-0 right-0 bottom-0 w-[88vw] max-w-[400px] flex flex-col shadow-[-24px_0_60px_rgba(8,18,27,0.28)] overflow-hidden ${
+                isDark
+                  ? 'bg-[#08121B] text-[#F4E8D2] border-l border-white/10'
+                  : 'bg-white text-slate-900 border-l border-slate-200/90'
+              }`}
+            >
+              {/* Drawer Header */}
+              <div
+                className={`px-5 py-4 flex items-center justify-between gap-3 border-b shrink-0 ${
+                  isDark ? 'border-white/10' : 'border-slate-100'
+                }`}
+              >
+                <div
+                  onClick={() => handleLinkClick('home')}
+                  className="cursor-pointer min-w-0"
                 >
-                  {isDark ? (
-                    <>
-                      <Sun className="w-3.5 h-3.5 text-[#FF7A00]" />
-                      <span>Light Mode</span>
-                    </>
-                  ) : (
-                    <>
-                      <Moon className="w-3.5 h-3.5 text-slate-700" />
-                      <span>Dark Mode</span>
-                    </>
-                  )}
+                  <Logo variant="full" darkText={!isDark} showTagline={false} compactHeader={true} />
+                </div>
+
+                <button
+                  ref={drawerCloseButtonRef}
+                  type="button"
+                  onClick={() => setMobileMenuOpen(false)}
+                  aria-label="Close navigation menu"
+                  className={`w-11 h-11 rounded-xl border flex items-center justify-center transition-colors duration-200 cursor-pointer shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF7A00] ${
+                    isDark
+                      ? 'bg-white/5 border-white/10 text-[#F4E8D2] hover:bg-[#FF7A00] hover:border-[#FF7A00] hover:text-white'
+                      : 'bg-slate-50 border-slate-200 text-slate-800 hover:bg-orange-50 hover:border-[#FF7A00]/40 hover:text-[#FF7A00]'
+                  }`}
+                >
+                  <X className="w-5 h-5" aria-hidden="true" />
                 </button>
               </div>
 
-              {navLinks.map((link, idx) => (
-                <motion.button
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.04 }}
-                  key={link.id}
-                  onClick={() => handleLinkClick(link.id)}
-                  className="text-left text-lg sm:text-xl font-semibold tracking-tight text-slate-900 hover:text-[#FF7A00] transition-colors border-b border-gray-100 pb-3"
-                >
-                  {link.name}
-                </motion.button>
-              ))}
-
-              {/* Explicit Profile / Account Button in Navigation List */}
-              <motion.button
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: navLinks.length * 0.04 }}
-                onClick={handleUserClick}
-                className="text-left text-lg sm:text-xl font-bold tracking-tight text-[#FF7A00] hover:text-black transition-colors border-b border-gray-100 pb-3 flex items-center justify-between cursor-pointer"
-              >
-                <span>{user ? 'MY PROFILE' : 'SIGN IN / REGISTER'}</span>
-                <User className="w-5 h-5 text-[#FF7A00]" />
-              </motion.button>
-
-              <div className="grid grid-cols-4 gap-3 mt-4">
-                {[
-                  { icon: Search, onClick: () => {} },
-                  { icon: User, onClick: handleUserClick },
-                  { icon: Heart, onClick: () => {} },
-                  { 
-                    icon: ShoppingCart, 
-                    onClick: () => { setMobileMenuOpen(false); openCart(); },
-                    badge: totalCount
-                  }
-                ].map((Action, i) => (
-                  <button 
-                    key={i} 
-                    onClick={Action.onClick} 
-                    aria-label={i === 3 ? "Open Cart" : "Action"}
-                    className="aspect-square rounded-2xl bg-gray-50 flex items-center justify-center text-gray-900 border border-gray-200 active:scale-95 transition-transform relative"
+              {/* Scrollable Navigation & Account Body */}
+              <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-5 flex flex-col gap-6">
+                {/* Primary Navigation Links */}
+                <nav aria-label="Mobile Navigation" className="flex flex-col">
+                  <p
+                    className={`px-2 pb-2 text-[11px] font-semibold uppercase tracking-[0.16em] ${
+                      isDark ? 'text-white/45' : 'text-slate-400'
+                    }`}
                   >
-                    <Action.icon className="w-5 h-5" />
-                    {i === 3 && totalCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-[#FF7A00] text-white text-[10px] font-bold min-w-4 h-4 px-1 rounded-full flex items-center justify-center border border-white">
-                        {totalCount}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
+                    Explore
+                  </p>
+                  <ul
+                    className={`divide-y ${
+                      isDark ? 'divide-white/[0.07]' : 'divide-slate-100'
+                    }`}
+                  >
+                    {navLinks.map((link, idx) => {
+                      const isActive = activeSection === link.id;
+                      return (
+                        <motion.li
+                          key={link.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{
+                            duration: 0.28,
+                            delay: 0.05 + idx * 0.025,
+                            ease: [0.16, 1, 0.3, 1],
+                          }}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => handleLinkClick(link.id)}
+                            aria-current={isActive ? 'page' : undefined}
+                            className={`w-full min-h-[48px] px-3 py-3 my-0.5 rounded-xl flex items-center justify-between gap-3 text-left transition-colors duration-200 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF7A00] ${
+                              isActive
+                                ? isDark
+                                  ? 'bg-[#FF7A00]/15 text-[#FF7A00]'
+                                  : 'bg-orange-50/90 text-[#FF7A00]'
+                                : isDark
+                                ? 'text-[#F4E8D2] hover:bg-white/[0.05] hover:text-[#FF7A00] active:bg-white/[0.08]'
+                                : 'text-slate-800 hover:bg-slate-50 hover:text-[#FF7A00] active:bg-orange-50/60'
+                            }`}
+                          >
+                            <span className="flex items-center gap-3 min-w-0">
+                              <span
+                                aria-hidden="true"
+                                className={`w-1.5 h-1.5 rounded-full transition-colors shrink-0 ${
+                                  isActive
+                                    ? 'bg-[#FF7A00]'
+                                    : isDark
+                                    ? 'bg-white/20 group-hover:bg-[#FF7A00]'
+                                    : 'bg-slate-300 group-hover:bg-[#FF7A00]'
+                                }`}
+                              />
+                              <span className="text-[15px] font-semibold tracking-wide truncate">
+                                {link.name}
+                              </span>
+                            </span>
 
-            {/* Bottom Fixed Button */}
-            <div className="p-6 bg-white border-t border-gray-100 sticky bottom-0 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
-              <button
-                onClick={() => { onOpenBookingModal(); setMobileMenuOpen(false); }}
-                className="w-full h-[60px] rounded-2xl font-['Poppins'] text-lg font-bold uppercase tracking-wider text-white bg-gradient-to-r from-[#FF7A00] to-[#FF9800] flex items-center justify-center gap-3 shadow-xl shadow-[#FF7A00]/30"
+                            <ArrowRight
+                              aria-hidden="true"
+                              className={`w-4 h-4 shrink-0 transition-transform duration-200 ${
+                                isActive
+                                  ? 'text-[#FF7A00] translate-x-0.5'
+                                  : isDark
+                                  ? 'text-white/30 group-hover:text-[#FF7A00] group-hover:translate-x-1'
+                                  : 'text-slate-300 group-hover:text-[#FF7A00] group-hover:translate-x-1'
+                              }`}
+                            />
+                          </button>
+                        </motion.li>
+                      );
+                    })}
+                  </ul>
+                </nav>
+
+                {/* Quick Utilities (Appearance & Cart) */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.28, delay: 0.26, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex flex-col gap-2.5"
+                >
+                  <p
+                    className={`px-2 text-[11px] font-semibold uppercase tracking-[0.16em] ${
+                      isDark ? 'text-white/45' : 'text-slate-400'
+                    }`}
+                  >
+                    Preferences &amp; Bag
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={toggleTheme}
+                      className={`min-h-[46px] px-3.5 py-2.5 rounded-xl border flex items-center justify-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer active:scale-[0.98] ${
+                        isDark
+                          ? 'bg-white/[0.04] border-white/10 text-[#F4E8D2] hover:border-[#FF7A00]/60'
+                          : 'bg-slate-50 border-slate-200 text-slate-800 hover:border-[#FF7A00]/50 hover:bg-orange-50/40'
+                      }`}
+                    >
+                      {isDark ? (
+                        <>
+                          <Sun className="w-4 h-4 text-[#FF7A00] shrink-0" aria-hidden="true" />
+                          <span>Light Mode</span>
+                        </>
+                      ) : (
+                        <>
+                          <Moon className="w-4 h-4 text-[#FF7A00] shrink-0" aria-hidden="true" />
+                          <span>Dark Mode</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        openCart();
+                      }}
+                      className={`min-h-[46px] px-3.5 py-2.5 rounded-xl border flex items-center justify-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer active:scale-[0.98] relative ${
+                        isDark
+                          ? 'bg-white/[0.04] border-white/10 text-[#F4E8D2] hover:border-[#FF7A00]/60'
+                          : 'bg-slate-50 border-slate-200 text-slate-800 hover:border-[#FF7A00]/50 hover:bg-orange-50/40'
+                      }`}
+                    >
+                      <ShoppingCart className="w-4 h-4 text-[#FF7A00] shrink-0" aria-hidden="true" />
+                      <span>Cart</span>
+                      {totalCount > 0 && (
+                        <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-[#FF7A00] text-white text-[10px] font-bold inline-flex items-center justify-center tabular-nums">
+                          {totalCount}
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                </motion.div>
+
+                {/* Account Section */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.28, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                  className={`p-4 rounded-2xl border ${
+                    isDark
+                      ? 'bg-white/[0.03] border-white/10'
+                      : 'bg-slate-50/80 border-slate-200/80'
+                  }`}
+                >
+                  {user ? (
+                    <div className="flex flex-col gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          navigate('/profile');
+                        }}
+                        className="flex items-center gap-3 text-left cursor-pointer group w-full"
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#FF7A00] to-[#FF9800] text-white flex items-center justify-center font-bold text-sm shadow-md shadow-[#FF7A00]/25 shrink-0">
+                          {(profile?.first_name ? profile.first_name[0] : '') || user.email?.[0]?.toUpperCase() || 'U'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p
+                            className={`text-sm font-bold truncate group-hover:text-[#FF7A00] transition-colors ${
+                              isDark ? 'text-[#F4E8D2]' : 'text-slate-900'
+                            }`}
+                          >
+                            {profile?.first_name
+                              ? `${profile.first_name} ${profile.last_name || ''}`.trim()
+                              : user.email?.split('@')[0]}
+                          </p>
+                          <p
+                            className={`text-xs truncate ${
+                              isDark ? 'text-white/55' : 'text-slate-500'
+                            }`}
+                          >
+                            {user.email}
+                          </p>
+                        </div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#FF7A00] shrink-0">
+                          {isAdmin ? 'Admin' : 'Member'}
+                        </span>
+                      </button>
+
+                      <div
+                        className={`grid grid-cols-2 gap-2 pt-3 border-t ${
+                          isDark ? 'border-white/10' : 'border-slate-200/80'
+                        }`}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            navigate('/profile');
+                          }}
+                          className={`min-h-[42px] px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-[0.98] ${
+                            isDark
+                              ? 'bg-white/5 border-white/10 text-[#F4E8D2] hover:border-[#FF7A00]'
+                              : 'bg-white border-slate-200 text-slate-800 hover:border-[#FF7A00]/50 hover:text-[#FF7A00]'
+                          }`}
+                        >
+                          <User className="w-3.5 h-3.5 text-[#FF7A00]" aria-hidden="true" />
+                          <span>My Profile</span>
+                        </button>
+
+                        {isAdmin ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setMobileMenuOpen(false);
+                              navigate('/admin');
+                            }}
+                            className="min-h-[42px] px-3 rounded-xl bg-[#FF7A00] hover:bg-[#e86d00] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-[0.98]"
+                          >
+                            <Shield className="w-3.5 h-3.5" aria-hidden="true" />
+                            <span>Admin Portal</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              signOut();
+                              setMobileMenuOpen(false);
+                            }}
+                            className={`min-h-[42px] px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-[0.98] ${
+                              isDark
+                                ? 'bg-red-950/40 border-red-400/25 text-red-300 hover:bg-red-950/70'
+                                : 'bg-white border-slate-200 text-red-600 hover:bg-red-50'
+                            }`}
+                          >
+                            <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
+                            <span>Sign Out</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <span
+                          className={`text-xs font-bold uppercase tracking-wider ${
+                            isDark ? 'text-[#F4E8D2]' : 'text-slate-800'
+                          }`}
+                        >
+                          Member Access
+                        </span>
+                        <span
+                          className={`text-[11px] ${
+                            isDark ? 'text-white/55' : 'text-slate-500'
+                          }`}
+                        >
+                          Bookings &amp; itineraries
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            navigate('/login');
+                          }}
+                          className={`min-h-[44px] px-3 rounded-xl border text-xs font-bold flex items-center justify-center transition-colors cursor-pointer active:scale-[0.98] ${
+                            isDark
+                              ? 'bg-white/5 border-white/15 text-[#F4E8D2] hover:border-[#FF7A00]'
+                              : 'bg-white border-slate-200 text-slate-800 hover:border-[#FF7A00]'
+                          }`}
+                        >
+                          Sign In
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            navigate('/register');
+                          }}
+                          className="min-h-[44px] px-3 rounded-xl bg-[#FF7A00] hover:bg-[#e86d00] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-[0.98] shadow-sm shadow-[#FF7A00]/25"
+                        >
+                          <UserPlus className="w-3.5 h-3.5" aria-hidden="true" />
+                          <span>Register</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              </div>
+
+              {/* Drawer Footer Primary CTA */}
+              <div
+                className={`p-5 border-t shrink-0 ${
+                  isDark ? 'border-white/10 bg-[#08121B]' : 'border-slate-100 bg-white'
+                }`}
               >
-                <span>book Now</span>
-                <ArrowRight className="w-6 h-6" />
-              </button>
-            </div>
-          </motion.div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onOpenBookingModal();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full min-h-[52px] rounded-2xl font-['Poppins'] text-sm font-bold uppercase tracking-wider text-white bg-gradient-to-r from-[#F97316] to-[#FF9800] hover:from-[#ff8c20] hover:to-[#ffaa33] flex items-center justify-center gap-2.5 shadow-lg shadow-[#FF7A00]/30 transition-all active:scale-[0.985] cursor-pointer"
+                >
+                  <span>Book Your Seat</span>
+                  <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                </button>
+              </div>
+            </motion.aside>
+          </div>
         )}
       </AnimatePresence>
-    </header>
+    </>
   );
 };

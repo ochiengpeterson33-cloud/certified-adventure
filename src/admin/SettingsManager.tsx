@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDropzone } from 'react-dropzone';
+import { Link } from 'react-router-dom';
 import {
   Settings,
   Save,
@@ -13,6 +14,7 @@ import {
   AlertCircle,
   Sliders,
   RotateCcw,
+  ArrowRight,
 } from 'lucide-react';
 import { optimizeImageForUpload } from '../lib/imageOptimizer';
 import {
@@ -603,6 +605,30 @@ export function SettingsManager() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Quick Link to Explore Our Experiences Glassmorphism & Contrast */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#E67A3A] flex items-center justify-center shrink-0">
+            <Sliders size={18} />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-gray-900">
+              Explore Our Experiences — Glassmorphism &amp; Contrast
+            </h3>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Adjust frosted glass opacity, blur, contrast levels, and background media for the Experiences grid.
+            </p>
+          </div>
+        </div>
+        <Link
+          to="/admin/homepage?tab=experiences"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#08121B] hover:bg-[#E67A3A] text-white text-xs font-bold transition-colors shrink-0"
+        >
+          <span>Level Experiences Contrast</span>
+          <ArrowRight size={14} />
+        </Link>
       </div>
 
       {/* Existing Website Settings Form */}

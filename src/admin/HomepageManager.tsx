@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
-import { Save, Plus, Trash2, CheckCircle2, Loader2, Upload, Image as ImageIcon, Video, X, AlertCircle, Sparkles, ArrowUp, ArrowDown, Vote, RotateCcw, Clock, Copy } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Save, Plus, Trash2, CheckCircle2, Loader2, Upload, Image as ImageIcon, Video, X, AlertCircle, Sparkles, ArrowUp, ArrowDown, Vote, RotateCcw, Clock, Copy, Sliders, Sun, Moon, ArrowRight, MapPin } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { motion } from 'motion/react';
 import {
@@ -11,6 +12,10 @@ import {
   useCulturePollVotes,
   broadcastPollsEvent,
   invalidateServerCache,
+  ExperiencesGlassConfig,
+  DEFAULT_EXPERIENCES_GLASS,
+  parseExperiencesGlassConfig,
+  computeExperiencesGlassStyles,
 } from '../hooks/useSupabaseData';
 import { optimizeImageForUpload } from '../lib/imageOptimizer';
 
@@ -140,22 +145,63 @@ function isoToLocalInput(iso?: string): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+const EXPERIENCE_GLASS_PRESETS: { label: string; values: ExperiencesGlassConfig }[] = [
+  {
+    label: 'Airy Crystal Glass',
+    values: {
+      glass_opacity: 14,
+      glass_blur: 16,
+      glass_contrast: 28,
+      section_dim: 35,
+      bg_contrast: 102,
+      bg_brightness: 100,
+    },
+  },
+  {
+    label: 'Balanced Frosted',
+    values: { ...DEFAULT_EXPERIENCES_GLASS },
+  },
+  {
+    label: 'High Contrast Glass',
+    values: {
+      glass_opacity: 54,
+      glass_blur: 24,
+      glass_contrast: 86,
+      section_dim: 68,
+      bg_contrast: 114,
+      bg_brightness: 82,
+    },
+  },
+];
+
 interface HomepageManagerProps {
   initialTab?: 'stats' | 'features' | 'why' | 'experiences';
 }
 
 export function HomepageManager({ initialTab = 'stats' }: HomepageManagerProps) {
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'stats' | 'features' | 'why' | 'experiences'>(initialTab);
-  const [experiences, setExperiences] = useState<Record<string, string>>({});
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const resolvedInitialTab =
+    tabParam === 'experiences' || tabParam === 'why' || tabParam === 'features' || tabParam === 'stats'
+      ? tabParam
+      : initialTab;
+
+  const [activeTab, setActiveTab] = useState<'stats' | 'features' | 'why' | 'experiences'>(resolvedInitialTab);
+  const [experiences, setExperiences] = useState<Record<string, any>>({});
+  const [previewExpDark, setPreviewExpDark] = useState(true);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Sync tab when navigating between /admin/polls and /admin/homepage
+  // Sync tab when navigating between /admin/polls, /admin/homepage, or ?tab=experiences
   useEffect(() => {
-    setActiveTab(initialTab);
-  }, [initialTab]);
+    if (tabParam === 'experiences' || tabParam === 'why' || tabParam === 'features' || tabParam === 'stats') {
+      setActiveTab(tabParam);
+    } else {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab, tabParam]);
 
   // States for each section
   const [stats, setStats] = useState<any[]>([]);
@@ -436,13 +482,10 @@ export function HomepageManager({ initialTab = 'stats' }: HomepageManagerProps) 
 
   const sectionBgType = (experiences.section_bg_type as 'none' | 'image' | 'video') ||
     (experiences.section_bg_video ? 'video' : experiences.section_bg_image ? 'image' : 'none');
-  const sectionBgOverlay = experiences.section_bg_overlay || '60';
-
-  const previewOverlayClass: Record<string, string> = {
-    '40': 'bg-[#08121B]/45',
-    '60': 'bg-[#08121B]/60',
-    '75': 'bg-[#08121B]/75',
-    '85': 'bg-[#08121B]/85',
+  const expGlassConfig = parseExperiencesGlassConfig(experiences);
+  const expGlassPreviewStyles = computeExperiencesGlassStyles(expGlassConfig, previewExpDark);
+  const updateExpGlass = (patch: Partial<ExperiencesGlassConfig>) => {
+    setExperiences((prev) => ({ ...prev, ...patch }));
   };
 
   const renderExperiences = () => (
@@ -450,7 +493,7 @@ export function HomepageManager({ initialTab = 'stats' }: HomepageManagerProps) 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-xl font-bold text-gray-900">Explore Our Experiences</h3>
-          <p className="text-sm text-gray-500">Customize the section background (video or image) and individual card media.</p>
+          <p className="text-sm text-gray-500">Customize glassmorphism contrast levels, section background media, and card visuals.</p>
         </div>
         <button
           onClick={() => handleSave('homepage-experiences', experiences)}
@@ -462,6 +505,269 @@ export function HomepageManager({ initialTab = 'stats' }: HomepageManagerProps) 
         </button>
       </div>
 
+      {/* Glassmorphism & Contrast Controls + Live WYSIWYG Preview */}
+      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-200 shadow-sm space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-orange-50 text-[#FF6A00] flex items-center justify-center shrink-0">
+              <Sliders className="w-4 h-4" />
+            </div>
+            <div>
+              <h4 className="font-bold text-gray-900 text-base">Glassmorphism &amp; Contrast Level</h4>
+              <p className="text-xs text-gray-500">Fine-tune card glass frost, contrast separation, and backdrop balance for light &amp; dark themes.</p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            {EXPERIENCE_GLASS_PRESETS.map((preset) => (
+              <button
+                key={preset.label}
+                type="button"
+                onClick={() => updateExpGlass(preset.values)}
+                className="px-2.5 py-1.5 rounded-lg border border-gray-200 hover:border-[#FF6A00] bg-gray-50 hover:bg-orange-50 text-[11px] font-bold text-gray-700 transition-colors cursor-pointer"
+              >
+                {preset.label}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => updateExpGlass(DEFAULT_EXPERIENCES_GLASS)}
+              className="px-2.5 py-1.5 rounded-lg border border-gray-200 hover:border-gray-300 text-[11px] font-semibold text-gray-500 hover:text-gray-800 inline-flex items-center gap-1 cursor-pointer"
+            >
+              <RotateCcw className="w-3 h-3" /> Reset
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Sliders Column */}
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50/80 border border-gray-200/80 rounded-xl p-4">
+            <div>
+              <div className="flex items-center justify-between text-xs font-bold text-gray-700 mb-1">
+                <span>Glass Contrast Level</span>
+                <span className="tabular-nums text-[#FF6A00]">{expGlassConfig.glass_contrast}%</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={expGlassConfig.glass_contrast}
+                onChange={(e) => updateExpGlass({ glass_contrast: Number(e.target.value) })}
+                className="w-full accent-[#FF6A00] cursor-pointer"
+              />
+              <p className="text-[11px] text-gray-500 mt-0.5">
+                Raises border crispness, tint depth &amp; text contrast
+              </p>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between text-xs font-bold text-gray-700 mb-1">
+                <span>Glass Frost Opacity</span>
+                <span className="tabular-nums text-[#FF6A00]">{expGlassConfig.glass_opacity}%</span>
+              </div>
+              <input
+                type="range"
+                min={5}
+                max={85}
+                value={expGlassConfig.glass_opacity}
+                onChange={(e) => updateExpGlass({ glass_opacity: Number(e.target.value) })}
+                className="w-full accent-[#FF6A00] cursor-pointer"
+              />
+              <p className="text-[11px] text-gray-500 mt-0.5">
+                Lower = clearer transparent glass; higher = richer frost
+              </p>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between text-xs font-bold text-gray-700 mb-1">
+                <span>Glass Blur</span>
+                <span className="tabular-nums text-[#FF6A00]">{expGlassConfig.glass_blur}px</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={36}
+                value={expGlassConfig.glass_blur}
+                onChange={(e) => updateExpGlass({ glass_blur: Number(e.target.value) })}
+                className="w-full accent-[#FF6A00] cursor-pointer"
+              />
+              <p className="text-[11px] text-gray-500 mt-0.5">
+                Controls backdrop frost blur inside each card
+              </p>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between text-xs font-bold text-gray-700 mb-1">
+                <span>Background Scrim Dim</span>
+                <span className="tabular-nums text-[#FF6A00]">{expGlassConfig.section_dim}%</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={85}
+                value={expGlassConfig.section_dim}
+                onChange={(e) => updateExpGlass({ section_dim: Number(e.target.value) })}
+                className="w-full accent-[#FF6A00] cursor-pointer"
+              />
+              <p className="text-[11px] text-gray-500 mt-0.5">
+                Dims background photo/video for sharper section readability
+              </p>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between text-xs font-bold text-gray-700 mb-1">
+                <span>Backdrop Contrast</span>
+                <span className="tabular-nums text-[#FF6A00]">{expGlassConfig.bg_contrast}%</span>
+              </div>
+              <input
+                type="range"
+                min={60}
+                max={160}
+                value={expGlassConfig.bg_contrast}
+                onChange={(e) => updateExpGlass({ bg_contrast: Number(e.target.value) })}
+                className="w-full accent-[#FF6A00] cursor-pointer"
+              />
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between text-xs font-bold text-gray-700 mb-1">
+                <span>Backdrop Brightness</span>
+                <span className="tabular-nums text-[#FF6A00]">{expGlassConfig.bg_brightness}%</span>
+              </div>
+              <input
+                type="range"
+                min={40}
+                max={140}
+                value={expGlassConfig.bg_brightness}
+                onChange={(e) => updateExpGlass({ bg_brightness: Number(e.target.value) })}
+                className="w-full accent-[#FF6A00] cursor-pointer"
+              />
+            </div>
+
+            <div className="sm:col-span-2 pt-1 flex justify-end">
+              <button
+                type="button"
+                onClick={() => handleSave('homepage-experiences', experiences)}
+                disabled={isSaving || isUploading}
+                className="px-4 py-2 rounded-xl bg-gray-900 hover:bg-[#FF6A00] disabled:opacity-50 text-white text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer"
+              >
+                {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                <span>Save Glass &amp; Contrast Level</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Live Interactive Card + Section Preview */}
+          <div className="lg:col-span-5 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-gray-600">
+                Live Glass Card Preview
+              </span>
+              <div className="inline-flex rounded-lg bg-gray-100 p-0.5 border border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setPreviewExpDark(false)}
+                  className={`px-2 py-1 rounded-md text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer ${
+                    !previewExpDark ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                  }`}
+                >
+                  <Sun className="w-3 h-3 text-[#FF6A00]" /> Light
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewExpDark(true)}
+                  className={`px-2 py-1 rounded-md text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer ${
+                    previewExpDark ? 'bg-[#08121B] text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                  }`}
+                >
+                  <Moon className="w-3 h-3 text-[#FF6A00]" /> Dark
+                </button>
+              </div>
+            </div>
+
+            <div
+              className={`relative rounded-2xl overflow-hidden border p-4 transition-colors duration-300 ${
+                previewExpDark ? 'bg-[#08121B] border-gray-800' : 'bg-[#F5F2EC] border-gray-200'
+              }`}
+            >
+              {/* Simulated Section Background */}
+              {sectionBgType === 'video' && experiences.section_bg_video ? (
+                <video
+                  src={experiences.section_bg_video}
+                  poster={experiences.section_bg_image || undefined}
+                  style={{ filter: expGlassPreviewStyles.mediaFilter }}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              ) : sectionBgType !== 'none' && experiences.section_bg_image ? (
+                <img
+                  src={experiences.section_bg_image}
+                  alt="Experiences preview backdrop"
+                  style={{ filter: expGlassPreviewStyles.mediaFilter }}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              ) : (
+                <div className="absolute inset-0 pointer-events-none">
+                  <div className="absolute -top-10 left-1/4 w-44 h-44 bg-[#E67A3A]/35 blur-[55px] rounded-full" />
+                  <div className="absolute -bottom-10 right-6 w-44 h-44 bg-[#29492F]/35 blur-[55px] rounded-full" />
+                </div>
+              )}
+
+              {sectionBgType !== 'none' && ((sectionBgType === 'video' && experiences.section_bg_video) || (sectionBgType === 'image' && experiences.section_bg_image)) && (
+                <div
+                  style={{ backgroundColor: expGlassPreviewStyles.sectionScrimColor }}
+                  className="absolute inset-0 transition-colors duration-200"
+                />
+              )}
+
+              {/* Preview Glass Card */}
+              <div
+                style={expGlassPreviewStyles.cardStyle}
+                className="relative z-10 rounded-2xl overflow-hidden border max-w-[260px] mx-auto transition-all duration-200"
+              >
+                <div className="p-2 pb-0">
+                  <div className="aspect-[16/10] w-full rounded-xl overflow-hidden bg-[#08121B] relative">
+                    {experiences.nganya ? (
+                      <img src={experiences.nganya} alt="Nganya preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-[#08121B] via-[#102436] to-[#29492F]" />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+                  </div>
+                </div>
+                <div className="p-3.5 pt-2.5">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-[#FF6A00] mb-0.5">
+                    Culture &amp; Vibe
+                  </p>
+                  <p className={`text-sm font-bold leading-snug mb-1 ${previewExpDark ? 'text-white' : 'text-slate-900'}`}>
+                    Nganya Experience
+                  </p>
+                  <p
+                    style={{ color: expGlassPreviewStyles.descriptionColor }}
+                    className="text-[11px] line-clamp-2 mb-2"
+                  >
+                    Ride Nairobi&apos;s most iconic matatus with music, lights and street culture.
+                  </p>
+                  <div className={`flex items-center gap-1 text-[10px] mb-2.5 ${previewExpDark ? 'text-[#F4E8D2]/70' : 'text-slate-600'}`}>
+                    <MapPin className="w-3 h-3 text-[#E67A3A] shrink-0" />
+                    <span className="truncate">Nairobi City &amp; Street Culture</span>
+                  </div>
+                  <div style={{ borderColor: expGlassPreviewStyles.dividerColor }} className="pt-2 border-t">
+                    <div className="w-full rounded-xl bg-gradient-to-r from-[#E67A3A] to-[#FF6A00] text-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider flex items-center justify-between">
+                      <span>Book Now</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Section Background Manager (Video or Image) */}
       <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-200 shadow-sm space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
@@ -471,7 +777,7 @@ export function HomepageManager({ initialTab = 'stats' }: HomepageManagerProps) 
             </div>
             <div>
               <h4 className="font-bold text-gray-900 text-base">Section Background Media</h4>
-              <p className="text-xs text-gray-500">Set an atmospheric video or photo behind the Explore Our Experiences section.</p>
+              <p className="text-xs text-gray-500">Set an atmospheric video or photo behind the Explore Our Experiences glass cards.</p>
             </div>
           </div>
 
@@ -639,63 +945,6 @@ export function HomepageManager({ initialTab = 'stats' }: HomepageManagerProps) 
             </div>
           </div>
         </div>
-
-        {/* Overlay Readability Strength + Mini Live Preview */}
-        {sectionBgType !== 'none' && ((sectionBgType === 'video' && experiences.section_bg_video) || (sectionBgType === 'image' && experiences.section_bg_image)) && (
-          <div className="pt-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-2">
-                Background Overlay Intensity (Text Readability)
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {[
-                  { value: '40', label: 'Vivid (40%)' },
-                  { value: '60', label: 'Balanced (60%)' },
-                  { value: '75', label: 'Contrast (75%)' },
-                  { value: '85', label: 'Subtle (85%)' },
-                ].map((preset) => (
-                  <button
-                    key={preset.value}
-                    type="button"
-                    onClick={() => setExperiences(prev => ({ ...prev, section_bg_overlay: preset.value }))}
-                    className={`px-2.5 py-2 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
-                      sectionBgOverlay === preset.value
-                        ? 'bg-[#FF6A00] text-white border-[#FF6A00] shadow-sm'
-                        : 'bg-gray-50 text-gray-700 border-gray-200 hover:border-[#FF6A00]/40'
-                    }`}
-                  >
-                    {preset.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="relative h-28 rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center">
-              {sectionBgType === 'video' && experiences.section_bg_video ? (
-                <video
-                  src={experiences.section_bg_video}
-                  poster={experiences.section_bg_image || undefined}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-              ) : (
-                <img
-                  src={experiences.section_bg_image}
-                  alt="Preview"
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-              )}
-              <div className={`absolute inset-0 ${previewOverlayClass[sectionBgOverlay] || 'bg-[#08121B]/60'}`} />
-              <div className="relative z-10 text-center px-3">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[#FF6A00]">Live Preview</p>
-                <p className="text-sm font-black uppercase text-white tracking-tight">Explore Our Experiences</p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Individual Experience Cards Media */}
