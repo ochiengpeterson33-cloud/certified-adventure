@@ -14,7 +14,7 @@ import {
 } from '../hooks/useSupabaseData';
 import { optimizeImageForUpload } from '../lib/imageOptimizer';
 
-const POLLS_SETUP_SQL = `-- Run supabase/culture_polls.sql in Supabase SQL Editor (non-destructive)
+const POLLS_SETUP_SQL = `-- Complete Certified Adventures Live Voting Setup (Non-Destructive & Idempotent)
 CREATE TABLE IF NOT EXISTS public.culture_poll_votes (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   poll_id TEXT NOT NULL,
@@ -26,6 +26,8 @@ CREATE TABLE IF NOT EXISTS public.culture_poll_votes (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS culture_poll_votes_poll_user_idx ON public.culture_poll_votes (poll_id, user_id) WHERE user_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS culture_poll_votes_poll_option_idx ON public.culture_poll_votes (poll_id, option_id);
+CREATE INDEX IF NOT EXISTS culture_poll_votes_voter_token_idx ON public.culture_poll_votes (voter_token);
+
 CREATE TABLE IF NOT EXISTS public.culture_poll_tallies (
   poll_id TEXT NOT NULL,
   option_id TEXT NOT NULL,
@@ -33,13 +35,102 @@ CREATE TABLE IF NOT EXISTS public.culture_poll_tallies (
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   PRIMARY KEY (poll_id, option_id)
 );
+
 INSERT INTO public.culture_poll_tallies (poll_id, option_id, vote_count, updated_at)
 SELECT poll_id, option_id, COUNT(*)::BIGINT, NOW() FROM public.culture_poll_votes GROUP BY poll_id, option_id
 ON CONFLICT (poll_id, option_id) DO UPDATE SET vote_count = EXCLUDED.vote_count, updated_at = NOW();
+
+CREATE OR REPLACE FUNCTION public.sync_culture_poll_tallies()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  IF (TG_OP = 'INSERT') THEN
+    INSERT INTO public.culture_poll_tallies (poll_id, option_id, vote_count, updated_at)
+    VALUES (NEW.poll_id, NEW.option_id, 1, NOW())
+    ON CONFLICT (poll_id, option_id) DO UPDATE SET vote_count = public.culture_poll_tallies.vote_count + 1, updated_at = NOW();
+    RETURN NEW;
+  ELSIF (TG_OP = 'DELETE') THEN
+    UPDATE public.culture_poll_tallies SET vote_count = GREATEST(vote_count - 1, 0), updated_at = NOW()
+    WHERE poll_id = OLD.poll_id AND option_id = OLD.option_id;
+    RETURN OLD;
+  END IF;
+  RETURN NULL;
+END; $$;
+
+DROP TRIGGER IF EXISTS trg_sync_culture_poll_tallies ON public.culture_poll_votes;
+CREATE TRIGGER trg_sync_culture_poll_tallies AFTER INSERT OR DELETE ON public.culture_poll_votes FOR EACH ROW EXECUTE FUNCTION public.sync_culture_poll_tallies();
+
+CREATE OR REPLACE FUNCTION public.cast_culture_vote(p_poll_id TEXT, p_option_id TEXT, p_voter_token TEXT)
+RETURNS JSONB LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  v_poll_id TEXT := trim(COALESCE(p_poll_id, ''));
+  v_option_id TEXT := trim(COALESCE(p_option_id, ''));
+  v_token TEXT := trim(COALESCE(p_voter_token, ''));
+  v_user_id UUID := auth.uid();
+  v_polls JSONB;
+  v_poll JSONB;
+  v_existing TEXT;
+  v_tallies JSONB;
+BEGIN
+  IF char_length(v_poll_id) = 0 OR char_length(v_option_id) = 0 OR char_length(v_token) < 8 THEN
+    RETURN jsonb_build_object('ok', false, 'error', 'Invalid vote request.');
+  END IF;
+  SELECT description::jsonb INTO v_polls FROM public.categories WHERE slug = 'homepage-culture-polls' LIMIT 1;
+  SELECT elem INTO v_poll FROM jsonb_array_elements(COALESCE(v_polls, '[]'::jsonb)) AS elem WHERE elem->>'id' = v_poll_id LIMIT 1;
+  IF v_poll IS NULL THEN RETURN jsonb_build_object('ok', false, 'invalid_poll', true, 'error', 'Poll not found.'); END IF;
+  IF COALESCE(v_poll->>'is_active', 'true') = 'false' OR COALESCE(v_poll->>'status', '') = 'closed' THEN
+    RETURN jsonb_build_object('ok', false, 'expired', true, 'error', 'This poll is closed.');
+  END IF;
+  IF NULLIF(trim(COALESCE(v_poll->>'closes_at', '')), '') IS NOT NULL AND NOW() >= (v_poll->>'closes_at')::timestamptz THEN
+    RETURN jsonb_build_object('ok', false, 'expired', true, 'error', 'Voting deadline has passed.');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM jsonb_array_elements(COALESCE(v_poll->'options', '[]'::jsonb)) AS opt WHERE opt->>'id' = v_option_id) THEN
+    RETURN jsonb_build_object('ok', false, 'invalid_option', true, 'error', 'Invalid voting option.');
+  END IF;
+  SELECT option_id INTO v_existing FROM public.culture_poll_votes
+  WHERE poll_id = v_poll_id AND (voter_token = v_token OR (v_user_id IS NOT NULL AND user_id = v_user_id)) LIMIT 1;
+  IF v_existing IS NOT NULL THEN
+    SELECT COALESCE(jsonb_agg(jsonb_build_object('poll_id', poll_id, 'option_id', option_id, 'vote_count', vote_count)), '[]'::jsonb) INTO v_tallies FROM public.culture_poll_tallies WHERE poll_id = v_poll_id;
+    RETURN jsonb_build_object('ok', false, 'already_voted', true, 'voted_option_id', v_existing, 'tallies', v_tallies);
+  END IF;
+  INSERT INTO public.culture_poll_votes (poll_id, option_id, voter_token, user_id) VALUES (v_poll_id, v_option_id, v_token, v_user_id);
+  SELECT COALESCE(jsonb_agg(jsonb_build_object('poll_id', poll_id, 'option_id', option_id, 'vote_count', vote_count)), '[]'::jsonb) INTO v_tallies FROM public.culture_poll_tallies WHERE poll_id = v_poll_id;
+  RETURN jsonb_build_object('ok', true, 'voted_option_id', v_option_id, 'tallies', v_tallies);
+END; $$;
+
+CREATE OR REPLACE FUNCTION public.get_culture_poll_state(p_voter_token TEXT DEFAULT NULL)
+RETURNS JSONB LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_token TEXT := NULLIF(trim(COALESCE(p_voter_token, '')), ''); v_user_id UUID := auth.uid(); v_tallies JSONB; v_my JSONB;
+BEGIN
+  SELECT COALESCE(jsonb_agg(jsonb_build_object('poll_id', poll_id, 'option_id', option_id, 'vote_count', vote_count)), '[]'::jsonb) INTO v_tallies FROM public.culture_poll_tallies;
+  IF (v_token IS NOT NULL AND char_length(v_token) >= 8) OR v_user_id IS NOT NULL THEN
+    SELECT COALESCE(jsonb_object_agg(poll_id, option_id), '{}'::jsonb) INTO v_my FROM (
+      SELECT DISTINCT ON (poll_id) poll_id, option_id FROM public.culture_poll_votes
+      WHERE (v_token IS NOT NULL AND voter_token = v_token) OR (v_user_id IS NOT NULL AND user_id = v_user_id) ORDER BY poll_id, created_at ASC
+    ) s;
+  ELSE v_my := '{}'::jsonb; END IF;
+  RETURN jsonb_build_object('tallies', v_tallies, 'my_votes', v_my);
+END; $$;
+
+CREATE OR REPLACE FUNCTION public.reset_culture_poll_votes(p_poll_id TEXT)
+RETURNS JSONB LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role::text IN ('Super Admin', 'Admin')) THEN
+    RAISE EXCEPTION 'Only administrators can reset poll votes.' USING ERRCODE = '42501';
+  END IF;
+  DELETE FROM public.culture_poll_votes WHERE poll_id = trim(COALESCE(p_poll_id, ''));
+  DELETE FROM public.culture_poll_tallies WHERE poll_id = trim(COALESCE(p_poll_id, ''));
+  RETURN jsonb_build_object('ok', true);
+END; $$;
+
+ALTER TABLE public.culture_poll_votes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.culture_poll_tallies ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public read culture_poll_tallies" ON public.culture_poll_tallies;
 CREATE POLICY "Public read culture_poll_tallies" ON public.culture_poll_tallies FOR SELECT TO public USING (true);
--- Run the full /supabase/culture_polls.sql and /supabase/security_hardening.sql scripts for RPCs & strict Admin RLS.`;
+GRANT EXECUTE ON FUNCTION public.cast_culture_vote(TEXT, TEXT, TEXT) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.get_culture_poll_state(TEXT) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.reset_culture_poll_votes(TEXT) TO authenticated;
+ALTER TABLE public.culture_poll_tallies REPLICA IDENTITY FULL;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.culture_poll_tallies; EXCEPTION WHEN duplicate_object THEN NULL; END $$;`;
 
 function isoToLocalInput(iso?: string): string {
   if (!iso) return '';

@@ -537,7 +537,10 @@ export function useCulturePolls() {
     queryFn: async () => {
       if (await isServerProxyAvailable()) {
         try {
-          const res = await fetch('/api/public/polls', { headers: { Accept: 'application/json' } });
+          const res = await fetch('/api/public/polls', {
+            cache: 'no-store',
+            headers: { Accept: 'application/json' },
+          });
           if (res.ok && res.headers.get('content-type')?.includes('application/json')) {
             const json = await res.json();
             if (Array.isArray(json?.polls)) {
@@ -594,13 +597,98 @@ export function useMyRemotePollVotes(voterToken: string, userId: string | null) 
   });
 }
 
+// Singleton ref-counted Realtime manager for lightweight culture_poll_tallies only
+// Guarantees at most 1 WebSocket channel per tab and closes automatically when hidden/closed
+let sharedTallyChannel: ReturnType<typeof supabase.channel> | null = null;
+let sharedTallySubscribers = 0;
+let sharedTallyConnected = false;
+const tallyStatusListeners = new Set<(connected: boolean) => void>();
+
+function notifyTallyStatus(connected: boolean) {
+  sharedTallyConnected = connected;
+  tallyStatusListeners.forEach((cb) => cb(connected));
+}
+
+function retainTallyRealtime(queryClient: ReturnType<typeof useQueryClient>): () => void {
+  sharedTallySubscribers += 1;
+
+  if (!sharedTallyChannel && typeof window !== 'undefined') {
+    sharedTallyChannel = supabase
+      .channel('public-culture-poll-tallies-live')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'culture_poll_tallies' },
+        (payload) => {
+          const eventType = payload.eventType;
+          const nextRow = payload.new as Partial<CultureTallyRow> | null;
+          const oldRow = payload.old as Partial<CultureTallyRow> | null;
+
+          queryClient.setQueryData<{ tallies: TallyMap; tableAvailable: boolean }>(
+            ['culture-poll-tallies'],
+            (prev) => {
+              const nextTallies: TallyMap = { ...(prev?.tallies || {}) };
+
+              if ((eventType === 'INSERT' || eventType === 'UPDATE') && nextRow?.poll_id && nextRow?.option_id) {
+                nextTallies[nextRow.poll_id] = {
+                  ...(nextTallies[nextRow.poll_id] || {}),
+                  [nextRow.option_id]: Number(nextRow.vote_count || 0),
+                };
+              } else if (eventType === 'DELETE' && oldRow?.poll_id) {
+                if (oldRow.option_id && nextTallies[oldRow.poll_id]) {
+                  const updatedPoll = { ...nextTallies[oldRow.poll_id] };
+                  delete updatedPoll[oldRow.option_id];
+                  nextTallies[oldRow.poll_id] = updatedPoll;
+                } else {
+                  delete nextTallies[oldRow.poll_id];
+                }
+              }
+
+              return {
+                tallies: nextTallies,
+                tableAvailable: true,
+              };
+            }
+          );
+        }
+      )
+      .subscribe((status) => {
+        notifyTallyStatus(status === 'SUBSCRIBED');
+      });
+  }
+
+  return () => {
+    sharedTallySubscribers = Math.max(0, sharedTallySubscribers - 1);
+    if (sharedTallySubscribers === 0 && sharedTallyChannel) {
+      const ch = sharedTallyChannel;
+      sharedTallyChannel = null;
+      notifyTallyStatus(false);
+      void supabase.removeChannel(ch);
+    }
+  };
+}
+
 export function useCulturePollVotes(options?: { hasActivePolls?: boolean }) {
   const queryClient = useQueryClient();
   const isVisible = useDocumentVisible();
   const hasActivePolls = options?.hasActivePolls ?? true;
+  const [isRealtimeConnected, setIsRealtimeConnected] = useState<boolean>(sharedTallyConnected);
 
-  // Jittered periodic interval prevents synchronized thundering-herd spikes
-  const [jitterMs] = useState(() => Math.floor(Math.random() * 4000));
+  // Jittered fallback interval prevents synchronized thundering-herd spikes
+  const [jitterMs] = useState(() => Math.floor(Math.random() * 1500));
+
+  useEffect(() => {
+    tallyStatusListeners.add(setIsRealtimeConnected);
+    setIsRealtimeConnected(sharedTallyConnected);
+    return () => {
+      tallyStatusListeners.delete(setIsRealtimeConnected);
+    };
+  }, []);
+
+  // Subscribe to lightweight tally updates only while tab is visible & polls are active
+  useEffect(() => {
+    if (!isVisible || !hasActivePolls) return;
+    return retainTallyRealtime(queryClient);
+  }, [isVisible, hasActivePolls, queryClient]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -636,13 +724,27 @@ export function useCulturePollVotes(options?: { hasActivePolls?: boolean }) {
     };
   }, [queryClient]);
 
+  // Adaptive refresh:
+  // - Hidden tab or all polls closed: 0 polling
+  // - Realtime subscribed: 30s background reconciliation (Realtime pushes votes <200ms)
+  // - Realtime unavailable / >200 cap reached: 4–5.5s polling via Express 2s RAM micro-cache
+  const refetchInterval =
+    !isVisible || !hasActivePolls
+      ? false
+      : isRealtimeConnected
+      ? 30_000
+      : 4_000 + jitterMs;
+
   return useQuery({
     queryKey: ['culture-poll-tallies'],
     queryFn: async () => {
-      // Prefer Express 3s micro-cache when active to protect Supabase Free tier
+      // Prefer Express 2s micro-cache when active to protect Supabase Free tier
       if (await isServerProxyAvailable()) {
         try {
-          const res = await fetch('/api/public/tallies', { headers: { Accept: 'application/json' } });
+          const res = await fetch('/api/public/tallies', {
+            cache: 'no-store',
+            headers: { Accept: 'application/json' },
+          });
           if (res.ok && res.headers.get('content-type')?.includes('application/json')) {
             const json = await res.json();
             const rows = (Array.isArray(json?.tallies) ? json.tallies : []) as CultureTallyRow[];
@@ -669,10 +771,9 @@ export function useCulturePollVotes(options?: { hasActivePolls?: boolean }) {
         tableAvailable: true,
       };
     },
-    staleTime: 2500,
+    staleTime: 1000,
     gcTime: 1000 * 60 * 10,
-    // Refresh only when tab is visible and at least one poll is active
-    refetchInterval: isVisible && hasActivePolls ? 10_000 + jitterMs : false,
+    refetchInterval,
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
   });

@@ -183,16 +183,16 @@ app.get('/api/public/polls', async (_req, res) => {
   }
 });
 
-// Cached lightweight aggregated tallies (3s micro-cache; zero raw voter data)
+// Cached lightweight aggregated tallies (2s server micro-cache; zero raw voter data)
 app.get('/api/public/tallies', async (_req, res) => {
   if (!PROXY_CONFIGURED) {
     return res.status(503).json({ error: 'Proxy not configured' });
   }
   try {
-    const { data, cacheHit } = await fetchWithSingleFlight('tallies', 3_000, async () => {
+    const { data, cacheHit } = await fetchWithSingleFlight('tallies', 2_000, async () => {
       return await supabaseRestGet('culture_poll_tallies?select=poll_id,option_id,vote_count');
     });
-    res.setHeader('Cache-Control', 'public, max-age=2, s-maxage=3, stale-while-revalidate=2');
+    res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=2, must-revalidate');
     res.setHeader('X-Cache', cacheHit ? 'HIT' : 'MISS');
     return res.json({ tallies: Array.isArray(data) ? data : [] });
   } catch (err) {

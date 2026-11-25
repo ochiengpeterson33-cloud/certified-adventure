@@ -404,11 +404,21 @@ GRANT EXECUTE ON FUNCTION public.get_culture_poll_state(TEXT) TO anon, authentic
 GRANT EXECUTE ON FUNCTION public.reset_culture_poll_votes(TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.reconcile_culture_poll_tallies() TO authenticated;
 
--- 9. Remove high-churn tables from supabase_realtime CDC to save Free-tier WAL/CPU
+-- 9. Remove high-churn raw votes from supabase_realtime, and publish lightweight tallies only
 DO $$
 BEGIN
   ALTER PUBLICATION supabase_realtime DROP TABLE public.culture_poll_votes;
 EXCEPTION
   WHEN undefined_object THEN NULL;
   WHEN invalid_parameter_value THEN NULL;
+END $$;
+
+ALTER TABLE public.culture_poll_tallies REPLICA IDENTITY FULL;
+
+DO $$
+BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.culture_poll_tallies;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+  WHEN undefined_object THEN NULL;
 END $$;
