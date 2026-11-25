@@ -43,10 +43,16 @@ export const isCaptchaConfigured = Boolean(TURNSTILE_SITE_KEY || HCAPTCHA_SITE_K
 interface CaptchaFieldProps {
   onTokenChange: (token: string | null) => void;
   resetSignal?: number;
+  forceTheme?: 'light' | 'dark';
 }
 
-export const CaptchaField: React.FC<CaptchaFieldProps> = ({ onTokenChange, resetSignal = 0 }) => {
+export const CaptchaField: React.FC<CaptchaFieldProps> = ({
+  onTokenChange,
+  resetSignal = 0,
+  forceTheme,
+}) => {
   const { isDark } = useTheme();
+  const effectiveTheme: 'light' | 'dark' = forceTheme ?? (isDark ? 'dark' : 'light');
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
   const onTokenChangeRef = useRef(onTokenChange);
@@ -97,7 +103,7 @@ export const CaptchaField: React.FC<CaptchaFieldProps> = ({ onTokenChange, reset
       try {
         widgetIdRef.current = api.render(containerRef.current, {
           sitekey: siteKey,
-          theme: isDark ? 'dark' : 'light',
+          theme: effectiveTheme,
           callback: (token: string) => {
             onTokenChangeRef.current(token);
           },
@@ -176,7 +182,7 @@ export const CaptchaField: React.FC<CaptchaFieldProps> = ({ onTokenChange, reset
         widgetIdRef.current = null;
       }
     };
-  }, [provider, siteKey, isDark]);
+  }, [provider, siteKey, effectiveTheme]);
 
   // Reset single-use token whenever parent increments resetSignal
   useEffect(() => {
@@ -194,12 +200,22 @@ export const CaptchaField: React.FC<CaptchaFieldProps> = ({ onTokenChange, reset
 
   return (
     <div className="pt-1">
-      <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-white/70 mb-2">
+      <div
+        className={`flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider mb-2 ${
+          effectiveTheme === 'dark' ? 'text-white/70' : 'text-slate-600'
+        }`}
+      >
         <ShieldCheck className="w-3.5 h-3.5 text-[#FF6A00]" />
         <span>Security Verification</span>
       </div>
       {loadFailed ? (
-        <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs">
+        <div
+          className={`p-3 rounded-xl border text-xs ${
+            effectiveTheme === 'dark'
+              ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+              : 'bg-amber-50 border-amber-200 text-amber-800'
+          }`}
+        >
           Unable to load the verification widget. Please refresh the page or disable browser content blockers.
         </div>
       ) : (

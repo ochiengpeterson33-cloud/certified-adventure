@@ -36,7 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
+        fetchProfile(session.user);
       } else {
         setLoading(false);
       }
@@ -47,7 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
+        fetchProfile(session.user);
       } else {
         setProfile(null);
         setLoading(false);
@@ -57,18 +57,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (authUser: User) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', userId)
+        .eq('id', authUser.id)
         .maybeSingle();
 
       if (error) {
         console.error('Error fetching profile:', error);
-      } else {
+      } else if (data) {
         setProfile(data);
+      } else {
+        // First-time OAuth / social login fallback profile creation (never overwrites existing role)
+        const meta = (authUser.user_metadata || {}) as Record<string, any>;
+        const rawName = String(meta.full_name || meta.name || '').trim();
+        const parts = rawName ? rawName.split(/\s+/) : [];
+        const firstName = String(meta.first_name || meta.given_name || parts[0] || '');
+        const lastName = String(meta.last_name || meta.family_name || parts.slice(1).join(' ') || '');
+
+        const { data: created } = await supabase
+          .from('profiles')
+          .upsert(
+            {
+              id: authUser.id,
+              first_name: firstName,
+              last_name: lastName,
+              full_name: rawName || null,
+              email: authUser.email || null,
+              avatar_url: meta.avatar_url || meta.picture || null,
+              role: 'Viewer',
+            },
+            { onConflict: 'id', ignoreDuplicates: true }
+          )
+          .select('*')
+          .maybeSingle();
+
+        if (created) {
+          setProfile(created);
+        }
       }
     } finally {
       setLoading(false);

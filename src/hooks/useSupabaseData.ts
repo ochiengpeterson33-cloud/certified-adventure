@@ -374,6 +374,70 @@ export function useHomepageExperiences() {
   });
 }
 
+export interface AuthPageThemeConfig {
+  image_url: string;
+  glass_opacity: number;
+  glass_blur: number;
+  backdrop_dim: number;
+  image_contrast: number;
+  image_brightness: number;
+}
+
+export const DEFAULT_AUTH_PAGE_THEME: AuthPageThemeConfig = {
+  image_url: '',
+  glass_opacity: 24,
+  glass_blur: 20,
+  backdrop_dim: 28,
+  image_contrast: 105,
+  image_brightness: 95,
+};
+
+function clampNum(value: unknown, fallback: number, min: number, max: number): number {
+  const n = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(max, Math.max(min, n));
+}
+
+export function parseAuthPageThemeConfig(rawJson?: string | null): AuthPageThemeConfig {
+  if (!rawJson) return { ...DEFAULT_AUTH_PAGE_THEME };
+  try {
+    const parsed = JSON.parse(rawJson);
+    return {
+      image_url: typeof parsed?.image_url === 'string' ? parsed.image_url.trim() : '',
+      glass_opacity: clampNum(parsed?.glass_opacity, DEFAULT_AUTH_PAGE_THEME.glass_opacity, 0, 85),
+      glass_blur: clampNum(parsed?.glass_blur, DEFAULT_AUTH_PAGE_THEME.glass_blur, 0, 36),
+      backdrop_dim: clampNum(parsed?.backdrop_dim, DEFAULT_AUTH_PAGE_THEME.backdrop_dim, 0, 80),
+      image_contrast: clampNum(parsed?.image_contrast, DEFAULT_AUTH_PAGE_THEME.image_contrast, 60, 160),
+      image_brightness: clampNum(parsed?.image_brightness, DEFAULT_AUTH_PAGE_THEME.image_brightness, 40, 140),
+    };
+  } catch {
+    return { ...DEFAULT_AUTH_PAGE_THEME };
+  }
+}
+
+export function useAuthPageBackground() {
+  return useQuery<AuthPageThemeConfig>({
+    queryKey: ['auth-page-background'],
+    queryFn: async () => {
+      const proxied = await fetchFromCmsProxy<any[]>('auth-page-background');
+      const row = proxied ? proxied[0] : null;
+      if (row?.description) {
+        return parseAuthPageThemeConfig(row.description);
+      }
+      const { data, error } = await supabase
+        .from('categories')
+        .select('description')
+        .eq('slug', 'auth-page-background')
+        .maybeSingle();
+      if (error && error.code !== 'PGRST116') throw error;
+      return parseAuthPageThemeConfig(data?.description);
+    },
+    staleTime: CMS_STALE_TIME,
+    gcTime: CMS_GC_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
 // ============================================================================
 // Community Polls & Lightweight Tally System (Free-Tier Scalable)
 // ============================================================================

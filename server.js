@@ -156,6 +156,7 @@ const CMS_RESOURCE_QUERIES = {
   'homepage-hero-videos': 'categories?select=description&slug=eq.homepage-hero-videos&limit=1',
   'homepage-why-choose-us': 'categories?select=description&slug=eq.homepage-why-choose-us&limit=1',
   'homepage-experiences': 'categories?select=description&slug=eq.homepage-experiences&limit=1',
+  'auth-page-background': 'categories?select=description&slug=eq.auth-page-background&limit=1',
 };
 
 // Cached public poll definitions (30s micro-cache)
